@@ -23,7 +23,7 @@ updates:
 
   # Dependabot uses the "npm" ecosystem for pnpm projects too.
   - package-ecosystem: "npm"
-    directory: "/Starter.PWA"
+    directory: "/Voxa.PWA"
     labels: ["dependencies"]
     schedule:
       interval: "monthly"
@@ -32,7 +32,7 @@ updates:
         patterns: ["*"]
 
   - package-ecosystem: "docker"
-    directory: "/Starter.WebApi"
+    directory: "/Voxa.WebApi"
     labels: ["dependencies"]
     schedule:
       interval: "monthly"

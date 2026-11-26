@@ -46,7 +46,7 @@ services:
             - "--providers.docker=true"
             - "--providers.docker.endpoint=tcp://docker-socket-proxy:2375"
             - "--providers.docker.exposedbydefault=false"
-            - "--providers.docker.network=starter-proxy"
+            - "--providers.docker.network=voxa-proxy"
             - "--entrypoints.web.address=:80"
             - "--entrypoints.web-secure.address=:443"
             # Keep the X-Forwarded-For that Cloudflare sends (it carries the real client) only when the request comes
@@ -76,7 +76,7 @@ services:
             - no-new-privileges:true
 
     api:
-        container_name: Starter-API
+        container_name: Voxa-API
         # latest follows published releases through Watchtower; set APP_VERSION (for example 1.4.2) to pin a release.
         image: ghcr.io/${IMAGE_REPOSITORY}/api:${APP_VERSION:-latest}
         restart: unless-stopped
@@ -108,7 +108,7 @@ services:
             - database
 
     db:
-        container_name: Starter-DB
+        container_name: Voxa-DB
         # Published on the server's loopback address only, for maintenance through an SSH tunnel
         # (ssh -L 5432:127.0.0.1:5432 <server>). Docker's published ports bypass host firewalls such as ufw,
         # so never publish it on all interfaces. The API uses the internal database network.
@@ -175,7 +175,7 @@ services:
 
 networks:
     proxy:
-        name: starter-proxy
+        name: voxa-proxy
     database: {}
     docker-socket:
         internal: true

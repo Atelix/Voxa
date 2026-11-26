@@ -129,8 +129,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - location: Starter.PWA
-            worker: starter-pwa-beta
+          - location: Voxa.PWA
+            worker: voxa-pwa-beta
     # The Cloudflare credentials go only to the steps that need them, never to the install and build steps.
     env:
       # No VITE_API_URL: like production, the app calls /api on its own host, which the reverse proxy sends to the API.

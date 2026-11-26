@@ -12,11 +12,11 @@ Apply the project adaptations below before the generic upstream examples.
 
 ## Project adaptations
 
-- Read `docs/architecture.md` and .editorconfig. Preserve Starter.WebApi controllers, Starter logic/services, Starter.Abstractions contracts and Starter.Persistence entities.
-- Place each service/logic interface in its own file in Starter.Abstractions. Interface methods return models and do not accept HttpContext.
+- Read `docs/architecture.md` and .editorconfig. Preserve Voxa.WebApi controllers, Voxa logic/services, Voxa.Abstractions contracts and Voxa.Persistence entities.
+- Place each service/logic interface in its own file in Voxa.Abstractions. Interface methods return models and do not accept HttpContext.
 - Use `IHttpContextAccessor` where implementations need the request; keep authorization-sensitive visibility decisions in logic.
 - Preserve the project's domain exceptions and ApiResponse/problem-details behavior rather than introducing an unrelated Result type, repository layer or Minimal API rewrite.
-- Use async operations and cancellation where supported. Never run parallel EF operations on the same StarterContext instance.
+- Use async operations and cancellation where supported. Never run parallel EF operations on the same VoxaContext instance.
 - Follow existing model mutability and mappings; do not convert tracked EF entities to immutable records merely to follow an example.
 
 ## Upstream reference

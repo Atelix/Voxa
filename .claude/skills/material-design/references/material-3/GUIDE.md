@@ -6,7 +6,7 @@
 
 ## Using this reference in the project
 
-The project's front end (`Starter.PWA`) is a Vue 3 app on **Vuetify 4**, which
+The project's front end (`Voxa.PWA`) is a Vue 3 app on **Vuetify 4**, which
 already implements Material Design. In this repository:
 
 - Implementation rules come from the `material-design` skill (`.claude/skills/material-design`).
