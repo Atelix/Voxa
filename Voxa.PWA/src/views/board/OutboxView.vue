@@ -43,9 +43,9 @@ const mails = computed(() => loader.data.value ?? [])
 
 onMounted(() => void loader.load())
 
-/** The voting link in the mail, pointing at this app, so the board can try the code at once. */
+/** The voting link in the mail, pointing at this app, so the board can try the codes at once. */
 function link(text: string): string | null {
-	const match = /#code=([A-Z0-9]+)/.exec(text)
+	const match = /#code=([A-Z0-9,]+)/.exec(text)
 	return match ? `${window.location.origin}/#code=${match[1]}` : null
 }
 </script>

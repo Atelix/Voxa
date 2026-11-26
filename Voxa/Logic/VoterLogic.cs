@@ -90,24 +90,35 @@ public sealed class VoterLogic(
         EnsureSender(settings);
         var pending = await context.Voters.Where(v => v.MeetingId == meetingId && !v.CodeSent && v.Email != null).ToListAsync(cancellationToken);
         var withoutEmail = await context.Voters.CountAsync(v => v.MeetingId == meetingId && !v.CodeSent && v.Email == null, cancellationToken);
-        RandomNumberGenerator.Shuffle(System.Runtime.InteropServices.CollectionsMarshal.AsSpan(pending));
+        // One mail per address: a parent of several youth members gets all their codes together. The mails go out in
+        // random order, and so do the codes within one mail's batch, so no order in the database follows the list.
+        var batches = pending.GroupBy(static v => v.Email!.Trim().ToUpperInvariant()).Select(static g => g.OrderBy(static v => v.Name).ToList()).ToArray();
+        RandomNumberGenerator.Shuffle(batches.AsSpan());
 
-        int sent = 0, failed = 0;
-        foreach (var voter in pending)
+        int sent = 0, failed = 0, unsaved = 0;
+        foreach (var batch in batches)
         {
-            var code = codes.Generate();
-            var message = CodeMail.Build(meeting, settings, voter, voter.Email!, code, app.Value);
+            var mailed = batch.Select(v => new MailedCode(v, codes.Generate())).ToArray();
+            var message = CodeMail.Build(meeting, settings, mailed, batch[0].Email!, app.Value);
             if (!await mail.SendAsync(message, cancellationToken))
             {
-                failed++;
+                failed += batch.Count;
                 continue;
             }
 
-            Issue(meeting, code);
-            voter.CodeSent = true;
-            if (++sent % SaveEvery == 0)
+            RandomNumberGenerator.Shuffle(mailed.AsSpan());
+            foreach (var (voter, code) in mailed)
+            {
+                Issue(meeting, code);
+                voter!.CodeSent = true;
+            }
+
+            sent += batch.Count;
+            unsaved += batch.Count;
+            if (unsaved >= SaveEvery)
             {
                 _ = await context.SaveChangesAsync(cancellationToken);
+                unsaved = 0;
             }
         }
 
@@ -147,7 +158,7 @@ public sealed class VoterLogic(
         EnsureSender(settings);
         var example = new Voter { Name = "[naam lid]", GuardianName = null };
         // A fresh code that is never stored, so the example cannot be used to vote.
-        var message = CodeMail.Build(meeting, settings, example, request.Email, codes.Generate(), app.Value);
+        var message = CodeMail.Build(meeting, settings, [new MailedCode(example, codes.Generate())], request.Email, app.Value);
         if (!await mail.SendAsync(message with { Subject = "[Test] " + message.Subject }, cancellationToken))
         {
             throw new DomainValidationException("The mail provider refused the test mail.");

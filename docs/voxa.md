@@ -16,7 +16,8 @@ sender and statute rules are settings in the app, so the same code runs for ever
 4. **Voters**: fetch the list from the member administration (Keeva) or upload a CSV. Suspended members drop out;
    minors are left out, vote themselves, or get their code through a parent, as the settings say.
 5. **Codes**: send a test mail to yourself, then send the codes. Members without an email address get a printed code
-   (**Papieren codes**).
+   (**Papieren codes**). Voters who share an address, such as a parent of several youth members, get one mail with a
+   code per member and one link that opens the voting page with all of those codes.
 6. **Meeting night** (`/bestuur/vergadering/<id>/live`): open the hall screen (`/zaal/<id>`) on the projector; it shows
    the QR code to the voting page. Open an item, let people vote, close it. Only then the result appears; add paper
    votes on the result page and show it on the hall screen.
@@ -30,6 +31,10 @@ sender and statute rules are settings in the app, so the same code runs for ever
   HMAC-SHA256 hash with the server's `Codes:Pepper`; the readable code exists only in memory while its mail is sent.
 - Nothing links a code to a voter: voters are mailed in random order, and the voter record only notes that a code
   was sent.
+- Every code is the vote of one member, also when one person holds several (a parent voting for their children). The
+  voting page can hold several codes: a vote goes out once per selected code, all selected by default, and the voter
+  can untick a code to vote differently for that member. The codes stay in the browser tab; the server gets each vote
+  as a separate request and does not learn which codes were used together.
 - A vote raises counters (ballots per item and channel, choices per option and channel) and marks the code as used
   for that item, in one transaction. There is no row per vote, no timestamp and no code next to a choice, so neither
   the board nor a database administrator can tell who voted what or in which order.
@@ -71,7 +76,7 @@ could send its own header.
 
 With `Mail__Mode=Outbox` (the default, and always in Development) no mail is sent. The board gets a **Testmailbox**
 with every mail the app would have sent, and **Proefvergadering maken** creates a meeting three days ahead with four
-items, eight test members at `example.org` (one minor via a parent, one without email, one suspended) and sends their
+items, nine test members at `example.org` (two minors via the same parent, one without email, one suspended) and sends their
 codes to the test mailbox. Open a mail there and use **Stemlink openen** to vote as that member.
 
 Locally:

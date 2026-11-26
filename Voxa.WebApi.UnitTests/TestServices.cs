@@ -60,8 +60,11 @@ internal sealed class TestServices : IDisposable
     public BallotLogic Ballot { get; }
 
     /// <summary>The codes in the test mailbox, read from the mails as a member would.</summary>
-    public IReadOnlyList<string> MailedCodes() =>
-        [.. Outbox.Messages().Select(static m => System.Text.RegularExpressions.Regex.Match(m.Text, @"Jouw stemcode: (\S+)").Groups[1].Value)];
+    public IReadOnlyList<string> MailedCodes() => [.. Outbox.Messages().SelectMany(static m => CodesIn(m.Text))];
+
+    /// <summary>The codes in one mail: "Jouw stemcode: ..." or, for an address with several voters, "Stemcode voor ...: ...".</summary>
+    public static IReadOnlyList<string> CodesIn(string text) =>
+        [.. System.Text.RegularExpressions.Regex.Matches(text, @"^(?:Jouw stemcode|Stemcode voor .+): (\S+)$", System.Text.RegularExpressions.RegexOptions.Multiline).Select(static m => m.Groups[1].Value)];
 
     public void Dispose()
     {

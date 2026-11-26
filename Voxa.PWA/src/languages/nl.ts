@@ -23,6 +23,7 @@ export default {
 		title: "Digitaal stemmen",
 		home: "Naar het begin",
 		codeShown: "Code {code}",
+		codesShown: "{n} codes",
 		signOut: "Afmelden",
 	},
 	start: {
@@ -38,6 +39,18 @@ export default {
 		unknownCode: "Deze code kennen we niet. Controleer de tekens en probeer het opnieuw.",
 		blocked: "Te veel verkeerde codes geprobeerd. Wacht tien minuten en probeer het dan opnieuw.",
 	},
+	codes: {
+		title: "Jouw code | Jouw codes ({n})",
+		one: "Stem je voor meerdere leden, bijvoorbeeld als ouder van jeugdleden? Voeg hun codes hier toe en stem voor iedereen tegelijk.",
+		several:
+			"Elke code is de stem van één lid. Je stemt voor alle codes tegelijk, of vinkt een code uit om voor dat lid anders te stemmen.",
+		addAnother: "Code toevoegen",
+		addLabel: "Nog een stemcode",
+		add: "Toevoegen",
+		cancel: "Annuleren",
+		alreadyAdded: "Deze code staat al op dit apparaat.",
+		otherMeeting: "Deze code hoort bij een andere vergadering.",
+	},
 	items: {
 		title: "Agendapunten",
 		live: "Live",
@@ -48,6 +61,7 @@ export default {
 		meetingStarts: "De vergadering begint {date}.",
 		ended: "Alle punten zijn gesloten. Bedankt voor het stemmen.",
 		refreshes: "Deze pagina ververst vanzelf zodra het bestuur een punt opent of sluit.",
+		openCodes: "Open, nog {open} van de {total} codes kunnen stemmen",
 		status: {
 			Pending: "Nog niet open",
 			Open: "Open, stem nu",
@@ -61,6 +75,15 @@ export default {
 		receivedTitle: "Je stem is ontvangen",
 		receivedSecret: "Je stem is geteld zonder je naam of code. Niemand kan zien wat je hebt gekozen.",
 		receivedResult: "De uitslag wordt bekend zodra het bestuur dit punt sluit.",
+		receivedFor: "Eén keer geteld voor elk van de {n} codes.",
+		voteOthers: "Stem voor de andere code | Stem voor de andere codes ({n})",
+		countsFor: "Telt voor",
+		codeCount: "{n} code | {n} codes",
+		forWhich: "Voor welke codes?",
+		forWhichHelp:
+			"Elke code is de stem van één lid. Vink een code uit om voor dat lid anders te stemmen; in de mail zie je welke code van wie is.",
+		alreadyTextSeveral:
+			"Met alle codes op dit apparaat is al gestemd over “{title}”. Een stem kan niet worden gewijzigd.",
 		backToItems: "Terug naar de punten",
 		alreadyTitle: "Je hebt al gestemd",
 		alreadyText: "Met deze code is al gestemd over “{title}”. Een stem kan niet worden gewijzigd.",
