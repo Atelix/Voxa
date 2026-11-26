@@ -16,7 +16,7 @@ services:
     # and an inspect also returns each container's environment; that read access cannot be narrowed further here
     # (docs/security-configuration.md). The network list is only used in Swarm mode, so it stays off.
     docker-socket-proxy:
-        image: tecnativa/docker-socket-proxy:0.5.0
+        image: tecnativa/docker-socket-proxy:3.4
         container_name: docker-socket-proxy
         restart: unless-stopped
         logging: *logging
