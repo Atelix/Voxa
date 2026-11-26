@@ -52,7 +52,7 @@ async function submit(): Promise<void> {
 	await action.run(() => board.signIn(password.value))
 	if (board.signedIn) {
 		const back =
-			typeof route.query.terug === "string" && route.query.terug.startsWith("/bestuur") ? route.query.terug : "/bestuur"
+			typeof route.query.return === "string" && route.query.return.startsWith("/admin/") ? route.query.return : "/admin"
 		await router.replace(back)
 	}
 }

@@ -17,7 +17,9 @@ and the trial data come in both.
 The fixed options of a proposal (for, against, abstain) and the blank choice of an election are shown in the reader's
 language. Agenda titles, descriptions and candidate names are what the board typed, so they stay as typed.
 
-Route paths such as `/bestuur` and `/stempunten` stay Dutch, so links in mails and bookmarks keep working.
+Web addresses are English in every language (`/admin`, `/items`, `/hall/<id>`). The Dutch paths of the first release
+(`/bestuur`, `/stempunten`, `/zaal/<id>` and so on) redirect to them, so old bookmarks keep working. The link in the code
+mail only uses `/#code=...`, so it never depended on them.
 
 ## Adding a language
 

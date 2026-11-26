@@ -33,7 +33,7 @@ dotnet tool restore
 dotnet ef database update --project Voxa --startup-project Voxa.WebApi
 dotnet run --project Voxa.WebApi
 
-# 3. App on http://localhost:3000 (board at /bestuur, password "bestuur" in Development)
+# 3. App on http://localhost:3000 (board at /admin, password "bestuur" in Development)
 pnpm --dir Voxa.PWA install
 pnpm --dir Voxa.PWA dev
 ```

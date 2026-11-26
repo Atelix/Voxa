@@ -7,11 +7,11 @@ sender and statute rules are settings in the app, so the same code runs for ever
 ## How a year goes
 
 1. **Switch it on** a few weeks before the meeting (deploy, or start the server again).
-2. **Settings** (`/bestuur/instellingen`): club name, language ([languages.md](languages.md)), colours, fonts, logo,
+2. **Settings** (`/admin/settings`): club name, language ([languages.md](languages.md)), colours, fonts, logo,
    mail sender, advance-voting term, the article of the statutes, how minors vote, and where the member list comes
    from. Import a preset such as
    [`clubs/sittard-condors.json`](../clubs/sittard-condors.json) with **Instellingen importeren**, then save.
-3. **Meeting** (`/bestuur`): create it, or copy last year's (the date moves a year ahead and the year in the name goes
+3. **Meeting** (`/admin`): create it, or copy last year's (the date moves a year ahead and the year in the name goes
    up). Add the agenda items: proposals (for/against/abstain, absolute or two-thirds majority) and elections
    (candidates and seats; a blank option is added). Per item choose whether advance voting is allowed.
 4. **Voters**: fetch the list from the member administration (Keeva) or upload a CSV. Suspended members drop out;
@@ -19,7 +19,7 @@ sender and statute rules are settings in the app, so the same code runs for ever
 5. **Codes**: send a test mail to yourself, then send the codes. Members without an email address get a printed code
    (**Papieren codes**). Voters who share an address, such as a parent of several youth members, get one mail with a
    code per member and one link that opens the voting page with all of those codes.
-6. **Meeting night** (`/bestuur/vergadering/<id>/live`): open the hall screen (`/zaal/<id>`) on the projector; it shows
+6. **Meeting night** (`/admin/meeting/<id>/live`): open the hall screen (`/hall/<id>`) on the projector; it shows
    the QR code to the voting page. Open an item, let people vote, close it. Only then the result appears; add paper
    votes on the result page and show it on the hall screen.
 7. **Archive** the meeting: voting ends, codes and the voter list are wiped, results stay.
@@ -85,7 +85,7 @@ Locally:
 ```bash
 dotnet ef database update --project Voxa --startup-project Voxa.WebApi
 dotnet run --project Voxa.WebApi          # board password in Development: bestuur
-pnpm --dir Voxa.PWA dev                    # http://localhost:3000, board at /bestuur
+pnpm --dir Voxa.PWA dev                    # http://localhost:3000, board at /admin
 ```
 
 ## Member list
