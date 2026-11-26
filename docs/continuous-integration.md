@@ -7,26 +7,26 @@ The `Continuous integration` workflow runs on every pull request, in the merge q
 | Job | Runs when |
 | --- | --- |
 | Load settings | Always |
-| Build and test .NET solution | Anything outside `Starter.PWA/`, `docs/` and root `*.md` files changed |
+| Build and test .NET solution | Anything outside `Voxa.PWA/`, `docs/` and root `*.md` files changed |
 | Build .NET solution with analyzers | Same as the .NET build, and runs next to it; the test job builds without analyzers |
 | Run PostgreSQL tests | Same as the .NET build, and runs next to it |
 | Check .NET formatting | Same as the .NET build, and runs next to it |
-| Build, type-check and lint frontend | Anything in `Starter.PWA/` (or `.node-version`) changed |
+| Build, type-check and lint frontend | Anything in `Voxa.PWA/` (or `.node-version`) changed |
 | Build Docker `<image>` | A `Dockerfile`, `.dockerignore`, `docker-compose*.yml` or `.github/CICD-Config.yml` changed and the other checks passed |
 | CI result | Always |
 
-The .NET formatting job checks C# formatting with `dotnet format whitespace` and `dotnet format style` against the root `.editorconfig`, for `Starter.sln` and `Starter.WebApi.PostgresTests`. EF Core migrations are generated code and are left out. Analyzer warnings (the `CA` rules) are not part of the check; they stay build warnings. When the check fails, fix it locally and commit the result:
+The .NET formatting job checks C# formatting with `dotnet format whitespace` and `dotnet format style` against the root `.editorconfig`, for `Voxa.sln` and `Voxa.WebApi.PostgresTests`. EF Core migrations are generated code and are left out. Analyzer warnings (the `CA` rules) are not part of the check; they stay build warnings. When the check fails, fix it locally and commit the result:
 
 ```bash
-dotnet format whitespace Starter.sln --exclude Starter/Migrations
-dotnet format style Starter.sln --exclude Starter/Migrations
+dotnet format whitespace Voxa.sln --exclude Voxa/Migrations
+dotnet format style Voxa.sln --exclude Voxa/Migrations
 ```
 
-Run the same two commands with `Starter.WebApi.PostgresTests` instead of `Starter.sln` when you changed that project. Plain `dotnet format` also applies analyzer code fixes, which can generate code (for example empty method stubs), so use the two subcommands instead.
+Run the same two commands with `Voxa.WebApi.PostgresTests` instead of `Voxa.sln` when you changed that project. Plain `dotnet format` also applies analyzer code fixes, which can generate code (for example empty method stubs), so use the two subcommands instead.
 
 The frontend lint is type-aware: ESLint uses `typescript-eslint`'s `recommendedTypeChecked` rules with the same `tsconfig.app.json` that `type-check` uses, plus `tsconfig.node.json` for the Vite and Vitest config files. It catches promises that are neither awaited nor handled (`no-floating-promises`, `no-misused-promises`) and values typed `any`. Await a promise where the code can wait for it. A deliberate fire-and-forget call, such as a navigation or a reload from an event handler, is written as `void promise`. Types exported from a `.vue` file are invisible to ESLint, so shared types and the shapes of exposed component methods live in `.ts` files.
 
-The .NET job also runs `Starter.WebApi.PostgresTests` against a throwaway PostgreSQL container. That project is not in `Starter.sln`, so `dotnet test Starter.sln` needs no Docker locally.
+The .NET job also runs `Voxa.WebApi.PostgresTests` against a throwaway PostgreSQL container. That project is not in `Voxa.sln`, so `dotnet test Voxa.sln` needs no Docker locally.
 
 Changes to `.github/` run the .NET and frontend jobs; they build the Docker images only when `.github/CICD-Config.yml` changed. Code changes alone do not build the images, so a change that breaks an image build without touching a Docker or Compose file shows up when beta is deployed or a release is published. Deployments, releases and manual runs always run every job, except that beta deployments and release image builds skip **Build Docker**: their publish job builds the same images right after the tests pass, so building them in CI as well would only double the work.
 

@@ -103,11 +103,11 @@
             "title": ".NET architecture and implementation",
             "description": "Use when writing or reviewing C# logic, services, dependency injection, async work and EF Core access in the project's ASP.NET Core solution.",
             "adaptations": [
-                "Read `docs/architecture.md` and .editorconfig. Preserve Starter.WebApi controllers, Starter logic/services, Starter.Abstractions contracts and Starter.Persistence entities.",
-                "Place each service/logic interface in its own file in Starter.Abstractions. Interface methods return models and do not accept HttpContext.",
+                "Read `docs/architecture.md` and .editorconfig. Preserve Voxa.WebApi controllers, Voxa logic/services, Voxa.Abstractions contracts and Voxa.Persistence entities.",
+                "Place each service/logic interface in its own file in Voxa.Abstractions. Interface methods return models and do not accept HttpContext.",
                 "Use `IHttpContextAccessor` where implementations need the request; keep authorization-sensitive visibility decisions in logic.",
                 "Preserve the project's domain exceptions and ApiResponse/problem-details behavior rather than introducing an unrelated Result type, repository layer or Minimal API rewrite.",
-                "Use async operations and cancellation where supported. Never run parallel EF operations on the same StarterContext instance.",
+                "Use async operations and cancellation where supported. Never run parallel EF operations on the same VoxaContext instance.",
                 "Follow existing model mutability and mappings; do not convert tracked EF entities to immutable records merely to follow an example."
             ]
         },
@@ -116,10 +116,10 @@
             "title": "C# unit and database testing",
             "description": "Use when implementing or reviewing .NET test code in the project: xUnit fixtures, mocks, assertions, ASP.NET integration tests and PostgreSQL regression tests. The RED/GREEN process belongs to ecc-tdd-workflow.",
             "adaptations": [
-                "Inspect existing tests and project references in Starter.WebApi.UnitTests and Starter.WebApi.PostgresTests; reuse their fixtures and installed assertion/mocking libraries.",
+                "Inspect existing tests and project references in Voxa.WebApi.UnitTests and Voxa.WebApi.PostgresTests; reuse their fixtures and installed assertion/mocking libraries.",
                 "Put behavior-focused unit tests in the existing .NET test project. Cover success, invalid input, denied access and missing records as relevant.",
-                "Use Starter.WebApi.PostgresTests for provider-specific translation, constraints, migrations and concurrency; in-memory EF cannot prove PostgreSQL behavior.",
-                "Run `dotnet test Starter.sln` for the required solution suite. The PostgreSQL project is outside the solution and additionally runs with `dotnet test Starter.WebApi.PostgresTests` when database behavior changes and Docker is available.",
+                "Use Voxa.WebApi.PostgresTests for provider-specific translation, constraints, migrations and concurrency; in-memory EF cannot prove PostgreSQL behavior.",
+                "Run `dotnet test Voxa.sln` for the required solution suite. The PostgreSQL project is outside the solution and additionally runs with `dotnet test Voxa.WebApi.PostgresTests` when database behavior changes and Docker is available.",
                 "Do not install FluentAssertions, NSubstitute, Bogus or a new test framework solely because upstream examples use them. State unavailable database infrastructure and unrun checks."
             ]
         },
@@ -129,7 +129,7 @@
             "description": "Use when changing reactive application logic in the project's Vue PWA: composables, Pinia, routing, request lifecycle, stale responses and frontend tests. Visual components, branding, layout and Material Design belong to material-design.",
             "adaptations": [
                 "Use Vue 3, TypeScript, Vuetify, Pinia and the existing Vite layout. Read the canonical `material-design` skill; this is not a Nuxt application.",
-                "Use the existing `useLoader` and `useAsyncAction` helpers in Starter.PWA as required by AGENTS.md, with Vuetify skeletons for content loading.",
+                "Use the existing `useLoader` and `useAsyncAction` helpers in Voxa.PWA as required by AGENTS.md, with Vuetify skeletons for content loading.",
                 "Use the existing API wrapper and generated client; never hand-edit src/logic/api.ts or replace the API lifecycle with sample fetch helpers.",
                 "Preserve current store/component conventions and the English/Dutch translations; avoid unrelated folder or store rewrites.",
                 "Use configured Vitest tests and the canonical `webapp-testing` skill for browser checks at phone and desktop widths. Run the PWA's required pnpm checks."
@@ -140,11 +140,11 @@
             "title": "EF Core migration planning",
             "description": "Use when changing the project's EF Core entities, schema, constraints, indexes or data migrations to plan compatibility and validate PostgreSQL behavior.",
             "adaptations": [
-                "The project uses EF Core with PostgreSQL. Inspect StarterContext, existing migrations and affected mappings before editing.",
-                "Use EF migrations in the Starter project with Starter.WebApi as the startup project. Review generated SQL and the model snapshot.",
+                "The project uses EF Core with PostgreSQL. Inspect VoxaContext, existing migrations and affected mappings before editing.",
+                "Use EF migrations in the Voxa project with Voxa.WebApi as the startup project. Review generated SQL and the model snapshot.",
                 "Plan rollout compatibility, data backfill, nullability, defaults, index locking and recovery for each schema change; prefer small additive steps when appropriate.",
                 "Use a disposable local/test database for validation. An application code task does not authorize applying a migration to a production or shared remote database.",
-                "Validate affected queries and constraints with Starter.WebApi.PostgresTests when Docker is available, and run the full required solution/PWA suite.",
+                "Validate affected queries and constraints with Voxa.WebApi.PostgresTests when Docker is available, and run the full required solution/PWA suite.",
                 "Treat Prisma, Django, Alembic and standalone production SQL examples as reference material; keep the EF Core migration mechanism."
             ]
         },
@@ -153,10 +153,10 @@
             "title": "PostgreSQL query performance",
             "description": "Use when investigating or changing the project's PostgreSQL queries, EF Core projections, indexes, pagination, constraints or database performance.",
             "adaptations": [
-                "Trace the EF Core/Npgsql query from logic to StarterContext and inspect its generated SQL before proposing an index or raw query.",
+                "Trace the EF Core/Npgsql query from logic to VoxaContext and inspect its generated SQL before proposing an index or raw query.",
                 "Keep visibility filters intact; select only fields needed by the response and preserve stable ordering for pagination.",
                 "Use a disposable test database for EXPLAIN/EXPLAIN ANALYZE and query experiments. Do not run mutating plans or migrations on shared production data.",
-                "Add indexes through an EF Core migration, examine write/locking costs and verify provider-specific behavior in Starter.WebApi.PostgresTests.",
+                "Add indexes through an EF Core migration, examine write/locking costs and verify provider-specific behavior in Voxa.WebApi.PostgresTests.",
                 "Keep existing identifiers and schema conventions. Do not introduce Supabase, change PostgreSQL settings globally or add RLS policies just to copy the upstream examples."
             ]
         }

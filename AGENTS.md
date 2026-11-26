@@ -38,18 +38,18 @@ A code change is valid only when every relevant build, test, type-check, and lin
 Before finishing a code change, run all of the following from the repository root:
 
 ```bash
-dotnet build Starter.sln
-dotnet test Starter.sln
-dotnet format whitespace Starter.sln --verify-no-changes --exclude Starter/Migrations
-dotnet format style Starter.sln --verify-no-changes --exclude Starter/Migrations
-pnpm --dir Starter.PWA run type-check
-pnpm --dir Starter.PWA run lint
-pnpm --dir Starter.PWA run test
-pnpm --dir Starter.PWA run build
+dotnet build Voxa.sln
+dotnet test Voxa.sln
+dotnet format whitespace Voxa.sln --verify-no-changes --exclude Voxa/Migrations
+dotnet format style Voxa.sln --verify-no-changes --exclude Voxa/Migrations
+pnpm --dir Voxa.PWA run type-check
+pnpm --dir Voxa.PWA run lint
+pnpm --dir Voxa.PWA run test
+pnpm --dir Voxa.PWA run build
 ```
 
-When a change touches the database (entities, `StarterContext`, migrations or queries whose behaviour depends on
-PostgreSQL), also run `dotnet test Starter.WebApi.PostgresTests` (needs Docker; see its README).
+When a change touches the database (entities, `VoxaContext`, migrations or queries whose behaviour depends on
+PostgreSQL), also run `dotnet test Voxa.WebApi.PostgresTests` (needs Docker; see its README).
 
 When a change affects only one part of the repository, focused checks may be run during development, but the full validation suite above is required before completion.
 
@@ -67,15 +67,15 @@ When a change affects only one part of the repository, focused checks may be run
 - Add or update tests for changed behavior and bug fixes where practical.
 - Keep changes focused on the requested task; do not modify unrelated files.
 - Review the final diff for accidental changes before reporting completion.
-- Define service and logic interfaces in `Starter.Abstractions` rather than alongside implementations. Keep each interface in its own file and place shared request/response contracts in `Starter.Abstractions/Models`.
+- Define service and logic interfaces in `Voxa.Abstractions` rather than alongside implementations. Keep each interface in its own file and place shared request/response contracts in `Voxa.Abstractions/Models`.
 - Interface methods return models, not EF entities, and never take `HttpContext`. Implementations that need the request use `IHttpContextAccessor`. Keep visibility and redaction rules in logic, not in controllers.
-- Report failures by throwing the domain exceptions in `Starter.Abstractions` (`ObjectNotFoundException`, `DomainValidationException`, `DomainForbiddenException`, `DomainConflictException`); `DomainExceptionHandler` turns them into problem responses. Do not build error responses in controllers.
+- Report failures by throwing the domain exceptions in `Voxa.Abstractions` (`ObjectNotFoundException`, `DomainValidationException`, `DomainForbiddenException`, `DomainConflictException`); `DomainExceptionHandler` turns them into problem responses. Do not build error responses in controllers.
 - Environment variables and `appsettings` are for secrets, addresses and infrastructure. Keep product behaviour (feature switches, limits, retention periods) in code or the database so it is reviewed and tested like other behaviour.
-- Every schema change is an EF Core migration (`dotnet ef migrations add <Name> --project Starter --startup-project Starter.WebApi`). Review the generated migration and snapshot; `MigrationTests` fails when the model changed without one.
+- Every schema change is an EF Core migration (`dotnet ef migrations add <Name> --project Voxa --startup-project Voxa.WebApi`). Review the generated migration and snapshot; `MigrationTests` fails when the model changed without one.
 
 ## Working with large generated files
 
-- The generated API client (`Starter.PWA/src/logic/api.ts`) grows with the API. Search it for the type or method you need instead of reading it whole, and review regenerated changes with `git diff`.
+- The generated API client (`Voxa.PWA/src/logic/api.ts`) grows with the API. Search it for the type or method you need instead of reading it whole, and review regenerated changes with `git diff`.
 - Lockfiles, `node_modules`, `dist`, `bin` and `obj` are not for reading; `.claude/settings.json` blocks Claude from opening them.
 
 ## PWA loading states
@@ -84,22 +84,22 @@ When a change affects only one part of the repository, focused checks may be run
 - Choose skeleton `type`s that mirror the layout that will replace them (for example `list-item-avatar-two-line@5` for a member list, `heading, paragraph` for an article), so the page does not shift when data arrives.
 - For `v-data-table` and `v-data-table-server`, keep the `:loading` prop and add a `#loading` slot containing `<v-skeleton-loader type="table-row@N" />`.
 - Track loading with an explicit flag that is reset in a `finally` block, and render the skeleton instead of empty-state components such as `k-notfound` until the first response arrives. Never show an empty or "not found" state while data is still loading.
-- In `Starter.PWA`, load view data with `useLoader` (`src/services/useLoader.ts`), whose `loading` starts true and ignores stale responses, and run saves with `useAsyncAction` (`src/services/useAsyncAction.ts`). Use them in new views and in views you touch.
+- In `Voxa.PWA`, load view data with `useLoader` (`src/services/useLoader.ts`), whose `loading` starts true and ignores stale responses, and run saves with `useAsyncAction` (`src/services/useAsyncAction.ts`). Use them in new views and in views you touch.
 - When reloading data that is already displayed (for example after saving), it is fine to keep the current content visible instead of swapping it for a skeleton.
 - Spinners remain appropriate only for in-place action feedback: `:loading` on buttons, inputs and autocompletes, and small inline status messages.
 
 ## PWA API endpoints
 
-- Create and update PWA API endpoints from the Web API's Swagger schema by using the `generate-api-schema` script in `Starter.PWA/package.json`; do not manually create or edit generated endpoint definitions.
+- Create and update PWA API endpoints from the Web API's Swagger schema by using the `generate-api-schema` script in `Voxa.PWA/package.json`; do not manually create or edit generated endpoint definitions.
 - Before generating endpoints, run the Web API in Development so that its Swagger document is available at `http://localhost:5143/swagger/v1/swagger.json`.
 - From the repository root, generate the PWA API client with:
 
 ```bash
-pnpm --dir Starter.PWA run generate-api-schema
+pnpm --dir Voxa.PWA run generate-api-schema
 ```
 
 - Run this command whenever controllers, routes, request models, response models, or other API-contract types change.
-- Review the generated changes in `Starter.PWA/src/logic/api.ts` and include them with the API-contract change.
+- Review the generated changes in `Voxa.PWA/src/logic/api.ts` and include them with the API-contract change.
 - Mark response-model properties the API always sends as `required`, so the generated types do not make them optional.
 - After generation, run the complete validation suite from the "Definition of valid code" section.
 

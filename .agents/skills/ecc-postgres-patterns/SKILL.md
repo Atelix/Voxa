@@ -12,10 +12,10 @@ Apply the project adaptations below before the generic upstream examples.
 
 ## Project adaptations
 
-- Trace the EF Core/Npgsql query from logic to StarterContext and inspect its generated SQL before proposing an index or raw query.
+- Trace the EF Core/Npgsql query from logic to VoxaContext and inspect its generated SQL before proposing an index or raw query.
 - Keep visibility filters intact; select only fields needed by the response and preserve stable ordering for pagination.
 - Use a disposable test database for EXPLAIN/EXPLAIN ANALYZE and query experiments. Do not run mutating plans or migrations on shared production data.
-- Add indexes through an EF Core migration, examine write/locking costs and verify provider-specific behavior in Starter.WebApi.PostgresTests.
+- Add indexes through an EF Core migration, examine write/locking costs and verify provider-specific behavior in Voxa.WebApi.PostgresTests.
 - Keep existing identifiers and schema conventions. Do not introduce Supabase, change PostgreSQL settings globally or add RLS policies just to copy the upstream examples.
 
 ## Upstream reference

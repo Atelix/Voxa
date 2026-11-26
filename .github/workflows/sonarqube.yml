@@ -71,7 +71,7 @@ jobs:
           # Only the C# code is analysed: the whole repository is over the Free plan's 50,000-line limit,
           # and the PWAs already get type-aware ESLint in CI. Build output and the generated EF Core
           # migrations are left out.
-          generated="**/bin/**,**/obj/**,Starter/Migrations/**"
+          generated="**/bin/**,**/obj/**,Voxa/Migrations/**"
           "$RUNNER_TEMP/sonar-scanner/dotnet-sonarscanner" begin \
             /k:"$SONAR_PROJECT_KEY" \
             /o:"$SONAR_ORGANIZATION" \
@@ -83,10 +83,10 @@ jobs:
             /d:sonar.cs.opencover.reportsPaths="$RUNNER_TEMP/coverage/**/coverage.opencover.xml"
       # The scanner swaps in its own ruleset and turns off WarningsAsErrors for this instrumented build.
       - name: Build
-        run: dotnet build Starter.sln --no-incremental
+        run: dotnet build Voxa.sln --no-incremental
       - name: Run unit tests with coverage
         run: >-
-          dotnet test Starter.sln --no-build
+          dotnet test Voxa.sln --no-build
           --collect:"XPlat Code Coverage"
           --results-directory "$RUNNER_TEMP/coverage"
           -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover

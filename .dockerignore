@@ -25,8 +25,8 @@ LICENSE
 README.md
 # The API image only needs its own projects; excluding the rest keeps its layer cache valid
 .github
-Starter.PWA
-Starter.WebApi.UnitTests
-Starter.WebApi.PostgresTests
+Voxa.PWA
+Voxa.WebApi.UnitTests
+Voxa.WebApi.PostgresTests
 docs
 tools

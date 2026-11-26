@@ -96,8 +96,8 @@ jobs:
             frontend=true
           else
             # The backend covers everything except the front end, documentation and root markdown files.
-            backend="$(grep -qvE '^(Starter\.PWA/|docs/|[^/]+\.md$|\.node-version$)' <<< "$changed" && echo true || echo false)"
-            frontend="$(grep -qE '^(Starter\.PWA/|\.node-version$)' <<< "$changed" && echo true || echo false)"
+            backend="$(grep -qvE '^(Voxa\.PWA/|docs/|[^/]+\.md$|\.node-version$)' <<< "$changed" && echo true || echo false)"
+            frontend="$(grep -qE '^(Voxa\.PWA/|\.node-version$)' <<< "$changed" && echo true || echo false)"
           fi
 
           # The Docker images are only built when a Dockerfile, a .dockerignore, a Compose file or the image list changed.
@@ -145,12 +145,12 @@ jobs:
           # 10.0.403 is listed but its download returns HTTP 409 (2026-10-25); go back to 10.0.x once it downloads.
           dotnet-version: '10.0.402'
       - name: Restore dependencies
-        run: dotnet restore Starter.sln
+        run: dotnet restore Voxa.sln
       # Analyzers take about two thirds of the build; the analyzers job runs them next to the tests.
       - name: Build
-        run: dotnet build Starter.sln --no-restore -p:RunAnalyzers=false
+        run: dotnet build Voxa.sln --no-restore -p:RunAnalyzers=false
       - name: Run unit tests
-        run: dotnet test Starter.sln --no-build
+        run: dotnet test Voxa.sln --no-build
 
   backend-analyzers:
     name: Build .NET solution with analyzers
@@ -167,12 +167,12 @@ jobs:
           # 10.0.403 is listed but its download returns HTTP 409 (2026-10-25); go back to 10.0.x once it downloads.
           dotnet-version: '10.0.402'
       - name: Restore dependencies
-        run: dotnet restore Starter.sln
+        run: dotnet restore Voxa.sln
       # Analyzer errors fail the build here; the PostgreSQL test project is built too, since its job skips analyzers.
       - name: Build
         run: |
-          dotnet build Starter.sln --no-restore
-          dotnet build Starter.WebApi.PostgresTests
+          dotnet build Voxa.sln --no-restore
+          dotnet build Voxa.WebApi.PostgresTests
 
   backend-postgres:
     name: Run PostgreSQL tests
@@ -196,9 +196,9 @@ jobs:
           current="$(sudo cat "$config" 2>/dev/null || echo '{}')"
           jq '."registry-mirrors" = ["https://mirror.gcr.io"]' <<< "$current" | sudo tee "$config" > /dev/null
           sudo systemctl restart docker
-      # Not part of Starter.sln, so local test runs need no Docker; the runner has Docker for Testcontainers.
+      # Not part of Voxa.sln, so local test runs need no Docker; the runner has Docker for Testcontainers.
       - name: Run PostgreSQL tests
-        run: dotnet test Starter.WebApi.PostgresTests -p:RunAnalyzers=false
+        run: dotnet test Voxa.WebApi.PostgresTests -p:RunAnalyzers=false
 
   # The style check compiles the solution itself, so it runs next to the build and tests instead of before them.
   backend-format:
@@ -216,16 +216,16 @@ jobs:
           # 10.0.403 is listed but its download returns HTTP 409 (2026-10-25); go back to 10.0.x once it downloads.
           dotnet-version: '10.0.402'
       - name: Restore dependencies
-        run: dotnet restore Starter.sln
+        run: dotnet restore Voxa.sln
       # Every check runs so a single run reports every failure.
       # Only whitespace and code style are checked; analyzer warnings stay build warnings.
       # Fix locally with the same commands without --verify-no-changes; see docs/continuous-integration.md.
       - name: Check formatting
         run: |
           status=0
-          for project in Starter.sln Starter.WebApi.PostgresTests; do
-            dotnet format whitespace "$project" --verify-no-changes --exclude Starter/Migrations || status=1
-            dotnet format style "$project" --verify-no-changes --exclude Starter/Migrations || status=1
+          for project in Voxa.sln Voxa.WebApi.PostgresTests; do
+            dotnet format whitespace "$project" --verify-no-changes --exclude Voxa/Migrations || status=1
+            dotnet format style "$project" --verify-no-changes --exclude Voxa/Migrations || status=1
           done
           exit $status
 

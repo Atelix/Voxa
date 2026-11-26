@@ -9,7 +9,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
     paths:
-      - 'Starter.PWA/**'
+      - 'Voxa.PWA/**'
       - '.node-version'
       - '.github/workflows/preview.yml'
 
@@ -35,7 +35,7 @@ jobs:
       url: ${{ steps.upload.outputs.url }}
     defaults:
       run:
-        working-directory: Starter.PWA
+        working-directory: Voxa.PWA
     env:
       # Previews talk to the beta API, set as the PREVIEW_API_URL variable (for example https://beta.example.com).
       # The beta API must allow the preview origin in Cors__AllowedOrigins.
@@ -60,13 +60,13 @@ jobs:
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
         if: steps.secrets.outputs.ok == 'true'
         with:
-          package_json_file: Starter.PWA/package.json
+          package_json_file: Voxa.PWA/package.json
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         if: steps.secrets.outputs.ok == 'true'
         with:
           node-version-file: .node-version
           cache: pnpm
-          cache-dependency-path: Starter.PWA/pnpm-lock.yaml
+          cache-dependency-path: Voxa.PWA/pnpm-lock.yaml
       - if: steps.secrets.outputs.ok == 'true'
         run: pnpm install --frozen-lockfile
       - if: steps.secrets.outputs.ok == 'true'

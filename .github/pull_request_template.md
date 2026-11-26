@@ -9,7 +9,7 @@
 ## Checklist
 
 - [ ] CI result is green
-- [ ] API contract changed: `Starter.PWA/src/logic/api.ts` regenerated
+- [ ] API contract changed: `Voxa.PWA/src/logic/api.ts` regenerated
 - [ ] Schema changed: migration added and reviewed
 - [ ] New texts are in both `en.ts` and `nl.ts`
 - [ ] Docs updated where behaviour or setup changed

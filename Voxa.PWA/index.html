@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+		<meta name="theme-color" content="#111111" />
+		<meta name="description" content="Voxa app" />
+		<link rel="manifest" href="/manifest.webmanifest" />
+		<title>Voxa</title>
+		<!--
+			Cascade layer order. Vuetify 4 puts its styles in layers that rank by first appearance, and the build links
+			component stylesheets before the main one, so the order is declared here first. app-base holds defaults for
+			plain elements, below Vuetify's components. The app's own styles (every component's <style>) go in the app
+			layer: above Vuetify's components, so they restyle them without extra specificity, and below Vuetify's
+			utility classes, so a spacing or colour class on an element always wins.
+		-->
+		<style>
+			@layer vuetify-core, app-base, vuetify-components, vuetify-overrides, app, vuetify-utilities, vuetify-final;
+		</style>
+	</head>
+
+	<body>
+		<noscript>This app needs JavaScript.</noscript>
+		<div id="app"></div>
+		<script type="module" src="/src/main.ts"></script>
+	</body>
+</html>
