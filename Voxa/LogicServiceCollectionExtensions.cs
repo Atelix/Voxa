@@ -20,7 +20,7 @@ public static class LogicServiceCollectionExtensions
         services.Configure<CodeOptions>(configuration.GetSection(CodeOptions.Section));
         services.Configure<MailOptions>(configuration.GetSection(MailOptions.Section));
         services.Configure<AppOptions>(configuration.GetSection(AppOptions.Section));
-        services.Configure<KeevaOptions>(configuration.GetSection(KeevaOptions.Section));
+        services.Configure<ImportOptions>(configuration.GetSection(ImportOptions.Section));
         services.Configure<AdminOptions>(configuration.GetSection(AdminOptions.Section));
 
         services.AddSingleton<ICodeService, CodeService>();
@@ -40,9 +40,6 @@ public static class LogicServiceCollectionExtensions
             services.AddSingleton<IMailSender>(static s => s.GetRequiredService<OutboxMailSender>());
             services.AddSingleton<IOutbox?>(static s => s.GetRequiredService<OutboxMailSender>());
         }
-
-        services.AddHttpClient<KeevaMemberSource>();
-        services.AddScoped<IMemberSource>(static s => s.GetRequiredService<KeevaMemberSource>());
 
         services.AddScoped<IClubLogic, ClubLogic>();
         services.AddScoped<IMeetingLogic, MeetingLogic>();

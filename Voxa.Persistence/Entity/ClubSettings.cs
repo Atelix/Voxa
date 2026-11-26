@@ -13,16 +13,9 @@ public enum MinorVoting
     None = 2,
 }
 
-/// <summary>Where the voter list comes from.</summary>
-public enum MemberSourceKind
-{
-    Csv = 0,
-    Keeva = 1,
-}
-
 /// <summary>
 /// The club this installation serves: its name, brand and voting rules. Voxa runs one installation per club, so there
-/// is a single row (id 1). Secrets such as the Mailgun and Keeva keys are not here but in the server's settings.
+/// is a single row (id 1). Secrets such as the Mailgun and import API keys are not here but in the server's settings.
 /// </summary>
 public class ClubSettings
 {
@@ -63,9 +56,4 @@ public class ClubSettings
 
     /// <summary>The age from which a member votes for themselves.</summary>
     public int AdultAge { get; set; }
-
-    public MemberSourceKind MemberSource { get; set; }
-
-    /// <summary>The club's Keeva address, for example https://sittardcondors.keeva.app. The API key is a server secret.</summary>
-    public string? KeevaUrl { get; set; }
 }

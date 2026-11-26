@@ -27,13 +27,6 @@
 			<div v-if="!list.codesSent" class="d-flex flex-wrap ga-2 mb-2">
 				<v-btn
 					variant="outlined"
-					prepend-icon="mdi-cloud-download-outline"
-					:loading="busy === 'source'"
-					@click="importSource"
-					>{{ $t("board.voters.fromSource") }}</v-btn
-				>
-				<v-btn
-					variant="outlined"
 					prepend-icon="mdi-file-delimited-outline"
 					:loading="busy === 'csv'"
 					@click="fileInput?.click()"
@@ -249,17 +242,6 @@ async function act<T>(name: string, action: () => Promise<T>, done?: string): Pr
 		return undefined
 	} finally {
 		busy.value = null
-	}
-}
-
-async function importSource(): Promise<void> {
-	const result = await act(
-		"source",
-		async () => (await api.admin.adminMeetingsVotersImportSourceCreate(props.meeting.id)).data
-	)
-	if (result) {
-		importResult.value = result
-		await loader.load()
 	}
 }
 

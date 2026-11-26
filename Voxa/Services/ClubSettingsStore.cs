@@ -19,7 +19,6 @@ public sealed class ClubSettingsStore(VoxaContext context)
         AdvanceVotingMaxDays = 30,
         MinorVoting = MinorVoting.Guardian,
         AdultAge = 18,
-        MemberSource = MemberSourceKind.Csv,
     };
 
     public async Task<ClubSettings> GetAsync(CancellationToken cancellationToken) =>

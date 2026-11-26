@@ -8,7 +8,7 @@ using Voxa.Services;
 
 namespace Voxa.Logic;
 
-public sealed class ClubLogic(VoxaContext context, ClubSettingsStore store, IOptions<KeevaOptions> keeva) : IClubLogic
+public sealed class ClubLogic(VoxaContext context, ClubSettingsStore store, IOptions<ImportOptions> import) : IClubLogic
 {
     /// <summary>A data URL of a 700 kB image, as base64 adds a third.</summary>
     private const int MaxLogoLength = 960_000;
@@ -72,8 +72,6 @@ public sealed class ClubLogic(VoxaContext context, ClubSettingsStore store, IOpt
         club.AdvanceVotingArticle = Mapping.Clean(request.AdvanceVotingArticle);
         club.MinorVoting = request.MinorVoting;
         club.AdultAge = request.AdultAge;
-        club.MemberSource = request.MemberSource;
-        club.KeevaUrl = Mapping.Clean(request.KeevaUrl)?.TrimEnd('/');
         _ = await context.SaveChangesAsync(cancellationToken);
         return ToModel(club);
     }
@@ -94,9 +92,7 @@ public sealed class ClubLogic(VoxaContext context, ClubSettingsStore store, IOpt
         AdvanceVotingArticle = club.AdvanceVotingArticle,
         MinorVoting = club.MinorVoting,
         AdultAge = club.AdultAge,
-        MemberSource = club.MemberSource,
-        KeevaUrl = club.KeevaUrl,
-        KeevaKeyConfigured = !string.IsNullOrWhiteSpace(keeva.Value.ApiKey),
+        ImportApiConfigured = import.Value.IsConfigured,
         AvailableFonts = ClubSettingsStore.Fonts,
     };
 }

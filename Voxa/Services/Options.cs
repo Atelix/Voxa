@@ -25,12 +25,21 @@ public sealed class MailgunOptions
     public string? ApiKey { get; set; }
 }
 
-/// <summary>The club's Keeva API key, with the scopes Members, MembersContacts and MembersPersonalData.</summary>
-public sealed class KeevaOptions
+/// <summary>
+/// The key a member administration (or an automation such as n8n) sends as <c>Authorization: Bearer</c> to push the
+/// member list to the import API. One installation serves one club, so this is the club's key. Not set: the import
+/// API refuses every request.
+/// </summary>
+public sealed class ImportOptions
 {
-    public const string Section = "Keeva";
+    public const string Section = "Import";
+
+    /// <summary>Keys shorter than this are refused at start-up; generate one with <c>openssl rand -hex 32</c>.</summary>
+    public const int MinKeyLength = 32;
 
     public string? ApiKey { get; set; }
+
+    public bool IsConfigured => !string.IsNullOrWhiteSpace(ApiKey);
 }
 
 public sealed class AppOptions

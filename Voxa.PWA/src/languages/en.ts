@@ -264,7 +264,6 @@ export default {
 			viaGuardian: "via parent or guardian",
 			withoutEmail: "without email",
 			sent: "code sent",
-			fromSource: "Fetch from member administration",
 			fromCsv: "Upload CSV",
 			csvHelp:
 				"CSV with columns name, email, birth date, status, guardian name and guardian email. Separate with ; or ,.",
@@ -382,12 +381,10 @@ export default {
 			adultAge: "Adult from age",
 			secretNote: "Voting by proxy is not possible. Each code is one vote.",
 			members: "Member administration",
-			source: "Fetch member list from",
-			sourceCsv: "CSV file",
-			sourceKeeva: "Keeva",
-			keevaUrl: "Address of the Keeva environment",
-			keevaKey: "The Keeva API key is set on the server.",
-			keevaNoKey: "No Keeva API key is set on the server yet. Ask the administrator.",
+			importApi:
+				"The import API is on: the member administration can send the member list to a meeting. Until the first code is sent it replaces the voter list; after that it only adds new members.",
+			importApiOff:
+				"Upload the member list as CSV per meeting. To have the member administration send it, the administrator sets an import key on the server.",
 			export: "Export settings",
 			import: "Import settings",
 			imported: "Settings loaded. Save to keep them.",

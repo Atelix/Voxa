@@ -20,7 +20,6 @@ public sealed class VoterLogic(
     ClubSettingsStore club,
     ICodeService codes,
     IMailSender mail,
-    IEnumerable<IMemberSource> sources,
     IOptions<AppOptions> app) : IVoterLogic
 {
     private const int SaveEvery = 25;
@@ -42,16 +41,53 @@ public sealed class VoterLogic(
     public async Task<VoterImportResultModel> ImportAsync(int meetingId, VoterImportRequest request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
-        return await ReplaceAsync(meetingId, MemberCsv.Parse(request.Csv), cancellationToken);
+        return await ApplyAsync(meetingId, MemberCsv.Parse(request.Csv), addAfterCodes: false, cancellationToken);
     }
 
-    public async Task<VoterImportResultModel> ImportFromSourceAsync(int meetingId, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<ImportMeetingModel>> ImportTargetsAsync(CancellationToken cancellationToken)
     {
-        var settings = await club.GetAsync(cancellationToken);
-        var source = (settings.MemberSource == MemberSourceKind.Keeva ? sources.OfType<KeevaMemberSource>().FirstOrDefault() : null)
-                     ?? throw new DomainValidationException("No member administration is set up; upload a CSV instead.");
-        await EnsureMeetingAsync(meetingId, cancellationToken);
-        return await ReplaceAsync(meetingId, await source.FetchAsync(cancellationToken), cancellationToken);
+        var meetings = await context.Meetings.AsNoTracking()
+                                    .Where(static m => m.Status != MeetingStatus.Archived)
+                                    .OrderBy(static m => m.StartsAt)
+                                    .Select(m => new
+                                    {
+                                        m.Id,
+                                        m.Name,
+                                        m.StartsAt,
+                                        m.Status,
+                                        Voters = context.Voters.Count(v => v.MeetingId == m.Id),
+                                        CodesSent = context.Voters.Any(v => v.MeetingId == m.Id && v.CodeSent),
+                                    })
+                                    .ToListAsync(cancellationToken);
+        return [.. meetings.Select(static m => new ImportMeetingModel
+        {
+            Id = m.Id,
+            Name = m.Name,
+            StartsAt = m.StartsAt,
+            Status = m.Status,
+            VoterCount = m.Voters,
+            ImportMode = m.CodesSent ? VoterImportMode.Added : VoterImportMode.Replaced,
+        })];
+    }
+
+    public async Task<VoterImportResultModel> ImportMembersAsync(int meetingId, MemberImportRequest request, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var members = request.Members.Select(static m =>
+        {
+            // The code goes to the first parent or guardian with an address, and the mail greets that person.
+            var guardian = m.Guardians?.FirstOrDefault(static g => Mapping.Clean(g.Email) is not null) ?? m.Guardians?.FirstOrDefault();
+            return new ImportedMember
+            {
+                Name = m.Name,
+                Email = m.Email,
+                BirthDate = m.BirthDate,
+                Suspended = m.Suspended,
+                GuardianName = guardian?.Name,
+                GuardianEmail = guardian?.Email,
+            };
+        }).ToList();
+        return await ApplyAsync(meetingId, members, addAfterCodes: true, cancellationToken);
     }
 
     public async Task<VoterModel> AddAsync(int meetingId, VoterRequest request, CancellationToken cancellationToken)
@@ -165,12 +201,17 @@ public sealed class VoterLogic(
         }
     }
 
-    /// <summary>Applies the club's rules (suspension, minors) to a member list and makes it the meeting's voter list.</summary>
-    private async Task<VoterImportResultModel> ReplaceAsync(int meetingId, IReadOnlyList<ImportedMember> members, CancellationToken cancellationToken)
+    /// <summary>
+    /// Applies the club's rules (suspension, minors) to a member list and makes it the meeting's voter list. Once codes
+    /// have been sent the list is never replaced: with <paramref name="addAfterCodes"/> the members who are not on it yet
+    /// are added, otherwise the import is refused.
+    /// </summary>
+    private async Task<VoterImportResultModel> ApplyAsync(int meetingId, IReadOnlyList<ImportedMember> members, bool addAfterCodes, CancellationToken cancellationToken)
     {
         var meeting = await EnsureMeetingAsync(meetingId, cancellationToken);
         var existing = await context.Voters.Where(v => v.MeetingId == meetingId).ToListAsync(cancellationToken);
-        if (existing.Any(static v => v.CodeSent))
+        var adding = existing.Any(static v => v.CodeSent);
+        if (adding && !addAfterCodes)
         {
             throw new DomainConflictException("Codes have been sent from this list. Add new members one by one.");
         }
@@ -202,7 +243,7 @@ public sealed class VoterLogic(
                 Email = Mapping.Clean(viaGuardian ? member.GuardianEmail : member.Email),
                 GuardianName = viaGuardian ? Mapping.Clean(member.GuardianName) ?? "ouder of verzorger" : null,
             };
-            if (voters.Any(v => string.Equals(v.Name, voter.Name, StringComparison.OrdinalIgnoreCase) && string.Equals(v.Email, voter.Email, StringComparison.OrdinalIgnoreCase)))
+            if (voters.Any(v => SameVoter(v, voter)))
             {
                 skipped.Add($"{member.Name}: dubbel");
                 continue;
@@ -211,22 +252,39 @@ public sealed class VoterLogic(
             voters.Add(voter);
         }
 
-        if (voters.Count == 0)
+        var alreadyListed = 0;
+        if (adding)
         {
-            throw new DomainValidationException("The list has no members entitled to vote.");
+            // By name only: a member whose address changed after the codes went out must not get a second code. Two
+            // members with the same name are rare; the board adds the second one by hand.
+            alreadyListed = voters.RemoveAll(v => existing.Any(e => string.Equals(e.Name, v.Name, StringComparison.OrdinalIgnoreCase)));
+        }
+        else
+        {
+            if (voters.Count == 0)
+            {
+                throw new DomainValidationException("The list has no members entitled to vote.");
+            }
+
+            context.Voters.RemoveRange(existing);
         }
 
-        context.Voters.RemoveRange(existing);
         context.Voters.AddRange(voters);
         _ = await context.SaveChangesAsync(cancellationToken);
         return new VoterImportResultModel
         {
+            Mode = adding ? VoterImportMode.Added : VoterImportMode.Replaced,
             Imported = voters.Count,
+            AlreadyListed = alreadyListed,
             ViaGuardian = voters.Count(static v => v.GuardianName is not null),
             WithoutEmail = voters.Count(static v => v.Email is null),
             Skipped = skipped,
         };
     }
+
+    /// <summary>One member is one voter: the same name with the same address (or both without one) is a duplicate.</summary>
+    private static bool SameVoter(Voter a, Voter b) =>
+        string.Equals(a.Name, b.Name, StringComparison.OrdinalIgnoreCase) && string.Equals(a.Email, b.Email, StringComparison.OrdinalIgnoreCase);
 
     private void Issue(Meeting meeting, string code)
     {

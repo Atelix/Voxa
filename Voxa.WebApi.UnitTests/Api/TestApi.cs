@@ -11,6 +11,7 @@ namespace Voxa.WebApi.UnitTests.Api;
 public sealed class TestApi : WebApplicationFactory<Program>
 {
     public const string Password = "test-board-password";
+    public const string ImportKey = "test-import-key-0123456789abcdef0123456789";
 
     private readonly string _database = Guid.NewGuid().ToString();
 
@@ -20,6 +21,7 @@ public sealed class TestApi : WebApplicationFactory<Program>
         builder.UseEnvironment("Development");
         builder.UseSetting("APP_VERSION", "1.2.3");
         builder.UseSetting("Admin:Password", Password);
+        builder.UseSetting("Import:ApiKey", ImportKey);
         builder.ConfigureServices(services =>
         {
             // Drop the Npgsql registration from Program.cs, or EF sees two database providers.
