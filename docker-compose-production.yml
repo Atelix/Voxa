@@ -1,0 +1,181 @@
+# Production and beta server: Traefik (HTTPS), the API, PostgreSQL and Watchtower (deploys). See docs/deployment.md.
+# Copy server.env.example to .env next to this file and fill it in.
+
+# Container logs (request logs with IP addresses) rotate by size, so old lines disappear instead of piling up
+# (personal data: keep them no longer than needed).
+x-logging: &logging
+    driver: local
+    options:
+        max-size: 10m
+        max-file: "5"
+
+services:
+    # Traefik reads container labels through this proxy instead of the raw Docker socket.
+    # Only GET requests to the container and event endpoints are allowed (plus the proxy's defaults, version and ping),
+    # so a Traefik compromise cannot start or change containers. Traefik's Docker provider lists and inspects containers,
+    # and an inspect also returns each container's environment; that read access cannot be narrowed further here
+    # (docs/security-configuration.md). The network list is only used in Swarm mode, so it stays off.
+    docker-socket-proxy:
+        image: tecnativa/docker-socket-proxy:0.5.0
+        container_name: docker-socket-proxy
+        restart: unless-stopped
+        logging: *logging
+        environment:
+            CONTAINERS: 1
+            EVENTS: 1
+            NETWORKS: 0
+            POST: 0
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+        networks:
+            - docker-socket
+        security_opt:
+            - no-new-privileges:true
+
+    traefik:
+        # Traefik v3 (rules use Go regular expressions).
+        image: traefik:v3.7
+        container_name: traefik
+        restart: unless-stopped
+        logging: *logging
+        depends_on:
+            - docker-socket-proxy
+        command:
+            # The dashboard and API stay disabled; nothing listens on 8080.
+            - "--api.dashboard=false"
+            - "--providers.docker=true"
+            - "--providers.docker.endpoint=tcp://docker-socket-proxy:2375"
+            - "--providers.docker.exposedbydefault=false"
+            - "--providers.docker.network=starter-proxy"
+            - "--entrypoints.web.address=:80"
+            - "--entrypoints.web-secure.address=:443"
+            # Keep the X-Forwarded-For that Cloudflare sends (it carries the real client) only when the request comes
+            # from Cloudflare; from any other address Traefik drops it. The API trusts the same ranges
+            # (add them to ForwardedHeaders__KnownNetworks only if the API must see the client address).
+            # Published at https://www.cloudflare.com/ips/ (checked October 2026); update both places when it changes.
+            - "--entrypoints.web.forwardedHeaders.trustedIPs=173.245.48.0/20,103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,141.101.64.0/18,108.162.192.0/18,190.93.240.0/20,188.114.96.0/20,197.234.240.0/22,198.41.128.0/17,162.158.0.0/15,104.16.0.0/13,104.24.0.0/14,172.64.0.0/13,131.0.72.0/22,2400:cb00::/32,2606:4700::/32,2803:f800::/32,2405:b500::/32,2405:8100::/32,2a06:98c0::/29,2c0f:f248::/32"
+            - "--entrypoints.web-secure.forwardedHeaders.trustedIPs=173.245.48.0/20,103.21.244.0/22,103.22.200.0/22,103.31.4.0/22,141.101.64.0/18,108.162.192.0/18,190.93.240.0/20,188.114.96.0/20,197.234.240.0/22,198.41.128.0/17,162.158.0.0/15,104.16.0.0/13,104.24.0.0/14,172.64.0.0/13,131.0.72.0/22,2400:cb00::/32,2606:4700::/32,2803:f800::/32,2405:b500::/32,2405:8100::/32,2a06:98c0::/29,2c0f:f248::/32"
+            - "--entrypoints.web.http.redirections.entryPoint.to=web-secure"
+            - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+            - "--entrypoints.web.http.redirections.entryPoint.permanent=true"
+            - "--certificatesResolvers.le.acme.email=${EMAIL}"
+            - "--certificatesResolvers.le.acme.storage=/letsencrypt/acme.json"
+            - "--certificatesResolvers.le.acme.dnsChallenge.provider=cloudflare"
+        environment:
+            - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
+        # Only HTTP (redirects to HTTPS) and HTTPS are published on the host.
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - ./letsencrypt:/letsencrypt
+        networks:
+            - proxy
+            - docker-socket
+        security_opt:
+            - no-new-privileges:true
+
+    api:
+        container_name: Starter-API
+        # latest follows published releases through Watchtower; set APP_VERSION (for example 1.4.2) to pin a release.
+        image: ghcr.io/${IMAGE_REPOSITORY}/api:${APP_VERSION:-latest}
+        restart: unless-stopped
+        logging: *logging
+        depends_on:
+            - db
+        labels:
+            - "traefik.enable=true"
+            # The app's host sends /api here; Cloudflare sends everything else on that host to the PWA's Worker
+            # (docs/deployment.md, "Routing").
+            - "traefik.http.routers.api.rule=Host(`${APP_HOST}`) && PathPrefix(`/api`)"
+            - "traefik.http.routers.api.entrypoints=web-secure"
+            - "traefik.http.routers.api.priority=200"
+            - "traefik.http.routers.api.tls=true"
+            - "traefik.http.routers.api.tls.certresolver=le"
+            - "traefik.http.routers.api.service=api"
+            # The image runs as a non-root user and listens on 8080.
+            - "traefik.http.services.api.loadbalancer.server.port=8080"
+            - "com.centurylinklabs.watchtower.enable=true"
+        environment:
+            - ConnectionString=Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+            - ASPNETCORE_URLS=http://+:8080
+            - Cors__AllowedOrigins__0=https://${APP_HOST}
+        env_file:
+            - path: .env.api
+              required: false
+        networks:
+            - proxy
+            - database
+
+    db:
+        container_name: Starter-DB
+        # Published on the server's loopback address only, for maintenance through an SSH tunnel
+        # (ssh -L 5432:127.0.0.1:5432 <server>). Docker's published ports bypass host firewalls such as ufw,
+        # so never publish it on all interfaces. The API uses the internal database network.
+        ports:
+            - "127.0.0.1:5432:5432"
+        image: postgres:18
+        restart: unless-stopped
+        logging: *logging
+        environment:
+            POSTGRES_DB: ${POSTGRES_DB}
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+        volumes:
+            # PostgreSQL 18 keeps its data under /var/lib/postgresql/18/docker.
+            - ./db-data:/var/lib/postgresql
+        networks:
+            - database
+
+    # Maintained fork of containrrr/watchtower. The deploy workflows call its HTTP API to update the API
+    # container right after publishing an image; Watchtower never checks for new images on its own.
+    # Watchtower only updates containers labelled com.centurylinklabs.watchtower.enable=true (the API).
+    # It publishes no ports and joins only the proxy network, so Traefik can route the token-protected update endpoint.
+    # A public image on ghcr.io is pulled anonymously. For a private one, run `docker login ghcr.io` on the server with a
+    # read:packages token and uncomment the config.json volume below, so Watchtower can pull it too.
+    # It needs the Docker socket itself (read-write in practice) because it pulls images and recreates containers.
+    watchtower:
+        # Pinned by digest, so a changed tag on ghcr.io cannot change what runs with the Docker socket.
+        # Update both the version and the digest together (docs/deployment.md).
+        image: ghcr.io/nicholas-fedor/watchtower:1.24.1@sha256:617a7d5523280cb73adac4d7977604afbe66b7ea86211f2ae0cbfa2043041d61
+        container_name: watchtower
+        restart: always
+        logging: *logging
+        labels:
+            - "traefik.enable=true"
+            # Served only as https://<APP_HOST>/api/watchtower/v1/update, the address the deploy workflows call
+            # (PRODUCTION_API_URL, BETA_API_URL); the prefix is stripped because Watchtower listens on /v1/update.
+            - "traefik.http.routers.watchtower.rule=Host(`${APP_HOST}`) && Path(`/api/watchtower/v1/update`)"
+            - "traefik.http.routers.watchtower.entrypoints=web-secure"
+            # Keep the deployment update endpoint ahead of the API router.
+            - "traefik.http.routers.watchtower.priority=400"
+            - "traefik.http.routers.watchtower.middlewares=watchtower-ratelimit,watchtower-strip"
+            # The workflows call it once per deploy from GitHub's runners, whose addresses change, so an IP allowlist
+            # cannot be used. The rate limit (per source address, which behind Cloudflare is the Cloudflare edge) slows
+            # down token guessing and repeated update calls.
+            - "traefik.http.middlewares.watchtower-ratelimit.ratelimit.average=6"
+            - "traefik.http.middlewares.watchtower-ratelimit.ratelimit.period=1m"
+            - "traefik.http.middlewares.watchtower-ratelimit.ratelimit.burst=3"
+            - "traefik.http.middlewares.watchtower-strip.stripprefix.prefixes=/api/watchtower"
+            - "traefik.http.routers.watchtower.tls=true"
+            - "traefik.http.routers.watchtower.tls.certresolver=le"
+            - "traefik.http.services.watchtower.loadbalancer.server.port=8080"
+        environment:
+            - WATCHTOWER_HTTP_API_TOKEN=${WATCHTOWER_HTTP_API_TOKEN}
+            # Enables only POST /v1/update (replaces the deprecated --http-api-update flag).
+            - WATCHTOWER_HTTP_API_ENDPOINTS=update
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            # - ${HOME}/.docker/config.json:/config.json:ro
+        command: --cleanup --label-enable
+        networks:
+            - proxy
+        security_opt:
+            - no-new-privileges:true
+
+networks:
+    proxy:
+        name: starter-proxy
+    database: {}
+    docker-socket:
+        internal: true

@@ -1,0 +1,20 @@
+# Code owners
+#
+# Owners listed here are automatically requested for review on pull requests that touch matching paths. With
+# "Require review from Code Owners" in the ruleset (.github/rulesets/protect-main.json), an approval from a listed
+# owner is required before merging. The LAST matching pattern wins, so keep the catch-all first.
+#
+# Replace @NealGeilen with the user or team that owns the new project (tools/init/rename.mjs asks for it).
+
+*                                   @NealGeilen
+
+# CI / CD, deployment and agent instructions: changes here can reach production or secrets.
+/.github/                           @NealGeilen
+**/Dockerfile                       @NealGeilen
+/docker-compose*.yml                @NealGeilen
+/Starter.PWA/wrangler.jsonc         @NealGeilen
+/AGENTS.md                          @NealGeilen
+/.claude/                           @NealGeilen
+
+# CODEOWNERS itself: keep last so ownership changes always need owner review
+/.github/CODEOWNERS                 @NealGeilen

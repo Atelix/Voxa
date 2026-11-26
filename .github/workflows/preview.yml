@@ -1,0 +1,111 @@
+name: PWA preview
+
+# Uploads a preview version of the PWA's Worker for every pull request that changes it, and comments its URL on the
+# pull request. A preview version never goes live: production and beta are only changed by the deploy workflows.
+# Needs the CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID secrets and a Worker that has been deployed once (the first
+# beta or production deploy creates it). Without the secrets the preview is skipped with a warning.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'Starter.PWA/**'
+      - '.node-version'
+      - '.github/workflows/preview.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    name: Upload PWA preview
+    # Forked pull requests get no secrets, and drafts wait until they are ready.
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository && !github.event.pull_request.draft }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
+    environment:
+      name: preview
+      url: ${{ steps.upload.outputs.url }}
+    defaults:
+      run:
+        working-directory: Starter.PWA
+    env:
+      # Previews talk to the beta API, set as the PREVIEW_API_URL variable (for example https://beta.example.com).
+      # The beta API must allow the preview origin in Cors__AllowedOrigins.
+      VITE_API_URL: ${{ vars.PREVIEW_API_URL }}
+      VITE_APP_VERSION: pr-${{ github.event.pull_request.number }}
+    steps:
+      - name: Check Cloudflare secrets
+        id: secrets
+        working-directory: .
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::warning::CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID are not set, so the preview is skipped."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.secrets.outputs.ok == 'true'
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        if: steps.secrets.outputs.ok == 'true'
+        with:
+          package_json_file: Starter.PWA/package.json
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: steps.secrets.outputs.ok == 'true'
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+          cache-dependency-path: Starter.PWA/pnpm-lock.yaml
+      - if: steps.secrets.outputs.ok == 'true'
+        run: pnpm install --frozen-lockfile
+      - if: steps.secrets.outputs.ok == 'true'
+        run: pnpm run build
+      - name: Upload preview version
+        id: upload
+        if: steps.secrets.outputs.ok == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WRANGLER_OUTPUT_FILE_PATH: ${{ runner.temp }}/wrangler-output.json
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # Uploads a new version without sending it live. pr-<n> always points at the PR's latest commit.
+          pnpm exec wrangler versions upload \
+            --preview-alias "pr-${PR_NUMBER}" \
+            --tag "${SHA::7}" \
+            --message "PR #${PR_NUMBER} @ ${SHA::7}"
+          url=$(jq -r 'select(.type=="version-upload") | .preview_alias_url // .preview_url // empty' "$WRANGLER_OUTPUT_FILE_PATH" | tail -n1)
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Preview: ${url:-no preview URL returned, check that workers.dev and preview URLs are enabled}" >> "$GITHUB_STEP_SUMMARY"
+      - name: Comment preview URL on the PR
+        if: steps.secrets.outputs.ok == 'true' && steps.upload.outputs.url != ''
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        env:
+          URL: ${{ steps.upload.outputs.url }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        with:
+          script: |
+            const marker = '<!-- cloudflare-preview -->';
+            const { URL, SHA } = process.env;
+            const body = [marker, '### PWA preview', '', `${URL} (\`${SHA.slice(0, 7)}\`)`].join('\n');
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number });
+            const existing = comments.find(c => c.user.type === 'Bot' && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }

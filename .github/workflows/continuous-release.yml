@@ -1,0 +1,54 @@
+name: Prepare release draft
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: release-draft-main
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  draft:
+    name: Update release draft
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - name: Calculate and update draft release
+        id: release-drafter
+        uses: release-drafter/release-drafter@d1a19e60e81a7e650d00a7de9277f87e439117ea # v7.11.0
+        with:
+          commitish: ${{ github.sha }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate draft version
+        env:
+          RELEASE_TAG: ${{ steps.release-drafter.outputs.tag_name }}
+          RESOLVED_VERSION: ${{ steps.release-drafter.outputs.resolved_version }}
+        shell: bash
+        run: |
+          if [[ ! "$RESOLVED_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "Release Drafter returned an invalid semantic version: $RESOLVED_VERSION" >&2
+            exit 1
+          fi
+
+          if [[ "$RELEASE_TAG" != "v$RESOLVED_VERSION" ]]; then
+            echo "Release tag $RELEASE_TAG does not match version v$RESOLVED_VERSION" >&2
+            exit 1
+          fi
+
+          {
+            echo "## Draft release $RELEASE_TAG"
+            echo
+            echo "The draft remains unpublished until it is manually published."
+            echo "Publishing creates the Git tag and publishes the Docker images right away; the server is updated at the next midnight (Europe/Amsterdam)."
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,41 @@
+# Security updates are raised as soon as a fix is available. Routine version updates are grouped into one PR
+# per ecosystem per month; set open-pull-requests-limit to 0 on an ecosystem to only get security updates.
+
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    labels: ["dependencies"]
+    schedule:
+      interval: "monthly"
+    groups:
+      monthly-version-updates:
+        patterns: ["*"]
+
+  - package-ecosystem: "nuget"
+    directory: "/"
+    labels: ["dependencies"]
+    schedule:
+      interval: "monthly"
+    groups:
+      monthly-version-updates:
+        patterns: ["*"]
+
+  # Dependabot uses the "npm" ecosystem for pnpm projects too.
+  - package-ecosystem: "npm"
+    directory: "/Starter.PWA"
+    labels: ["dependencies"]
+    schedule:
+      interval: "monthly"
+    groups:
+      monthly-version-updates:
+        patterns: ["*"]
+
+  - package-ecosystem: "docker"
+    directory: "/Starter.WebApi"
+    labels: ["dependencies"]
+    schedule:
+      interval: "monthly"
+    groups:
+      monthly-version-updates:
+        patterns: ["*"]

@@ -1,0 +1,16 @@
+name: Feature request
+description: Something new or better. Describe the need; the solution is worked out together.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: The need
+      description: Who is blocked or slowed down, and what are they trying to do?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: First idea for a solution
+      description: Optional. This is a suggestion, not a spec (see the issues-are-suggestions skill).

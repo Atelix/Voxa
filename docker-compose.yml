@@ -1,0 +1,38 @@
+# Local development: PostgreSQL, and optionally the API in a container.
+#   docker compose up -d db         # database only; run the API with `dotnet run --project Starter.WebApi`
+#   docker compose up -d            # database and the API image on http://localhost:5000
+# Copy .env.development.example to .env first.
+services:
+  api:
+    container_name: Starter-API
+    build:
+      context: .
+      dockerfile: ./Starter.WebApi/Dockerfile
+    depends_on:
+      - db
+    # Only this machine can reach the API; the image runs as a non-root user on 8080.
+    ports:
+      - 127.0.0.1:5000:8080
+    environment:
+      - ConnectionString=Host=db;Port=5432;Database=Starter;Username=root;Password=${STARTER_DEV_DB_PASSWORD:?Set STARTER_DEV_DB_PASSWORD in your local .env file}
+      # Production mode, so the container applies the migrations on start-up like the server does.
+      - ASPNETCORE_ENVIRONMENT=Production
+      - Cors__AllowedOrigins__0=http://localhost:3000
+
+  db:
+    container_name: Starter-DB
+    # Same major version as production (docker-compose-production.yml).
+    image: postgres:18
+    environment:
+      POSTGRES_PASSWORD: ${STARTER_DEV_DB_PASSWORD:?Set STARTER_DEV_DB_PASSWORD in your local .env file}
+      POSTGRES_DB: Starter
+      POSTGRES_USER: root
+    # Only this machine can reach the development database.
+    ports:
+      - 127.0.0.1:5432:5432
+    volumes:
+      # PostgreSQL 18 keeps its data under /var/lib/postgresql/18/docker.
+      - starter-db-data-18:/var/lib/postgresql
+
+volumes:
+  starter-db-data-18:

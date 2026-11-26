@@ -1,0 +1,9 @@
+{
+	"compilerOptions": {
+		"composite": true,
+		"module": "es2022",
+		"moduleResolution": "Bundler",
+		"allowSyntheticDefaultImports": true
+	},
+	"include": ["vite.config.ts", "vitest.config.ts"]
+}

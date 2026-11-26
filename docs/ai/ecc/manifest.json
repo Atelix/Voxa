@@ -1,0 +1,181 @@
+{
+    "repository": "https://github.com/affaan-m/ECC",
+    "version": "2.2.3",
+    "revision": "b92f181b3b748d1abbc2afd94af6aa7d8c8fca29",
+    "files": [
+        {
+            "source": "LICENSE",
+            "path": "docs/ai/ecc/LICENSE",
+            "sha256": "326146379f01bb137c0a5d3c54770c1aa31076705c8b88a7f6b26a460f6221b2"
+        },
+        {
+            "source": "skills/search-first/SKILL.md",
+            "path": "docs/ai/ecc/skills/search-first/SKILL.md",
+            "sha256": "76835db48dd910061d2e4271b1151793d2fddbabeb2d2866eed068b3580c55d5"
+        },
+        {
+            "source": "skills/tdd-workflow/SKILL.md",
+            "path": "docs/ai/ecc/skills/tdd-workflow/SKILL.md",
+            "sha256": "8887afa786ef30de834e7567115d3df71934b343c3d9d849714f8ea43f979ee0"
+        },
+        {
+            "source": "skills/verification-loop/SKILL.md",
+            "path": "docs/ai/ecc/skills/verification-loop/SKILL.md",
+            "sha256": "5b06be54d4852f60e6cf1b04c6e9a4748554334eb3e41af6c0959b544e6464ae"
+        },
+        {
+            "source": "skills/security-review/SKILL.md",
+            "path": "docs/ai/ecc/skills/security-review/SKILL.md",
+            "sha256": "b9eb6416eebc8dda046674f0a2dbb3be88aff526d182b60a0f55998d3d6d0d8d"
+        },
+        {
+            "source": "skills/dotnet-patterns/SKILL.md",
+            "path": "docs/ai/ecc/skills/dotnet-patterns/SKILL.md",
+            "sha256": "61bc21a6c6d6d1230d90f0bbebca55101b1b63de68ece8574152cbad152cef07"
+        },
+        {
+            "source": "skills/csharp-testing/SKILL.md",
+            "path": "docs/ai/ecc/skills/csharp-testing/SKILL.md",
+            "sha256": "ee93aae975fa9d44bebc33be010b24435d38177e77395c697048622d9be68ad1"
+        },
+        {
+            "source": "skills/vue-patterns/SKILL.md",
+            "path": "docs/ai/ecc/skills/vue-patterns/SKILL.md",
+            "sha256": "65e322383510de25bd5fc6fce4b0980d99d38b341f09bea662bd9a410e20c016"
+        },
+        {
+            "source": "skills/api-design/SKILL.md",
+            "path": "docs/ai/ecc/skills/api-design/SKILL.md",
+            "sha256": "250e464413a13c0eb93cc73447b423df1f9aa8e4f80e5e68c41f895b2c33e352"
+        },
+        {
+            "source": "skills/database-migrations/SKILL.md",
+            "path": "docs/ai/ecc/skills/database-migrations/SKILL.md",
+            "sha256": "dad2f1964295eee14a96e06213ce3f60992bbcdc1f37a50c828bbc2e1abd79dd"
+        },
+        {
+            "source": "skills/postgres-patterns/SKILL.md",
+            "path": "docs/ai/ecc/skills/postgres-patterns/SKILL.md",
+            "sha256": "9c8c391ae9e9aa87faa7ca091e1d395c97766df14080d0bfbea8a97721776163"
+        }
+    ],
+    "skills": [
+        {
+            "name": "search-first",
+            "title": "Research before implementation",
+            "description": "Research existing project code, primary framework documentation and maintained packages before adding a feature, utility, dependency or integration.",
+            "adaptations": [
+                "Search the repository with `rg` first, then read the relevant architecture, neighboring implementations and tests.",
+                "Check primary .NET, EF Core, Vue, Vuetify and package documentation using available tools. State which searches were unavailable.",
+                "Use the PWA's `packageManager` field and pnpm; search NuGet for .NET dependencies. Prefer existing helpers over adding a package.",
+                "Keep research proportional to the change. Use the existing project skills before looking for another agent or external service.",
+                "Reuse the authorized task scope and known requirements; continue routine research and reversible implementation without requesting redundant approval."
+            ]
+        },
+        {
+            "name": "tdd-workflow",
+            "title": "Behavior-focused testing",
+            "description": "Use when changing project behavior or fixing a regression to run the failing-test, minimal-fix and refactor cycle. Owns the cross-stack testing process; C# fixture/assertion details belong to ecc-csharp-testing.",
+            "adaptations": [
+                "Use xUnit for the .NET projects and the configured Vitest script for the PWA; inspect nearby tests before choosing fixtures or assertions.",
+                "For a bug, run a regression test that fails for the intended reason, make the smallest fix and rerun that same test before refactoring.",
+                "Do not run ECC's package-manager detector or install sample Jest, React, Bun or coverage tooling. The project already specifies its runners.",
+                "Keep tests focused on user-visible behavior and meaningful boundaries; instruction-only edits do not require synthetic application tests.",
+                "The full suite in AGENTS.md remains required. Use existing coverage configuration; do not add an arbitrary 80% threshold or new evidence-report directory.",
+                "Record actual RED/GREEN results and any unverified checks in the PR body. Routine test commands within the authorized task do not need repeated approval."
+            ]
+        },
+        {
+            "name": "security-review",
+            "title": "Security and data isolation",
+            "description": "Review the project's authentication, authorization, personal data, uploads, webhooks and integrations for cross-user access and sensitive-data exposure.",
+            "adaptations": [
+                "Read `docs/architecture.md`, `docs/security-configuration.md` and the relevant API documentation. Preserve the existing authentication and authorization boundaries.",
+                "Treat route ids, headers and request bodies as untrusted until verified. Keep visibility and redaction decisions in logic, not in controllers.",
+                "Test denied access, missing permissions and response redaction when those boundaries change.",
+                "Use parameterized EF Core/Npgsql access, input validation, signature verification for webhooks and rate limiting where they exist.",
+                "Keep secrets in the configured secret stores/environment, redact credentials and personal data from logs, and avoid printing secret matches.",
+                "Apply relevant checklist items to the project's actual stack. Do not switch token storage, add Supabase/RLS, introduce blockchain tooling or run automatic dependency upgrades from upstream examples."
+            ]
+        },
+        {
+            "name": "dotnet-patterns",
+            "title": ".NET architecture and implementation",
+            "description": "Use when writing or reviewing C# logic, services, dependency injection, async work and EF Core access in the project's ASP.NET Core solution.",
+            "adaptations": [
+                "Read `docs/architecture.md` and .editorconfig. Preserve Starter.WebApi controllers, Starter logic/services, Starter.Abstractions contracts and Starter.Persistence entities.",
+                "Place each service/logic interface in its own file in Starter.Abstractions. Interface methods return models and do not accept HttpContext.",
+                "Use `IHttpContextAccessor` where implementations need the request; keep authorization-sensitive visibility decisions in logic.",
+                "Preserve the project's domain exceptions and ApiResponse/problem-details behavior rather than introducing an unrelated Result type, repository layer or Minimal API rewrite.",
+                "Use async operations and cancellation where supported. Never run parallel EF operations on the same StarterContext instance.",
+                "Follow existing model mutability and mappings; do not convert tracked EF entities to immutable records merely to follow an example."
+            ]
+        },
+        {
+            "name": "csharp-testing",
+            "title": "C# unit and database testing",
+            "description": "Use when implementing or reviewing .NET test code in the project: xUnit fixtures, mocks, assertions, ASP.NET integration tests and PostgreSQL regression tests. The RED/GREEN process belongs to ecc-tdd-workflow.",
+            "adaptations": [
+                "Inspect existing tests and project references in Starter.WebApi.UnitTests and Starter.WebApi.PostgresTests; reuse their fixtures and installed assertion/mocking libraries.",
+                "Put behavior-focused unit tests in the existing .NET test project. Cover success, invalid input, denied access and missing records as relevant.",
+                "Use Starter.WebApi.PostgresTests for provider-specific translation, constraints, migrations and concurrency; in-memory EF cannot prove PostgreSQL behavior.",
+                "Run `dotnet test Starter.sln` for the required solution suite. The PostgreSQL project is outside the solution and additionally runs with `dotnet test Starter.WebApi.PostgresTests` when database behavior changes and Docker is available.",
+                "Do not install FluentAssertions, NSubstitute, Bogus or a new test framework solely because upstream examples use them. State unavailable database infrastructure and unrun checks."
+            ]
+        },
+        {
+            "name": "vue-patterns",
+            "title": "Vue and Vuetify implementation",
+            "description": "Use when changing reactive application logic in the project's Vue PWA: composables, Pinia, routing, request lifecycle, stale responses and frontend tests. Visual components, branding, layout and Material Design belong to material-design.",
+            "adaptations": [
+                "Use Vue 3, TypeScript, Vuetify, Pinia and the existing Vite layout. Read the canonical `material-design` skill; this is not a Nuxt application.",
+                "Use the existing `useLoader` and `useAsyncAction` helpers in Starter.PWA as required by AGENTS.md, with Vuetify skeletons for content loading.",
+                "Use the existing API wrapper and generated client; never hand-edit src/logic/api.ts or replace the API lifecycle with sample fetch helpers.",
+                "Preserve current store/component conventions and the English/Dutch translations; avoid unrelated folder or store rewrites.",
+                "Use configured Vitest tests and the canonical `webapp-testing` skill for browser checks at phone and desktop widths. Run the PWA's required pnpm checks."
+            ]
+        },
+        {
+            "name": "database-migrations",
+            "title": "EF Core migration planning",
+            "description": "Use when changing the project's EF Core entities, schema, constraints, indexes or data migrations to plan compatibility and validate PostgreSQL behavior.",
+            "adaptations": [
+                "The project uses EF Core with PostgreSQL. Inspect StarterContext, existing migrations and affected mappings before editing.",
+                "Use EF migrations in the Starter project with Starter.WebApi as the startup project. Review generated SQL and the model snapshot.",
+                "Plan rollout compatibility, data backfill, nullability, defaults, index locking and recovery for each schema change; prefer small additive steps when appropriate.",
+                "Use a disposable local/test database for validation. An application code task does not authorize applying a migration to a production or shared remote database.",
+                "Validate affected queries and constraints with Starter.WebApi.PostgresTests when Docker is available, and run the full required solution/PWA suite.",
+                "Treat Prisma, Django, Alembic and standalone production SQL examples as reference material; keep the EF Core migration mechanism."
+            ]
+        },
+        {
+            "name": "postgres-patterns",
+            "title": "PostgreSQL query performance",
+            "description": "Use when investigating or changing the project's PostgreSQL queries, EF Core projections, indexes, pagination, constraints or database performance.",
+            "adaptations": [
+                "Trace the EF Core/Npgsql query from logic to StarterContext and inspect its generated SQL before proposing an index or raw query.",
+                "Keep visibility filters intact; select only fields needed by the response and preserve stable ordering for pagination.",
+                "Use a disposable test database for EXPLAIN/EXPLAIN ANALYZE and query experiments. Do not run mutating plans or migrations on shared production data.",
+                "Add indexes through an EF Core migration, examine write/locking costs and verify provider-specific behavior in Starter.WebApi.PostgresTests.",
+                "Keep existing identifiers and schema conventions. Do not introduce Supabase, change PostgreSQL settings globally or add RLS policies just to copy the upstream examples."
+            ]
+        }
+    ],
+    "integrations": [
+        {
+            "name": "api-client",
+            "reference": "docs/ai/ecc/skills/api-design/SKILL.md",
+            "canonical": ".claude/skills/api-client/SKILL.md"
+        },
+        {
+            "name": "verification-before-completion",
+            "reference": "docs/ai/ecc/skills/verification-loop/SKILL.md",
+            "canonical": ".claude/skills/verification-before-completion/SKILL.md"
+        }
+    ],
+    "retiredSkills": [
+        "ecc-api-design",
+        "ecc-verification-loop",
+        "material-3"
+    ]
+}

@@ -1,0 +1,116 @@
+name: SonarQube
+# Weekly SonarQube Cloud analysis of the C# code on main. The open findings become GitHub issues, one per rule, which
+# later runs update, close when fixed and reopen when findings return. Pull requests are not analysed.
+# See docs/sonarqube.md.
+on:
+  schedule:
+    # Mondays 04:23 UTC, before the working week starts in Amsterdam.
+    - cron: '23 4 * * 1'
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Analyse and list what would change, without creating or changing issues'
+        type: boolean
+        default: false
+concurrency:
+  group: sonarqube
+  cancel-in-progress: false
+permissions:
+  contents: read
+  issues: write
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+jobs:
+  analyse:
+    name: Analyse main and sync issues
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    # The Free plan analyses only the main branch, and issues must describe main. Until the SONAR_PROJECT_KEY
+    # variable is set (docs/sonarqube.md) the job is skipped, so a new project from the template stays green.
+    if: ${{ github.ref == 'refs/heads/main' && vars.SONAR_PROJECT_KEY != '' }}
+    env:
+      SONAR_SCANNER_VERSION: '11.3.0'
+      SONAR_HOST_URL: 'https://sonarcloud.io'
+      SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+      SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+    steps:
+      - name: Check SonarQube configuration
+        shell: bash
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          missing=()
+          [[ -n "$SONAR_TOKEN" ]] || missing+=("secret SONAR_TOKEN")
+          [[ -n "$SONAR_ORGANIZATION" ]] || missing+=("variable SONAR_ORGANIZATION")
+          [[ -n "$SONAR_PROJECT_KEY" ]] || missing+=("variable SONAR_PROJECT_KEY")
+          if (( ${#missing[@]} > 0 )); then
+            echo "::error::SonarQube is not configured; missing: ${missing[*]}. See docs/sonarqube.md."
+            exit 1
+          fi
+      # The full history lets SonarQube attribute findings to commits.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: '10.0.x'
+      # Runs tools/sonarqube/sync-issues.mjs.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+      - name: Install SonarScanner for .NET
+        run: dotnet tool install dotnet-sonarscanner --version "$SONAR_SCANNER_VERSION" --tool-path "$RUNNER_TEMP/sonar-scanner"
+      - name: Begin analysis
+        shell: bash
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          # Only the C# code is analysed: the whole repository is over the Free plan's 50,000-line limit,
+          # and the PWAs already get type-aware ESLint in CI. Build output and the generated EF Core
+          # migrations are left out.
+          generated="**/bin/**,**/obj/**,Starter/Migrations/**"
+          "$RUNNER_TEMP/sonar-scanner/dotnet-sonarscanner" begin \
+            /k:"$SONAR_PROJECT_KEY" \
+            /o:"$SONAR_ORGANIZATION" \
+            /d:sonar.host.url="$SONAR_HOST_URL" \
+            /d:sonar.token="$SONAR_TOKEN" \
+            /d:sonar.scm.revision="$GITHUB_SHA" \
+            /d:sonar.inclusions="**/*.cs" \
+            /d:sonar.exclusions="$generated" \
+            /d:sonar.cs.opencover.reportsPaths="$RUNNER_TEMP/coverage/**/coverage.opencover.xml"
+      # The scanner swaps in its own ruleset and turns off WarningsAsErrors for this instrumented build.
+      - name: Build
+        run: dotnet build Starter.sln --no-incremental
+      - name: Run unit tests with coverage
+        run: >-
+          dotnet test Starter.sln --no-build
+          --collect:"XPlat Code Coverage"
+          --results-directory "$RUNNER_TEMP/coverage"
+          -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+      - name: End analysis
+        id: analysis
+        shell: bash
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          "$RUNNER_TEMP/sonar-scanner/dotnet-sonarscanner" end /d:sonar.token="$SONAR_TOKEN"
+          # The sync step waits for SonarQube Cloud to process this analysis before reading its findings.
+          task_id="$(sed -n 's/^ceTaskId=//p' .sonarqube/out/.sonar/report-task.txt)"
+          if [[ -z "$task_id" ]]; then
+            echo "::error::The scanner wrote no analysis task id to .sonarqube/out/.sonar/report-task.txt"
+            exit 1
+          fi
+          echo "task-id=$task_id" >> "$GITHUB_OUTPUT"
+      - name: Turn findings into issues
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+          SONAR_CE_TASK_ID: ${{ steps.analysis.outputs.task-id }}
+          SONAR_REVISION: ${{ github.sha }}
+          SONAR_ISSUES_MIN_SEVERITY: ${{ vars.SONAR_ISSUES_MIN_SEVERITY }}
+          SONAR_ISSUES_MAX_NEW: ${{ vars.SONAR_ISSUES_MAX_NEW }}
+          SONAR_ISSUES_DRY_RUN: ${{ inputs.dry-run == true }}
+        run: node tools/sonarqube/sync-issues.mjs

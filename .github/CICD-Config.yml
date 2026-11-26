@@ -1,0 +1,20 @@
+# The main frontend, exposed as the `frontend` output of the CI workflow for callers that need it.
+frontend-location: Starter.PWA
+# Every frontend project that is type-checked, linted, built (and tested when `test` is true) in CI.
+frontends:
+  - location: Starter.PWA
+    test: true
+# Every Docker image that is tested and published.
+# The PWA has no image: it is served from a Cloudflare Worker.
+# context: the build context
+# file: the Dockerfile
+# image: the image name under ghcr.io/<owner>/<repository>/
+# Pull requests only build the images when a Dockerfile, a .dockerignore, a Compose file or this list changed.
+docker:
+  - image: api
+    context: .
+    file: ./Starter.WebApi/Dockerfile
+
+# False means that the code analysis will not be performed
+# Otherwise give a list of languages to be analyzed according to GitHub CodeQL documentation
+code-analysis-languages: false

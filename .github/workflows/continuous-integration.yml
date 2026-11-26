@@ -1,0 +1,355 @@
+name: Continuous integration
+concurrency:
+  group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}"
+  cancel-in-progress: true
+on:
+  workflow_call:
+    inputs:
+      skip-docker-build:
+        description: 'Skip the Docker image build because the caller builds and publishes the same images itself'
+        type: boolean
+        default: false
+      ref:
+        description: 'Git ref to check out and test instead of the ref that triggered the caller, such as a release tag'
+        type: string
+        default: ''
+    outputs:
+      docker:
+        description: 'Docker images to build'
+        value: ${{jobs.config.outputs.docker}}
+      frontend:
+        description: 'Frontend location'
+        value: ${{jobs.config.outputs.frontend}}
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
+  # Lets the pipeline run in a GitHub merge queue when one is enabled for the target branch.
+  merge_group:
+  workflow_dispatch:
+
+# Every job only reads the repository: nothing here comments, pushes images or writes to the repository.
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+jobs:
+  config:
+    name: Load settings
+    # Skipping this job also skips the dependent backend and frontend checks.
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.draft == false }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      docker: ${{ steps.config.outputs.docker }}
+      docker-build: ${{ steps.config.outputs.docker-build }}
+      frontend: ${{ steps.config.outputs.frontend }}
+      frontends: ${{ steps.config.outputs.frontends }}
+      code-analysis: ${{ steps.config.outputs.code-analysis }}
+      backend-changed: ${{ steps.changes.outputs.backend }}
+      frontend-changed: ${{ steps.changes.outputs.frontend }}
+      docker-changed: ${{ steps.changes.outputs.docker }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The pull request merge commit and its parents are enough to list the changed files.
+          fetch-depth: 2
+          ref: ${{ inputs.ref }}
+      - name: Verify agent foundation
+        run: node tools/ai/sync-skills.mjs --check
+      - name: Test repository tools
+        run: node --test "tools/**/*.test.mjs"
+      # Pull requests and merge queue runs only execute the parts of the pipeline affected by their changes.
+      # Every other trigger (deployments, releases, manual runs) always runs everything.
+      - name: Detect changed components
+        id: changes
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          MERGE_GROUP_BASE_SHA: ${{ github.event.merge_group.base_sha }}
+        run: |
+          case "$EVENT_NAME" in
+            pull_request)
+              base="HEAD^1"
+              ;;
+            merge_group)
+              git fetch --no-tags --depth=1 origin "$MERGE_GROUP_BASE_SHA"
+              base="$MERGE_GROUP_BASE_SHA"
+              ;;
+            *)
+              echo "backend=true" >> "$GITHUB_OUTPUT"
+              echo "frontend=true" >> "$GITHUB_OUTPUT"
+              echo "docker=true" >> "$GITHUB_OUTPUT"
+              exit 0
+              ;;
+          esac
+
+          changed="$(git diff --name-only "$base" HEAD)"
+          echo "Changed files:"
+          echo "$changed"
+
+          # Workflow and pipeline changes validate everything.
+          if grep -q '^\.github/' <<< "$changed"; then
+            backend=true
+            frontend=true
+          else
+            # The backend covers everything except the front end, documentation and root markdown files.
+            backend="$(grep -qvE '^(Starter\.PWA/|docs/|[^/]+\.md$|\.node-version$)' <<< "$changed" && echo true || echo false)"
+            frontend="$(grep -qE '^(Starter\.PWA/|\.node-version$)' <<< "$changed" && echo true || echo false)"
+          fi
+
+          # The Docker images are only built when a Dockerfile, a .dockerignore, a Compose file or the image list changed.
+          docker="$(grep -qE '(^|/)Dockerfile[^/]*$|(^|/)\.dockerignore$|^docker-compose[^/]*\.ya?ml$|^\.github/CICD-Config\.yml$' <<< "$changed" && echo true || echo false)"
+
+          echo "backend=$backend" >> "$GITHUB_OUTPUT"
+          echo "frontend=$frontend" >> "$GITHUB_OUTPUT"
+          echo "docker=$docker" >> "$GITHUB_OUTPUT"
+          echo "Backend changed: $backend, frontend changed: $frontend, Docker changed: $docker"
+      # yq is preinstalled on the GitHub-hosted Ubuntu runners.
+      - name: Load configuration
+        id: config
+        shell: bash
+        env:
+          DOCKER_CHANGED: ${{ steps.changes.outputs.docker }}
+          SKIP_DOCKER_BUILD: ${{ inputs.skip-docker-build == true }}
+        run: |
+          config=.github/CICD-Config.yml
+          docker="$(yq -o=json -I=0 '.docker' "$config")"
+          if [[ "$SKIP_DOCKER_BUILD" == "true" || "$DOCKER_CHANGED" != "true" ]]; then
+            docker_build='[]'
+          else
+            docker_build="$docker"
+          fi
+
+          echo "docker=$docker" >> "$GITHUB_OUTPUT"
+          echo "docker-build=$docker_build" >> "$GITHUB_OUTPUT"
+          echo "frontend=$(yq '.frontend-location' "$config")" >> "$GITHUB_OUTPUT"
+          echo "frontends=$(yq -o=json -I=0 '.frontends' "$config")" >> "$GITHUB_OUTPUT"
+          echo "code-analysis=$(yq -o=json -I=0 '.code-analysis-languages' "$config")" >> "$GITHUB_OUTPUT"
+          cat "$GITHUB_OUTPUT"
+
+  backend:
+    name: Build and test .NET solution
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    needs: [ config ]
+    if: ${{ needs.config.outputs.backend-changed == 'true' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          # 10.0.403 is listed but its download returns HTTP 409 (2026-10-25); go back to 10.0.x once it downloads.
+          dotnet-version: '10.0.402'
+      - name: Restore dependencies
+        run: dotnet restore Starter.sln
+      # Analyzers take about two thirds of the build; the analyzers job runs them next to the tests.
+      - name: Build
+        run: dotnet build Starter.sln --no-restore -p:RunAnalyzers=false
+      - name: Run unit tests
+        run: dotnet test Starter.sln --no-build
+
+  backend-analyzers:
+    name: Build .NET solution with analyzers
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    needs: [ config ]
+    if: ${{ needs.config.outputs.backend-changed == 'true' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          # 10.0.403 is listed but its download returns HTTP 409 (2026-10-25); go back to 10.0.x once it downloads.
+          dotnet-version: '10.0.402'
+      - name: Restore dependencies
+        run: dotnet restore Starter.sln
+      # Analyzer errors fail the build here; the PostgreSQL test project is built too, since its job skips analyzers.
+      - name: Build
+        run: |
+          dotnet build Starter.sln --no-restore
+          dotnet build Starter.WebApi.PostgresTests
+
+  backend-postgres:
+    name: Run PostgreSQL tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    needs: [ config ]
+    if: ${{ needs.config.outputs.backend-changed == 'true' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          # 10.0.403 is listed but its download returns HTTP 409 (2026-10-25); go back to 10.0.x once it downloads.
+          dotnet-version: '10.0.402'
+      # Anonymous Docker Hub pulls from shared runners hit its rate limit, so pull through Google's public
+      # mirror first; Docker falls back to Docker Hub when the mirror misses.
+      - name: Use a Docker Hub mirror
+        run: |
+          config=/etc/docker/daemon.json
+          current="$(sudo cat "$config" 2>/dev/null || echo '{}')"
+          jq '."registry-mirrors" = ["https://mirror.gcr.io"]' <<< "$current" | sudo tee "$config" > /dev/null
+          sudo systemctl restart docker
+      # Not part of Starter.sln, so local test runs need no Docker; the runner has Docker for Testcontainers.
+      - name: Run PostgreSQL tests
+        run: dotnet test Starter.WebApi.PostgresTests -p:RunAnalyzers=false
+
+  # The style check compiles the solution itself, so it runs next to the build and tests instead of before them.
+  backend-format:
+    name: Check .NET formatting
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    needs: [ config ]
+    if: ${{ needs.config.outputs.backend-changed == 'true' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          # 10.0.403 is listed but its download returns HTTP 409 (2026-10-25); go back to 10.0.x once it downloads.
+          dotnet-version: '10.0.402'
+      - name: Restore dependencies
+        run: dotnet restore Starter.sln
+      # Every check runs so a single run reports every failure.
+      # Only whitespace and code style are checked; analyzer warnings stay build warnings.
+      # Fix locally with the same commands without --verify-no-changes; see docs/continuous-integration.md.
+      - name: Check formatting
+        run: |
+          status=0
+          for project in Starter.sln Starter.WebApi.PostgresTests; do
+            dotnet format whitespace "$project" --verify-no-changes --exclude Starter/Migrations || status=1
+            dotnet format style "$project" --verify-no-changes --exclude Starter/Migrations || status=1
+          done
+          exit $status
+
+  frontend:
+    name: Build, type-check and lint ${{ matrix.frontend.location }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    needs: [ config ]
+    if: ${{ needs.config.outputs.frontend-changed == 'true' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        frontend: ${{ fromJson(needs.config.outputs.frontends) }}
+    defaults:
+      run:
+        working-directory: '${{ matrix.frontend.location }}'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+      # Uses the pnpm version in the project's packageManager field.
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          package_json_file: '${{ matrix.frontend.location }}/package.json'
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+          cache: 'pnpm'
+          cache-dependency-path: '${{ matrix.frontend.location }}/pnpm-lock.yaml'
+      - name: Install modules
+        id: install
+        run: pnpm install --frozen-lockfile
+      # The checks below run independently so a single run reports every failure.
+      - name: Type-check
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: pnpm run type-check
+      - name: Perform linter
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: pnpm run lint
+      - name: Test
+        if: ${{ !cancelled() && steps.install.outcome == 'success' && matrix.frontend.test }}
+        run: pnpm run test
+      - name: Build
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: pnpm build
+
+  build-docker:
+    name: Build Docker ${{ matrix.image }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    needs: [ config, backend, backend-analyzers, backend-postgres, backend-format, frontend ]
+    # Backend or frontend jobs are skipped when their code is unchanged; only a failure blocks the image build.
+    if: ${{ !cancelled() && needs.config.result == 'success' && !contains(needs.*.result, 'failure') && needs.config.outputs.docker-build != '[]' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{fromJson(needs.config.outputs.docker-build)}}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+        with:
+          # Pull base images through Google's public Docker Hub mirror to avoid Docker Hub's anonymous rate limit.
+          buildkitd-config-inline: |
+            [registry."docker.io"]
+              mirrors = ["mirror.gcr.io"]
+      # No GitHub Actions layer cache: importing and exporting it took longer than rebuilding the image.
+      - name: Build
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: ${{ matrix.context }}
+          push: false
+          file: ${{ matrix.file }}
+
+  # Single status check to require in branch protection and for auto-merge.
+  # It passes only when every job that was needed succeeded, and fails when a needed job
+  # failed, was cancelled or did not run, so skipped jobs can never let a change through.
+  ci-result:
+    name: CI result
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    needs: [ config, backend, backend-analyzers, backend-postgres, backend-format, frontend, build-docker ]
+    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.draft == false) }}
+    steps:
+      - name: Verify job results
+        shell: bash
+        env:
+          CONFIG_RESULT: ${{ needs.config.result }}
+          BACKEND_RESULT: ${{ needs.backend.result }}
+          BACKEND_ANALYZERS_RESULT: ${{ needs.backend-analyzers.result }}
+          BACKEND_POSTGRES_RESULT: ${{ needs.backend-postgres.result }}
+          BACKEND_FORMAT_RESULT: ${{ needs.backend-format.result }}
+          FRONTEND_RESULT: ${{ needs.frontend.result }}
+          DOCKER_RESULT: ${{ needs.build-docker.result }}
+          BACKEND_NEEDED: ${{ needs.config.outputs.backend-changed }}
+          FRONTEND_NEEDED: ${{ needs.config.outputs.frontend-changed }}
+          DOCKER_NEEDED: ${{ needs.config.outputs.docker-build != '' && needs.config.outputs.docker-build != '[]' }}
+        run: |
+          failed=false
+
+          check() {
+            local job="$1" result="$2" needed="$3"
+            if [[ "$needed" == "true" ]]; then
+              expected="success"
+            else
+              expected="skipped"
+            fi
+
+            echo "$job: needed=$needed result=$result"
+            if [[ "$result" != "$expected" ]]; then
+              echo "::error::$job was expected to be '$expected' but was '$result'"
+              failed=true
+            fi
+          }
+
+          check "Load settings" "$CONFIG_RESULT" true
+          check ".NET build and test" "$BACKEND_RESULT" "$BACKEND_NEEDED"
+          check ".NET analyzers" "$BACKEND_ANALYZERS_RESULT" "$BACKEND_NEEDED"
+          check "PostgreSQL tests" "$BACKEND_POSTGRES_RESULT" "$BACKEND_NEEDED"
+          check ".NET formatting" "$BACKEND_FORMAT_RESULT" "$BACKEND_NEEDED"
+          check "Frontend checks" "$FRONTEND_RESULT" "$FRONTEND_NEEDED"
+          check "Docker build" "$DOCKER_RESULT" "$DOCKER_NEEDED"
+
+          if [[ "$failed" == "true" ]]; then
+            exit 1
+          fi

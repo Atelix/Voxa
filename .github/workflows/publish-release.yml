@@ -1,0 +1,356 @@
+name: Deploy published release
+
+# Published releases go to production at the first midnight (Europe/Amsterdam) after they were published.
+# Their images are already built and published by "Publish release images" when the release is published,
+# so this workflow only updates the server and deploys the Workers.
+# GitHub schedules run in UTC, so the workflow runs at 22:00 and 23:00 UTC and only continues when it is
+# shortly after midnight in Amsterdam, whatever the daylight saving time offset.
+on:
+  schedule:
+    - cron: '0 22 * * *'
+    - cron: '0 23 * * *'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to deploy right away, for example v1.4.0; leave empty for the latest published release'
+        type: string
+        default: ''
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  version:
+    name: Select release to deploy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      deployments: read
+    outputs:
+      deploy: ${{ steps.select.outputs.deploy }}
+      tag: ${{ steps.select.outputs.tag }}
+      commit: ${{ steps.release.outputs.commit }}
+      repository: ${{ steps.release.outputs.repository }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - name: Select release
+        id: select
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EVENT_NAME: ${{ github.event_name }}
+          REQUESTED_TAG: ${{ inputs.tag }}
+        shell: bash
+        run: |
+          skip() {
+            echo "$1"
+            echo "deploy=false" >> "$GITHUB_OUTPUT"
+            echo "## No deployment" >> "$GITHUB_STEP_SUMMARY"
+            echo "$1" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          }
+
+          releases="$(gh api "repos/$GITHUB_REPOSITORY/releases?per_page=100")"
+
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            # Manual runs deploy right away, for example for a hotfix.
+            if [[ -n "$REQUESTED_TAG" ]]; then
+              tag="$(jq -r --arg tag "$REQUESTED_TAG" '[.[] | select(.draft | not) | select(.tag_name == $tag)][0].tag_name // empty' <<< "$releases")"
+              if [[ -z "$tag" ]]; then
+                echo "No published release exists for tag $REQUESTED_TAG." >&2
+                exit 1
+              fi
+            else
+              tag="$(jq -r '[.[] | select(.draft | not)] | sort_by(.published_at) | last | .tag_name // empty' <<< "$releases")"
+              [[ -n "$tag" ]] || skip "There is no published release."
+            fi
+          else
+            hour="$(TZ=Europe/Amsterdam date +%-H)"
+            # Hours 0-2 leave room for delayed scheduled runs; the other daily run falls outside this window.
+            if (( hour > 2 )); then
+              skip "It is $(TZ=Europe/Amsterdam date +%H:%M) in Amsterdam; production deploys only run after midnight."
+            fi
+
+            midnight="$(TZ=Europe/Amsterdam date -d 'today 00:00' +%s)"
+            tag="$(jq -r --argjson midnight "$midnight" \
+              '[.[] | select(.draft | not) | select((.published_at | fromdateiso8601) < $midnight)] | sort_by(.published_at) | last | .tag_name // empty' \
+              <<< "$releases")"
+            [[ -n "$tag" ]] || skip "No release was published before midnight."
+
+            # A release is deployed once; a failed deployment is retried the next night.
+            deployed="$(gh api "repos/$GITHUB_REPOSITORY/deployments?environment=production&ref=$tag" --jq '.[].id' \
+              | while read -r id; do gh api "repos/$GITHUB_REPOSITORY/deployments/$id/statuses" --jq '.[].state'; done \
+              | grep -c '^success$' || true)"
+            if (( deployed > 0 )); then
+              skip "Release $tag is already deployed to production."
+            fi
+          fi
+
+          echo "Deploying release $tag"
+          echo "deploy=true" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Check out release tag
+        if: ${{ steps.select.outputs.deploy == 'true' }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.select.outputs.tag }}
+
+      - name: Validate release
+        id: release
+        if: ${{ steps.select.outputs.deploy == 'true' }}
+        env:
+          RELEASE_TAG: ${{ steps.select.outputs.tag }}
+        shell: bash
+        run: |
+          if [[ ! "$RELEASE_TAG" =~ ^v([0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?)$ ]]; then
+            echo "Published release tag is not a supported semantic version: $RELEASE_TAG" >&2
+            exit 1
+          fi
+
+          version="${RELEASE_TAG#v}"
+          commit="$(git rev-parse "$RELEASE_TAG^{commit}")"
+
+          # Only code that reached main is deployed: a release tag on another branch would otherwise run
+          # with the production credentials.
+          git fetch --no-tags origin main
+          if ! git merge-base --is-ancestor "$commit" origin/main; then
+            echo "Release $RELEASE_TAG points at $commit, which is not on main. Publish releases from main only." >&2
+            exit 1
+          fi
+          repository="${GITHUB_REPOSITORY,,}"
+
+          echo "commit=$commit" >> "$GITHUB_OUTPUT"
+          echo "repository=$repository" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  # "Publish release images" builds and publishes the images as soon as a release is published, after its tests
+  # pass. This job only checks they are there and moves "latest", which the production server runs, to them.
+  images:
+    name: Point latest at the release images
+    needs: version
+    if: ${{ needs.version.outputs.deploy == 'true' }}
+    runs-on: ubuntu-24.04
+    # A release published just before midnight may still be building when the nightly run starts.
+    timeout-minutes: 50
+    permissions:
+      contents: read
+      packages: write
+    env:
+      COMMIT: ${{ needs.version.outputs.commit }}
+      IMAGE_PREFIX: ghcr.io/${{ needs.version.outputs.repository }}
+      RELEASE_TAG: ${{ needs.version.outputs.tag }}
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - name: Check out release tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.version.outputs.tag }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # yq is preinstalled on the GitHub-hosted Ubuntu runners; the image list is read from the release tag.
+      - name: Wait for the release images
+        shell: bash
+        run: |
+          mapfile -t images < <(yq -r '.docker[].image' .github/CICD-Config.yml)
+          for image in "${images[@]}"; do
+            for attempt in {1..45}; do
+              version_digest="$(docker buildx imagetools inspect "$IMAGE_PREFIX/$image:$VERSION" 2>/dev/null | awk '/^Digest:/ { print $2; exit }' || true)"
+              [[ -n "$version_digest" ]] && break
+              echo "$IMAGE_PREFIX/$image:$VERSION is not published yet (attempt $attempt), retrying in 60 seconds"
+              sleep 60
+            done
+            if [[ -z "$version_digest" ]]; then
+              echo "$IMAGE_PREFIX/$image:$VERSION was not published. Check the Publish release images run for $RELEASE_TAG, or start it under Actions → Publish release images with this tag." >&2
+              exit 1
+            fi
+
+            # The version tag must be the image built from the release commit, not an older build of the same version.
+            commit_digest="$(docker buildx imagetools inspect "$IMAGE_PREFIX/$image:sha-$COMMIT" 2>/dev/null | awk '/^Digest:/ { print $2; exit }' || true)"
+            if [[ "$version_digest" != "$commit_digest" ]]; then
+              echo "$IMAGE_PREFIX/$image:$VERSION ($version_digest) is not the image of commit $COMMIT (${commit_digest:-missing}). Start Actions → Publish release images with $RELEASE_TAG to rebuild it." >&2
+              exit 1
+            fi
+            echo "$IMAGE_PREFIX/$image:$VERSION is published ($version_digest)"
+          done
+
+      # Retagging copies no layers and builds nothing: latest points at the same manifest as the version tag.
+      - name: Point latest at the release images
+        shell: bash
+        run: |
+          mapfile -t images < <(yq -r '.docker[].image' .github/CICD-Config.yml)
+          for image in "${images[@]}"; do
+            docker buildx imagetools create --tag "$IMAGE_PREFIX/$image:latest" "$IMAGE_PREFIX/$image:$VERSION"
+            echo "- \`$image:latest\` → \`$image:$VERSION\`" >> "$GITHUB_STEP_SUMMARY"
+          done
+
+  api:
+    name: Update API server
+    needs:
+      - images
+      - version
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    # Secrets stored on the production environment are only given to its jobs; until then the repository secrets are used.
+    environment: production
+    env:
+      API_URL: ${{ vars.PRODUCTION_API_URL }}
+      EXPECTED_VERSION: ${{ needs.version.outputs.version }}
+      WATCHTOWER_TOKEN: ${{ secrets.WATCHTOWER_TOKEN }}
+    permissions:
+      contents: read
+    steps:
+      - name: Require Watchtower settings
+        shell: bash
+        run: |
+          if [[ -z "$API_URL" || -z "$WATCHTOWER_TOKEN" ]]; then
+            echo "The PRODUCTION_API_URL variable and WATCHTOWER_TOKEN secret must be configured (on the production environment or the repository)." >&2
+            exit 1
+          fi
+
+      # Watchtower pulls the new image and recreates the container before it responds.
+      - name: Trigger Watchtower update
+        shell: bash
+        run: |
+          curl --fail-with-body --silent --show-error --max-time 600 \
+            --request POST \
+            --header "Authorization: Bearer $WATCHTOWER_TOKEN" \
+            "$API_URL/api/watchtower/v1/update"
+
+      # The PWA is deployed only once the API runs the same version, so users see no maintenance screen.
+      - name: Wait for API to run the new version
+        shell: bash
+        run: |
+          version=""
+          for attempt in {1..30}; do
+            version="$(curl --fail --silent --show-error --max-time 10 "$API_URL/api/health" | jq -r '.version // empty' || true)"
+            if [[ "$version" == "$EXPECTED_VERSION" ]]; then
+              echo "API runs version $version"
+              exit 0
+            fi
+            echo "API reports version '${version:-unavailable}', expected '$EXPECTED_VERSION' (attempt $attempt), retrying in 5 seconds"
+            sleep 5
+          done
+          echo "API did not report version $EXPECTED_VERSION after the update." >&2
+          exit 1
+
+  # The Worker is deployed after the API so the new frontend never talks to an old API.
+  cloudflare:
+    name: Deploy ${{ matrix.worker }} Cloudflare Worker
+    needs:
+      - api
+      - version
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: production
+    permissions:
+      contents: read
+    # Every front end runs on its own Worker; add a row per Worker.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - location: Starter.PWA
+            worker: starter-pwa
+    # The Cloudflare credentials go only to the steps that need them, never to the install and build steps.
+    env:
+      VITE_APP_VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - name: Require Cloudflare credentials
+        shell: bash
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [[ -z "$CLOUDFLARE_ACCOUNT_ID" || -z "$CLOUDFLARE_API_TOKEN" ]]; then
+            echo "CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN must be configured as secrets of the production environment or the repository." >&2
+            exit 1
+          fi
+
+      - name: Check out release tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.version.outputs.tag }}
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          package_json_file: ${{ matrix.location }}/package.json
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+          cache-dependency-path: ${{ matrix.location }}/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: ${{ matrix.location }}
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Worker with release version
+        working-directory: ${{ matrix.location }}
+        run: pnpm run build
+
+      - name: Deploy Cloudflare Worker
+        uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4.1.3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: ${{ matrix.location }}
+          command: deploy
+        env:
+          VITE_APP_VERSION: ${{ needs.version.outputs.version }}
+
+      - name: Add deployment summary
+        run: |
+          {
+            echo "## Deployed ${{ matrix.worker }} v${{ needs.version.outputs.version }}"
+            echo
+            echo "The Cloudflare Worker was built from tag ${{ needs.version.outputs.tag }}; the container images were published when the release was published."
+            echo "The API server was updated through Watchtower before the Worker was deployed."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # The nightly run skips releases with a successful production deployment, so each release deploys once.
+  record:
+    name: Record production deployment
+    needs:
+      - cloudflare
+      - version
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      deployments: write
+    steps:
+      - name: Record successful deployment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_TAG: ${{ needs.version.outputs.tag }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: bash
+        run: |
+          deployment_id="$(jq -n --arg ref "$RELEASE_TAG" \
+            '{ref: $ref, environment: "production", auto_merge: false, required_contexts: [], description: "Nightly production deployment"}' \
+            | gh api --method POST "repos/$GITHUB_REPOSITORY/deployments" --input - --jq '.id')"
+
+          jq -n --arg url "$RUN_URL" '{state: "success", log_url: $url}' \
+            | gh api --method POST "repos/$GITHUB_REPOSITORY/deployments/$deployment_id/statuses" --input - > /dev/null
+
+          echo "Recorded deployment $deployment_id of $RELEASE_TAG to production."
