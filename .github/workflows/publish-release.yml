@@ -128,9 +128,11 @@ jobs:
           fi
           repository="${GITHUB_REPOSITORY,,}"
 
-          echo "commit=$commit" >> "$GITHUB_OUTPUT"
-          echo "repository=$repository" >> "$GITHUB_OUTPUT"
-          echo "version=$version" >> "$GITHUB_OUTPUT"
+          {
+            echo "commit=$commit"
+            echo "repository=$repository"
+            echo "version=$version"
+          } >> "$GITHUB_OUTPUT"
 
   # "Publish release images" builds and publishes the images as soon as a release is published, after its tests
   # pass. This job only checks they are there and moves "latest", which the production server runs, to them.

@@ -32,9 +32,11 @@ jobs:
         shell: bash
         run: |
           commit="$(git rev-parse HEAD)"
-          echo "commit=$commit" >> "$GITHUB_OUTPUT"
-          echo "short_commit=${commit::12}" >> "$GITHUB_OUTPUT"
-          echo "repository=${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+          {
+            echo "commit=$commit"
+            echo "short_commit=${commit::12}"
+            echo "repository=${GITHUB_REPOSITORY,,}"
+          } >> "$GITHUB_OUTPUT"
   publish:
     name: Publish ${{ matrix.image }} beta image
     needs: [integration, metadata]
