@@ -29,7 +29,7 @@ internal sealed class TestServices : IDisposable
         Meetings = new MeetingLogic(Context, Club, Time);
         Agenda = new AgendaLogic(Context);
         Results = new ResultLogic(Context, Time);
-        Voters = new VoterLogic(Context, Club, Codes, Outbox, [], Options.Create(new AppOptions { PublicUrl = "https://stem.example.org" }));
+        Voters = new VoterLogic(Context, Club, Codes, Outbox, Options.Create(new AppOptions { PublicUrl = "https://stem.example.org" }));
         Ballot = new BallotLogic(Context, Codes, Limiter, Client, Time);
     }
 

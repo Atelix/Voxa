@@ -8,12 +8,12 @@ sender and statute rules are settings in the app, so the same code runs for ever
 
 1. **Switch it on** a few weeks before the meeting (deploy, or start the server again).
 2. **Settings** (`/bestuur/instellingen`): club name, colours, fonts, logo, mail sender, advance-voting term, the
-   article of the statutes, how minors vote, and where the member list comes from. Import a preset such as
+   article of the statutes, and how minors vote. Import a preset such as
    [`clubs/sittard-condors.json`](../clubs/sittard-condors.json) with **Instellingen importeren**, then save.
 3. **Meeting** (`/bestuur`): create it, or copy last year's (the date moves a year ahead and the year in the name goes
    up). Add the agenda items: proposals (for/against/abstain, absolute or two-thirds majority) and elections
    (candidates and seats; a blank option is added). Per item choose whether advance voting is allowed.
-4. **Voters**: fetch the list from the member administration (Keeva) or upload a CSV. Suspended members drop out;
+4. **Voters**: the member administration sends the list through the [import API](import-api.md), or upload a CSV. Suspended members drop out;
    minors are left out, vote themselves, or get their code through a parent, as the settings say.
 5. **Codes**: send a test mail to yourself, then send the codes. Members without an email address get a printed code
    (**Papieren codes**). Voters who share an address, such as a parent of several youth members, get one mail with a
@@ -64,7 +64,7 @@ Set these as environment variables (in `.env.api` next to `docker-compose-produc
 | `Mail__Mode` | no | `Outbox` (default, trial: nothing leaves the server) or `Mailgun`. |
 | `Mail__Mailgun__Domain`, `Mail__Mailgun__ApiKey` | with Mailgun | Sending domain and API key. `Mail__Mailgun__BaseUrl` defaults to the EU region. |
 | `Mail__RedirectTo` | no | Sends every mail to this address instead, for a dress rehearsal. |
-| `Keeva__ApiKey` | with Keeva | Key with the scopes Members, MembersContacts and MembersPersonalData. |
+| `Import__ApiKey` | for the import API | The club's key for the [member import API](import-api.md), at least 32 characters (`openssl rand -hex 32`). Not set: the import API refuses every request. |
 
 The sender address in the club settings must belong to the Mailgun domain.
 
@@ -89,9 +89,10 @@ pnpm --dir Voxa.PWA dev                    # http://localhost:3000, board at /be
 
 ## Member list
 
-**Keeva**: set the Keeva address in the settings and `Keeva__ApiKey` on the server. Current members are fetched; a
-parent's email comes from the member's linked parent account (the primary contact first). Keeva has no suspension
-field, so remove suspended members by hand after the import.
+**Import API**: a member administration, or an automation such as n8n, sends the club's members to
+`POST /api/import/meetings/{id}/members` with the club's key (`Import__ApiKey`). Each member has a name, email, birth
+date, a suspended flag and parents or guardians with name and email. The contract, examples and an n8n recipe are in
+[import-api.md](import-api.md).
 
 **CSV**: a header row, separated by `;`, `,` or tab, quotes allowed. Columns (Dutch or English names):
 
@@ -103,7 +104,9 @@ field, so remove suspended members by hand after the import.
 | Status | `status` or `geschorst` (`geschorst`, `ja`, `1` mean suspended) |
 | Parent | `naam ouder`, `e-mail ouder` |
 
-The list can be replaced until the first code is sent; after that, add members one by one.
+The list can be replaced until the first code is sent. After that a CSV is refused (add members one by one), and the
+import API only adds members whose name is not on the list yet; nobody is removed. Press **Codes
+versturen** again to mail the new voters.
 
 ## Results
 

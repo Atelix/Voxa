@@ -52,12 +52,11 @@ public sealed record ClubSettingsModel
 
     public required int AdultAge { get; init; }
 
-    public required MemberSourceKind MemberSource { get; init; }
-
-    public required string? KeevaUrl { get; init; }
-
-    /// <summary>Whether the server has a Keeva API key, so the Keeva import can work. The key itself is never sent.</summary>
-    public required bool KeevaKeyConfigured { get; init; }
+    /// <summary>
+    /// Whether the server has a key for the member import API (<c>Import__ApiKey</c>), so a member administration can
+    /// send the member list. The key itself is never sent.
+    /// </summary>
+    public required bool ImportApiConfigured { get; init; }
 
     /// <summary>The fonts the app bundles; the font settings must be one of these.</summary>
     public required IReadOnlyList<string> AvailableFonts { get; init; }
@@ -115,10 +114,4 @@ public sealed class ClubSettingsRequest
 
     [Range(12, 21)]
     public int AdultAge { get; init; } = 18;
-
-    public MemberSourceKind MemberSource { get; init; }
-
-    [StringLength(300)]
-    [Url]
-    public string? KeevaUrl { get; init; }
 }

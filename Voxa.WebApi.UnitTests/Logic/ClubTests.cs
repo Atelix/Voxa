@@ -12,7 +12,7 @@ public sealed class ClubTests
     public async Task SettingsAreSavedAndTheBrandIsPublic()
     {
         using var services = new TestServices(DateTimeOffset.UtcNow);
-        var logic = new ClubLogic(services.Context, services.Club, Options.Create(new KeevaOptions()));
+        var logic = new ClubLogic(services.Context, services.Club, Options.Create(new ImportOptions()));
 
         _ = await logic.UpdateAsync(Request("data:image/png;base64,AAAA"), CancellationToken.None);
         var brand = await logic.BrandAsync(CancellationToken.None);
@@ -26,7 +26,7 @@ public sealed class ClubTests
     public async Task ALogoThatIsTooLargeIsRefused()
     {
         using var services = new TestServices(DateTimeOffset.UtcNow);
-        var logic = new ClubLogic(services.Context, services.Club, Options.Create(new KeevaOptions()));
+        var logic = new ClubLogic(services.Context, services.Club, Options.Create(new ImportOptions()));
         var logo = "data:image/png;base64," + new string('A', 1_000_000);
 
         _ = await Assert.ThrowsAsync<DomainValidationException>(() => logic.UpdateAsync(Request(logo), CancellationToken.None));

@@ -122,11 +122,6 @@ public class AdminVotersController(IVoterLogic voterLogic) : ControllerBase
     public async Task<ActionResult<VoterImportResultModel>> Import(int meetingId, VoterImportRequest request, CancellationToken cancellationToken) =>
         await voterLogic.ImportAsync(meetingId, request, cancellationToken);
 
-    /// <summary>Fetches the member list from the club's member administration (Keeva).</summary>
-    [HttpPost("import/source")]
-    public async Task<ActionResult<VoterImportResultModel>> ImportFromSource(int meetingId, CancellationToken cancellationToken) =>
-        await voterLogic.ImportFromSourceAsync(meetingId, cancellationToken);
-
     [HttpPost]
     public async Task<ActionResult<VoterModel>> Add(int meetingId, VoterRequest request, CancellationToken cancellationToken) =>
         await voterLogic.AddAsync(meetingId, request, cancellationToken);

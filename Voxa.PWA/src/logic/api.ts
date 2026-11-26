@@ -10,6 +10,7 @@
  * ---------------------------------------------------------------
  */
 
+/** Where the voting period is for a meeting. */
 export enum VotingPhase {
   NotYetOpen = "NotYetOpen",
   Advance = "Advance",
@@ -17,6 +18,13 @@ export enum VotingPhase {
   Ended = "Ended",
 }
 
+/** What an import did with the voter list. */
+export enum VoterImportMode {
+  Replaced = "Replaced",
+  Added = "Added",
+}
+
+/** How an item ended. Elections and proposals use different values. */
 export enum ResultOutcome {
   NoVotes = "NoVotes",
   Adopted = "Adopted",
@@ -40,11 +48,6 @@ export enum MinorVoting {
   None = "None",
 }
 
-export enum MemberSourceKind {
-  Csv = "Csv",
-  Keeva = "Keeva",
-}
-
 export enum MeetingStatus {
   Draft = "Draft",
   Ready = "Ready",
@@ -61,6 +64,7 @@ export enum MajorityRule {
   TwoThirds = "TwoThirds",
 }
 
+/** An item from the voter's point of view. */
 export enum BallotItemStatus {
   Pending = "Pending",
   Open = "Open",
@@ -81,6 +85,7 @@ export enum AgendaItemKind {
 
 export interface AdminSessionModel {
   signedIn: boolean;
+  /** Mail goes to the in-memory test mailbox instead of Mailgun; demo data may be loaded. */
   trialMode: boolean;
 }
 
@@ -98,8 +103,12 @@ export interface AgendaItemModel {
   state: AgendaItemState;
   advanceVoting: boolean;
   options: OptionModel[];
-  /** @format int32 */
+  /**
+   * Ballots cast so far, over every channel. Only the count; never what was voted.
+   * @format int32
+   */
   ballots: number;
+  /** The item can no longer be edited: it has votes or has been opened. */
   locked: boolean;
 }
 
@@ -117,12 +126,14 @@ export interface AgendaItemRequest {
   kind?: AgendaItemKind;
   majority?: MajorityRule;
   /**
+   * Election only: the number of seats.
    * @format int32
    * @min 0
    * @max 50
    */
   seats?: number;
   advanceVoting?: boolean;
+  /** Election only: the candidates, in ballot order. */
   candidates?: CandidateRequest[];
 }
 
@@ -144,6 +155,7 @@ export interface BallotItemModel {
   kind: AgendaItemKind;
   /** @format int32 */
   seats: number;
+  /** An item from the voter's point of view. */
   status: BallotItemStatus;
   options: OptionModel[];
 }
@@ -155,6 +167,7 @@ export interface BallotSessionModel {
   location: string | null;
   /** @format date-time */
   advanceOpensAt: string | null;
+  /** Where the voting period is for a meeting. */
   phase: VotingPhase;
   items: BallotItemModel[];
 }
@@ -183,6 +196,7 @@ export interface ChannelCountModel {
   total: number;
 }
 
+/** The club's name, brand and contact address: public, the app themes itself with it. */
 export interface ClubBrandModel {
   clubName: string;
   contactEmail: string | null;
@@ -193,6 +207,7 @@ export interface ClubBrandModel {
   logoDataUrl: string | null;
 }
 
+/** Every club setting, for the board's settings page and to copy a club's setup to a new installation. */
 export interface ClubSettingsModel {
   clubName: string;
   contactEmail: string | null;
@@ -210,13 +225,21 @@ export interface ClubSettingsModel {
   minorVoting: MinorVoting;
   /** @format int32 */
   adultAge: number;
-  memberSource: MemberSourceKind;
-  keevaUrl: string | null;
-  keevaKeyConfigured: boolean;
+  /**
+   * Whether the server has a key for the member import API (`Import__ApiKey`), so a member administration can
+   * send the member list. The key itself is never sent.
+   */
+  importApiConfigured: boolean;
+  /** The fonts the app bundles; the font settings must be one of these. */
   availableFonts: string[];
 }
 
+/**
+ * The envelope for successful responses that carry a message next to the data, such as "Item saved".
+ * Failures never use it: they are problem details written by Voxa.WebApi.DomainExceptionHandler.
+ */
 export interface ClubSettingsModelApiResponse {
+  /** Every club setting, for the board's settings page and to copy a club's setup to a new installation. */
   data: ClubSettingsModel;
   message: string | null;
 }
@@ -254,6 +277,7 @@ export interface ClubSettingsRequest {
    */
   bodyFont: string;
   /**
+   * A data URL of at most about 750 kB.
    * @minLength 0
    * @maxLength 1000000
    */
@@ -293,15 +317,9 @@ export interface ClubSettingsRequest {
    * @max 21
    */
   adultAge?: number;
-  memberSource?: MemberSourceKind;
-  /**
-   * @format uri
-   * @minLength 0
-   * @maxLength 300
-   */
-  keevaUrl?: string | null;
 }
 
+/** Everything worth keeping after the season: per meeting, the totals of every item. */
 export interface ExportModel {
   /** @format date-time */
   exportedAt: string;
@@ -324,7 +342,9 @@ export interface LiveItemModel {
   ballots: ChannelCountModel;
 }
 
+/** The live meeting as the board sees it: turnout only, results only for closed items. */
 export interface LiveModel {
+  /** A meeting in the board's list. */
   meeting: MeetingSummaryModel;
   advanceOpenNow: boolean;
   /** @format int32 */
@@ -333,10 +353,12 @@ export interface LiveModel {
 }
 
 export interface MeetingExportModel {
+  /** A meeting in the board's list. */
   meeting: MeetingSummaryModel;
   results: ResultModel[];
 }
 
+/** A meeting with its agenda, for the board. */
 export interface MeetingModel {
   /** @format int32 */
   id: number;
@@ -355,11 +377,17 @@ export interface MeetingModel {
   voterCount: number;
   /** @format int32 */
   codesIssued: number;
-  /** @format int32 */
+  /**
+   * Codes that voted at least once; known after archiving, or live while the codes exist.
+   * @format int32
+   */
   codesUsed: number;
   /** @format date-time */
   archivedAt: string | null;
-  /** @format date-time */
+  /**
+   * The earliest moment advance voting may open: 30 days before the meeting (statutes art. 20.8).
+   * @format date-time
+   */
   earliestAdvanceOpensAt: string;
   /** @format int32 */
   screenItemId: number | null;
@@ -381,10 +409,14 @@ export interface MeetingRequest {
    */
   location?: string | null;
   advanceVoting?: boolean;
-  /** @format date-time */
+  /**
+   * When advance voting opens; empty means the earliest moment the statutes allow.
+   * @format date-time
+   */
   advanceOpensAt?: string | null;
 }
 
+/** A meeting in the board's list. */
 export interface MeetingSummaryModel {
   /** @format int32 */
   id: number;
@@ -403,7 +435,10 @@ export interface MeetingSummaryModel {
   voterCount: number;
   /** @format int32 */
   codesIssued: number;
-  /** @format int32 */
+  /**
+   * Codes that voted at least once; known after archiving, or live while the codes exist.
+   * @format int32
+   */
   codesUsed: number;
   /** @format date-time */
   archivedAt: string | null;
@@ -434,6 +469,7 @@ export interface OutboxMailModel {
   sentAt: string;
 }
 
+/** Fresh codes for paper slips. They are shown once and stored only as hashes. */
 export interface PaperCodesModel {
   codes: string[];
 }
@@ -460,6 +496,7 @@ export interface PaperOptionCount {
 
 export interface PaperVotesRequest {
   /**
+   * The number of paper ballots for this item.
    * @format int32
    * @min 0
    * @max 100000
@@ -468,6 +505,7 @@ export interface PaperVotesRequest {
   options: PaperOptionCount[];
 }
 
+/** The totals of a closed item. */
 export interface ResultModel {
   /** @format int32 */
   itemId: number;
@@ -482,21 +520,33 @@ export interface ResultModel {
   seats: number;
   ballots: ChannelCountModel;
   options: OptionResultModel[];
-  /** @format int32 */
+  /**
+   * The votes that count: for plus against, or the ballots that are not blank.
+   * @format int32
+   */
   validVotes: number;
-  /** @format int32 */
+  /**
+   * The number of votes needed: more than half, or two thirds, of Voxa.Abstractions.Models.ResultModel.ValidVotes.
+   * @format int32
+   */
   votesNeeded: number;
+  /** How an item ended. Elections and proposals use different values. */
   outcome: ResultOutcome;
 }
 
+/** What the hall screen shows: the open item and its count, or a result the board put on screen. */
 export interface ScreenModel {
   meetingName: string;
   openItem: LiveItemModel;
+  /** The totals of a closed item. */
   result: ResultModel;
 }
 
 export interface ScreenRequest {
-  /** @format int32 */
+  /**
+   * A closed item to show on the hall screen, or empty to show the open item again.
+   * @format int32
+   */
   itemId?: number | null;
 }
 
@@ -505,7 +555,10 @@ export interface SendCodesResultModel {
   sent: number;
   /** @format int32 */
   failed: number;
-  /** @format int32 */
+  /**
+   * Voters without an e-mail address; they need a paper code.
+   * @format int32
+   */
   withoutEmail: number;
 }
 
@@ -534,11 +587,13 @@ export interface VoteRequest {
   code: string;
   /** @format int32 */
   itemId?: number;
+  /** The chosen option, or for an election the chosen candidates or only the blank option. */
   optionIds: number[];
 }
 
 export interface VoterImportRequest {
   /**
+   * The member list as CSV text (comma or semicolon), with a header row. See docs/voxa.md.
    * @minLength 0
    * @maxLength 2000000
    */
@@ -546,12 +601,23 @@ export interface VoterImportRequest {
 }
 
 export interface VoterImportResultModel {
-  /** @format int32 */
+  /** What an import did with the voter list. */
+  mode: VoterImportMode;
+  /**
+   * Voters put on the list: the whole list when replaced, the new voters when added.
+   * @format int32
+   */
   imported: number;
+  /**
+   * When adding: members who were already on the list (by name) and were left as they were.
+   * @format int32
+   */
+  alreadyListed: number;
   /** @format int32 */
   viaGuardian: number;
   /** @format int32 */
   withoutEmail: number;
+  /** Rows that were left out, such as suspended members, with the reason. */
   skipped: string[];
 }
 
@@ -596,7 +662,10 @@ export interface VoterRequest {
 }
 
 export interface WipeRequest {
-  /** @minLength 1 */
+  /**
+   * Must be the word WISSEN, so nobody wipes the data by accident.
+   * @minLength 1
+   */
   confirm: string;
 }
 
@@ -900,6 +969,7 @@ export class Api<
      *
      * @tags AdminData
      * @name AdminDataExportList
+     * @summary The totals of every meeting, to keep before the data is wiped.
      * @request GET:/api/admin/data/export
      */
     adminDataExportList: (params: RequestParams = {}) =>
@@ -915,6 +985,7 @@ export class Api<
      *
      * @tags AdminData
      * @name AdminDataWipeCreate
+     * @summary Deletes every meeting, code, voter and total. The club settings stay.
      * @request POST:/api/admin/data/wipe
      */
     adminDataWipeCreate: (data: WipeRequest, params: RequestParams = {}) =>
@@ -931,6 +1002,7 @@ export class Api<
      *
      * @tags AdminData
      * @name AdminDataDemoCreate
+     * @summary Trial setup only: a demo meeting whose codes go to the test mailbox.
      * @request POST:/api/admin/data/demo
      */
     adminDataDemoCreate: (params: RequestParams = {}) =>
@@ -946,6 +1018,7 @@ export class Api<
      *
      * @tags AdminData
      * @name AdminDataOutboxList
+     * @summary Trial setup only: the mails in the test mailbox, newest first.
      * @request GET:/api/admin/data/outbox
      */
     adminDataOutboxList: (params: RequestParams = {}) =>
@@ -1026,6 +1099,7 @@ export class Api<
      *
      * @tags AdminItems
      * @name AdminItemsResultList
+     * @summary The result of a closed item. 403 while the item is still open or waiting.
      * @request GET:/api/admin/items/{id}/result
      */
     adminItemsResultList: (id: number, params: RequestParams = {}) =>
@@ -1144,6 +1218,7 @@ export class Api<
      *
      * @tags AdminMeetings
      * @name AdminMeetingsCopyCreate
+     * @summary A new draft with the same agenda, a year later.
      * @request POST:/api/admin/meetings/{id}/copy
      */
     adminMeetingsCopyCreate: (id: number, params: RequestParams = {}) =>
@@ -1159,6 +1234,7 @@ export class Api<
      *
      * @tags AdminMeetings
      * @name AdminMeetingsArchiveCreate
+     * @summary Closes every item and deletes the codes and the voter list; only the totals remain.
      * @request POST:/api/admin/meetings/{id}/archive
      */
     adminMeetingsArchiveCreate: (id: number, params: RequestParams = {}) =>
@@ -1216,6 +1292,7 @@ export class Api<
      *
      * @tags AdminMeetings
      * @name AdminMeetingsLiveList
+     * @summary Turnout per item; results only for closed items.
      * @request GET:/api/admin/meetings/{id}/live
      */
     adminMeetingsLiveList: (id: number, params: RequestParams = {}) =>
@@ -1354,24 +1431,6 @@ export class Api<
      * No description
      *
      * @tags AdminVoters
-     * @name AdminMeetingsVotersImportSourceCreate
-     * @request POST:/api/admin/meetings/{meetingId}/voters/import/source
-     */
-    adminMeetingsVotersImportSourceCreate: (
-      meetingId: number,
-      params: RequestParams = {},
-    ) =>
-      this.request<VoterImportResultModel, any>({
-        path: `/api/admin/meetings/${meetingId}/voters/import/source`,
-        method: "POST",
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags AdminVoters
      * @name AdminMeetingsVotersDelete
      * @request DELETE:/api/admin/meetings/{meetingId}/voters/{voterId}
      */
@@ -1409,6 +1468,7 @@ export class Api<
      *
      * @tags AdminVoters
      * @name AdminMeetingsVotersPaperCreate
+     * @summary Codes for paper slips, shown once.
      * @request POST:/api/admin/meetings/{meetingId}/voters/paper
      */
     adminMeetingsVotersPaperCreate: (
@@ -1451,6 +1511,7 @@ export class Api<
      *
      * @tags Ballot
      * @name BallotSessionCreate
+     * @summary The meeting and its items as this code sees them: open, voted, waiting or closed.
      * @request POST:/api/ballot/session
      */
     ballotSessionCreate: (
