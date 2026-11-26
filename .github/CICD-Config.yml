@@ -15,6 +15,10 @@ docker:
     context: .
     file: ./Voxa.WebApi/Dockerfile
 
-# False means that the code analysis will not be performed
-# Otherwise give a list of languages to be analyzed according to GitHub CodeQL documentation
-code-analysis-languages: false
+# The languages CodeQL analyses (.github/workflows/codeql.yml), as named in the GitHub CodeQL documentation.
+# false turns the analysis off; then also remove the code_scanning rule from .github/rulesets/protect-main.json,
+# or pull requests wait for CodeQL results that never come.
+code-analysis-languages:
+  - actions
+  - csharp
+  - javascript-typescript

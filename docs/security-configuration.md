@@ -33,6 +33,9 @@ In development, keep secrets out of the repository with user secrets:
   and is rate limited.
 - **CI**: actions pinned to commit SHAs, least-privilege `GITHUB_TOKEN` permissions, deploy secrets only in their
   GitHub environments, releases only from `main`.
+- **Scanning**: CodeQL on every pull request and weekly, dependency review on pull requests, Dependabot updates for
+  every ecosystem including the server's Compose images, and actionlint on the workflows
+  ([continuous-integration.md](continuous-integration.md)).
 
 ## What a real project adds
 
