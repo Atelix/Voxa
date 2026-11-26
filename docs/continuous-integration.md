@@ -7,6 +7,8 @@ The `Continuous integration` workflow runs on every pull request, in the merge q
 | Job | Runs when |
 | --- | --- |
 | Load settings | Always |
+| Lint workflows | Always |
+| Review dependency changes | Pull requests |
 | Build and test .NET solution | Anything outside `Voxa.PWA/`, `docs/` and root `*.md` files changed |
 | Build .NET solution with analyzers | Same as the .NET build, and runs next to it; the test job builds without analyzers |
 | Run PostgreSQL tests | Same as the .NET build, and runs next to it |
@@ -14,6 +16,15 @@ The `Continuous integration` workflow runs on every pull request, in the merge q
 | Build, type-check and lint frontend | Anything in `Voxa.PWA/` (or `.node-version`) changed |
 | Build Docker `<image>` | A `Dockerfile`, `.dockerignore`, `docker-compose*.yml` or `.github/CICD-Config.yml` changed and the other checks passed |
 | CI result | Always |
+
+**Lint workflows** runs [actionlint](https://github.com/rhysd/actionlint) on `.github/workflows/`: syntax, expressions,
+action inputs, and the `run:` scripts through the runner's shellcheck. Its version and checksum are pinned in
+`continuous-integration.yml`; Dependabot does not update them.
+
+**Review dependency changes** fails a pull request that adds a NuGet, npm, Docker or action dependency, or moves to a
+version, with a known high or critical vulnerability. It compares the pull request with its base through GitHub's
+dependency graph, so vulnerabilities published later for dependencies already on `main` arrive as Dependabot alerts
+instead of failing unrelated pull requests.
 
 The .NET formatting job checks C# formatting with `dotnet format whitespace` and `dotnet format style` against the root `.editorconfig`, for `Voxa.sln` and `Voxa.WebApi.PostgresTests`. EF Core migrations are generated code and are left out. Analyzer warnings (the `CA` rules) are not part of the check; they stay build warnings. When the check fails, fix it locally and commit the result:
 
@@ -36,6 +47,14 @@ Docker builds do not use the GitHub Actions layer cache. Importing and exporting
 
 - **Load settings** also runs `node tools/ai/sync-skills.mjs --check` (the agent skills are in sync, see
   [ai-development.md](ai-development.md)) and the tests of the repository's own tools (`node --test "tools/**/*.test.mjs"`).
+- **CodeQL** (`codeql.yml`) analyses the C#, TypeScript/Vue and workflow code on every ready pull request, on every
+  push to `main` and weekly, with the `security-extended` queries (`.github/codeql/codeql-config.yml`). It builds
+  nothing (`build-mode: none`). The languages are `code-analysis-languages` in `.github/CICD-Config.yml`. Findings are
+  under **Security → Code scanning**; the ruleset's code scanning rule blocks a pull request that adds a high or
+  critical alert. It is not part of `CI result`.
+- **Dependabot** (`.github/dependabot.yml`) raises one grouped pull request per ecosystem per month for minor and patch
+  updates (actions, NuGet, the PWA's npm packages, the Dockerfile's base images and the server's Compose images), and a
+  separate pull request per major update. PostgreSQL major versions are ignored: they need a manual dump and restore.
 - **PWA preview** (`preview.yml`) uploads a preview version of the Worker for pull requests that change the PWA and
   comments its URL. It is not part of `CI result`.
 - **SonarQube** (`sonarqube.yml`) runs weekly once configured; see [sonarqube.md](sonarqube.md).
@@ -53,9 +72,21 @@ Docker builds do not use the GitHub Actions layer cache. Importing and exporting
 
 ## Repository settings
 
-These settings are made in GitHub by a repository administrator. The ruleset is also stored as
-`.github/rulesets/protect-main.json`: import it under **Settings → Rules → Rulesets → New ruleset → Import a ruleset**
-instead of clicking it together (it also requires a code-owner approval, see `.github/CODEOWNERS`).
+These settings are made in GitHub by a repository administrator; a pull request cannot change them. The ruleset is
+stored as `.github/rulesets/protect-main.json`: import it under **Settings → Rules → Rulesets → New ruleset → Import a
+ruleset** instead of clicking it together. Besides the rules below it requires a code-owner approval
+(`.github/CODEOWNERS`) given after the last push, resolved review threads, and no new high or critical CodeQL alerts.
+Because the approval must come after the last push, a pull request whose last commit was pushed by the only code
+owner needs another reviewer or a new push by someone else.
+
+Under **Settings → Advanced Security** (or **Code security**), enable:
+
+- **Dependency graph**, **Dependabot alerts** and **Dependabot security updates**. Review dependency changes needs the
+  dependency graph.
+- **Secret scanning** with **Push protection**, so a pushed token is refused instead of found later.
+- **Private vulnerability reporting**, so security problems can be reported without a public issue.
+- **Code scanning**: leave GitHub's **Default setup** off. `codeql.yml` is an advanced setup, and GitHub refuses the
+  uploads of an advanced setup while default setup is on.
 
 1. **Settings → General → Pull Requests**: enable **Allow auto-merge**.
 2. **Settings → Rules → Rulesets → New branch ruleset**, targeting the default branch (`main`):
