@@ -137,7 +137,7 @@ services:
     watchtower:
         # Pinned by digest, so a changed tag on ghcr.io cannot change what runs with the Docker socket.
         # Update both the version and the digest together (docs/deployment.md).
-        image: ghcr.io/nicholas-fedor/watchtower:1.24.1@sha256:617a7d5523280cb73adac4d7977604afbe66b7ea86211f2ae0cbfa2043041d61
+        image: ghcr.io/nicholas-fedor/watchtower:1.24.2@sha256:2d4f5c528311959333d57ff4630e695aa4df297806d3a5ff213ce4964f22d813
         container_name: watchtower
         restart: always
         logging: *logging
