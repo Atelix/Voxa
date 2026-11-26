@@ -3,6 +3,12 @@
 	html {
 		-webkit-text-size-adjust: 100%;
 	}
+
+	/* The club's fonts (App.vue sets these from the club's settings). */
+	body,
+	.v-application {
+		font-family: var(--voxa-body-font, "Open Sans"), system-ui, sans-serif;
+	}
 }
 
 @layer app {
@@ -10,5 +16,76 @@
 	:focus-visible {
 		outline: 2px solid rgb(var(--v-theme-primary));
 		outline-offset: 2px;
+	}
+
+	/* Headings, buttons and labels in the club's heading font, as in the mockups. */
+	.voxa-heading,
+	.v-btn,
+	.v-tab,
+	.v-chip,
+	.v-toolbar-title {
+		font-family: var(--voxa-heading-font, "Montserrat"), system-ui, sans-serif;
+		letter-spacing: 0.03em;
+	}
+
+	.voxa-heading {
+		margin: 0;
+		font-weight: 600;
+		line-height: 1.1;
+		text-transform: uppercase;
+	}
+
+	.v-btn {
+		text-transform: uppercase;
+	}
+
+	.voxa-eyebrow {
+		font-family: var(--voxa-heading-font, "Montserrat"), system-ui, sans-serif;
+		font-size: 0.875rem;
+		font-weight: 500;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	/* The big code field on the start page. */
+	.voxa-code input {
+		font-family: var(--voxa-heading-font, "Montserrat"), system-ui, sans-serif;
+		font-size: 1.5rem;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+	}
+
+	/* A selectable choice (option, candidate) as a large touch target. */
+	.voxa-choice {
+		display: flex;
+		gap: 14px;
+		align-items: center;
+		width: 100%;
+		min-height: 64px;
+		padding: 12px 16px;
+		border: 2px solid rgba(var(--v-border-color), 0.2);
+		border-radius: 12px;
+		background: rgb(var(--v-theme-surface));
+		cursor: pointer;
+		text-align: left;
+		color: inherit;
+		font: inherit;
+	}
+
+	.voxa-choice[aria-checked="true"],
+	.voxa-choice[aria-pressed="true"] {
+		border-color: rgb(var(--v-theme-primary));
+		background: var(--voxa-tint);
+	}
+
+	.voxa-choice:disabled {
+		cursor: not-allowed;
+		opacity: 0.55;
+	}
+
+	@media print {
+		.voxa-no-print {
+			display: none !important;
+		}
 	}
 }

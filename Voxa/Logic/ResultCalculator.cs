@@ -81,6 +81,7 @@ public static class ResultCalculator
                                      int valid, int needed, ResultOutcome outcome, Func<int, bool> elected) => new()
                                      {
                                          ItemId = item.Id,
+                                         MeetingId = item.MeetingId,
                                          Position = item.Position,
                                          Title = item.Title,
                                          Kind = item.Kind,

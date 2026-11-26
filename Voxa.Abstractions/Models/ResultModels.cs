@@ -49,6 +49,8 @@ public sealed record ResultModel
 {
     public required int ItemId { get; init; }
 
+    public required int MeetingId { get; init; }
+
     public required int Position { get; init; }
 
     public required string Title { get; init; }

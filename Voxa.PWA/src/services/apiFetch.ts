@@ -1,5 +1,6 @@
 import { ApiError, normalizeApiError } from "@/logic/ApiError"
 import { recordApiVersion } from "@/services/appVersion"
+import { deviceId } from "@/services/deviceId"
 
 const TIMEOUT_MS = 20_000
 const MAX_READ_RETRIES = 2
@@ -7,12 +8,15 @@ const RETRYABLE_STATUSES = [502, 503, 504]
 
 /**
  * fetch for the generated client: enforces a timeout, retries idempotent reads on transient failures, records the
- * API version header, and throws every failure as an ApiError. Add authentication headers here when the app gets
- * sign-in.
+ * API version header, and throws every failure as an ApiError. The board's sign-in is a cookie, so requests include
+ * credentials; the device id lets the API limit wrong codes per phone instead of per hall.
  */
 export const apiFetch: typeof fetch = async (input, init = {}) => {
 	const method = (init.method ?? "GET").toUpperCase()
 	const canRetry = method === "GET" || method === "HEAD"
+	const headers = new Headers(init.headers)
+	headers.set("X-Voxa-Device", deviceId())
+	init = { ...init, headers, credentials: "include" }
 
 	for (let attempt = 0; ; attempt++) {
 		let response: Response

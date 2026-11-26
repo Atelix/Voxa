@@ -7,6 +7,7 @@
 import "@mdi/font/css/materialdesignicons.css"
 import "vuetify/styles"
 import "@/styles/main.css"
+import "./fonts"
 
 import { createVuetify } from "vuetify"
 import { createVueI18nAdapter } from "vuetify/locale/adapters/vue-i18n"
@@ -17,21 +18,22 @@ export default createVuetify({
 	// Vuetify's own texts ("Items per page", "Clear") follow the app language.
 	locale: { adapter: createVueI18nAdapter({ i18n, useI18n }) },
 	defaults: {
-		VBtn: { rounded: "sm" },
-		VCard: { rounded: "sm" },
+		VBtn: { rounded: "lg" },
+		VCard: { rounded: "lg" },
 		VTextField: { variant: "outlined", density: "comfortable" },
 		VTextarea: { variant: "outlined", density: "comfortable" },
 		VSelect: { variant: "outlined", density: "comfortable" },
 	},
 	theme: {
-		defaultTheme: "system",
+		defaultTheme: "light",
 		themes: {
+			// The club's colours replace primary and secondary at start-up (App.vue, ClubStore).
 			light: {
 				dark: false,
 				colors: {
-					primary: "#111111",
-					secondary: "#4A4A4A",
-					background: "#FFFFFF",
+					primary: "#1F2A44",
+					secondary: "#4FB3D9",
+					background: "#F4F6FA",
 					surface: "#FFFFFF",
 				},
 				variables: {
@@ -42,10 +44,10 @@ export default createVuetify({
 			dark: {
 				dark: true,
 				colors: {
-					primary: "#F2F2F2",
-					secondary: "#BDBDBD",
-					background: "#111111",
-					surface: "#1C1C1C",
+					primary: "#4FB3D9",
+					secondary: "#4FB3D9",
+					background: "#111318",
+					surface: "#1C1F26",
 				},
 			},
 		},

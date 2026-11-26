@@ -15,8 +15,15 @@
     "generate-api-schema": "pnpm dlx swagger-typescript-api generate -p http://localhost:5143/swagger/v1/swagger.json -o src/logic/ -n api.ts --module-name-index 1"
   },
   "dependencies": {
+    "@fontsource/hind": "5.2.8",
+    "@fontsource/lato": "5.2.7",
+    "@fontsource/montserrat": "5.2.8",
+    "@fontsource/open-sans": "5.2.7",
+    "@fontsource/oswald": "5.2.8",
+    "@fontsource/roboto": "5.2.10",
     "@mdi/font": "7.4.47",
     "pinia": "^4.1.0",
+    "qrcode": "1.5.4",
     "vue": "^3.5.46",
     "vue-i18n": "^11.4.23",
     "vue-router": "^5.5.1",
@@ -27,6 +34,7 @@
     "@cloudflare/vite-plugin": "^1.70.1",
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.6.6",
+    "@types/qrcode": "1.5.6",
     "@vitejs/plugin-vue": "^6.0.11",
     "@vue/eslint-config-typescript": "^14.9.0",
     "@vue/tsconfig": "^0.9.1",

@@ -10,6 +10,9 @@ namespace Voxa.Logic;
 
 public sealed class ClubLogic(VoxaContext context, ClubSettingsStore store, IOptions<KeevaOptions> keeva) : IClubLogic
 {
+    /// <summary>A data URL of a 700 kB image, as base64 adds a third.</summary>
+    private const int MaxLogoLength = 960_000;
+
     private static readonly string[] s_logoTypes = ["data:image/png;base64,", "data:image/jpeg;base64,", "data:image/svg+xml;base64,", "data:image/webp;base64,"];
 
     public async Task<ClubBrandModel> BrandAsync(CancellationToken cancellationToken)
@@ -41,6 +44,11 @@ public sealed class ClubLogic(VoxaContext context, ClubSettingsStore store, IOpt
         if (logo is not null && !s_logoTypes.Any(t => logo.StartsWith(t, StringComparison.Ordinal)))
         {
             throw new DomainValidationException("The logo must be a PNG, JPEG, SVG or WebP image.");
+        }
+
+        if (logo?.Length > MaxLogoLength)
+        {
+            throw new DomainValidationException("The logo is too large; keep it under 700 kB.");
         }
 
         var club = await context.ClubSettings.FirstOrDefaultAsync(cancellationToken);
