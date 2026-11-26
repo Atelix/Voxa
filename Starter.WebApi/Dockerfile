@@ -1,9 +1,9 @@
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:11.0 AS base
 WORKDIR /app
 # The final stage runs as the image's non-root user ($APP_UID) and listens on 8080 (ASPNETCORE_HTTP_PORTS).
 EXPOSE 8080
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:11.0 AS build
 WORKDIR /src
 # Copy every referenced project file first so the restore layer stays cached until dependencies change
 COPY ["Starter.WebApi/Starter.WebApi.csproj", "Starter.WebApi/"]
