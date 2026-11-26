@@ -69,7 +69,7 @@ public sealed class SharedAddressTests : IDisposable
         Assert.Contains(">CCCC-DDDD</p>", mail.Html, StringComparison.Ordinal);
     }
 
-    private async Task<int> ReadyMeetingAsync()
+    private async Task<Guid> ReadyMeetingAsync()
     {
         var meeting = await _services.Meetings.CreateAsync(new MeetingRequest
         {

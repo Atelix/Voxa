@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -19,6 +18,7 @@ namespace Voxa.Migrations
                     Id = table.Column<int>(type: "integer", nullable: false),
                     ClubName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     ContactEmail = table.Column<string>(type: "character varying(320)", maxLength: 320, nullable: true),
+                    Language = table.Column<string>(type: "character varying(8)", maxLength: 8, nullable: false),
                     PrimaryColor = table.Column<string>(type: "character varying(9)", maxLength: 9, nullable: false),
                     SecondaryColor = table.Column<string>(type: "character varying(9)", maxLength: 9, nullable: false),
                     HeadingFont = table.Column<string>(type: "character varying(60)", maxLength: 60, nullable: false),
@@ -30,9 +30,7 @@ namespace Voxa.Migrations
                     AdvanceVotingMaxDays = table.Column<int>(type: "integer", nullable: false),
                     AdvanceVotingArticle = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     MinorVoting = table.Column<int>(type: "integer", nullable: false),
-                    AdultAge = table.Column<int>(type: "integer", nullable: false),
-                    MemberSource = table.Column<int>(type: "integer", nullable: false),
-                    KeevaUrl = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true)
+                    AdultAge = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -43,18 +41,18 @@ namespace Voxa.Migrations
                 name: "Meetings",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Kind = table.Column<int>(type: "integer", nullable: false),
                     StartsAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Location = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
+                    Language = table.Column<string>(type: "character varying(8)", maxLength: 8, nullable: true),
                     AdvanceVoting = table.Column<bool>(type: "boolean", nullable: false),
                     AdvanceOpensAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     Status = table.Column<int>(type: "integer", nullable: false),
                     CodesIssued = table.Column<int>(type: "integer", nullable: false),
                     CodesUsedAtArchive = table.Column<int>(type: "integer", nullable: true),
-                    ScreenItemId = table.Column<int>(type: "integer", nullable: true),
+                    ScreenItemId = table.Column<Guid>(type: "uuid", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ArchivedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
@@ -67,9 +65,8 @@ namespace Voxa.Migrations
                 name: "AgendaItems",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    MeetingId = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    MeetingId = table.Column<Guid>(type: "uuid", nullable: false),
                     Position = table.Column<int>(type: "integer", nullable: false),
                     Title = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: false),
                     Description = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: true),
@@ -94,9 +91,8 @@ namespace Voxa.Migrations
                 name: "Voters",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    MeetingId = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    MeetingId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Email = table.Column<string>(type: "character varying(320)", maxLength: 320, nullable: true),
                     GuardianName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
@@ -118,7 +114,7 @@ namespace Voxa.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    MeetingId = table.Column<int>(type: "integer", nullable: false),
+                    MeetingId = table.Column<Guid>(type: "uuid", nullable: false),
                     Hash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false)
                 },
                 constraints: table =>
@@ -136,7 +132,7 @@ namespace Voxa.Migrations
                 name: "BallotTallies",
                 columns: table => new
                 {
-                    AgendaItemId = table.Column<int>(type: "integer", nullable: false),
+                    AgendaItemId = table.Column<Guid>(type: "uuid", nullable: false),
                     Channel = table.Column<int>(type: "integer", nullable: false),
                     Count = table.Column<int>(type: "integer", nullable: false),
                     Version = table.Column<Guid>(type: "uuid", nullable: false)
@@ -156,9 +152,8 @@ namespace Voxa.Migrations
                 name: "ItemOptions",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    AgendaItemId = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    AgendaItemId = table.Column<Guid>(type: "uuid", nullable: false),
                     Position = table.Column<int>(type: "integer", nullable: false),
                     Label = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
                     Note = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
@@ -180,7 +175,7 @@ namespace Voxa.Migrations
                 columns: table => new
                 {
                     VotingCodeId = table.Column<Guid>(type: "uuid", nullable: false),
-                    AgendaItemId = table.Column<int>(type: "integer", nullable: false)
+                    AgendaItemId = table.Column<Guid>(type: "uuid", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -203,7 +198,7 @@ namespace Voxa.Migrations
                 name: "OptionTallies",
                 columns: table => new
                 {
-                    ItemOptionId = table.Column<int>(type: "integer", nullable: false),
+                    ItemOptionId = table.Column<Guid>(type: "uuid", nullable: false),
                     Channel = table.Column<int>(type: "integer", nullable: false),
                     Count = table.Column<int>(type: "integer", nullable: false),
                     Version = table.Column<Guid>(type: "uuid", nullable: false)

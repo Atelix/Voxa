@@ -35,7 +35,7 @@ public class ImportController(IVoterLogic voterLogic) : ControllerBase
     /// <response code="404">The meeting does not exist.</response>
     /// <response code="409">The meeting is archived.</response>
     /// <response code="429">Too many wrong keys from this address; try again after Retry-After seconds.</response>
-    [HttpPost("meetings/{meetingId:int}/members")]
+    [HttpPost("meetings/{meetingId:guid}/members")]
     [RequestSizeLimit(8_000_000)]
     [Consumes("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -44,6 +44,6 @@ public class ImportController(IVoterLogic voterLogic) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     [ProducesResponseType(StatusCodes.Status429TooManyRequests)]
-    public async Task<ActionResult<VoterImportResultModel>> Members(int meetingId, MemberImportRequest request, CancellationToken cancellationToken) =>
+    public async Task<ActionResult<VoterImportResultModel>> Members(Guid meetingId, MemberImportRequest request, CancellationToken cancellationToken) =>
         await voterLogic.ImportMembersAsync(meetingId, request, cancellationToken);
 }

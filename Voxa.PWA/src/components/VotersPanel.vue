@@ -271,7 +271,7 @@ async function addVoter(): Promise<void> {
 	}
 }
 
-async function removeVoter(id: number): Promise<void> {
+async function removeVoter(id: string): Promise<void> {
 	if (await act("remove", () => api.admin.adminMeetingsVotersDelete(id, String(props.meeting.id)))) await loader.load()
 }
 

@@ -134,7 +134,7 @@ public sealed class BallotLogic(VoxaContext context, ICodeService codes, IAttemp
         return meeting.AdvanceVoting && meeting.AdvanceOpensAt <= now ? VotingPhase.Advance : VotingPhase.NotYetOpen;
     }
 
-    private async Task WriteVoteAsync(Guid codeId, int itemId, IReadOnlyList<int> chosen, VoteChannel channel, CancellationToken cancellationToken)
+    private async Task WriteVoteAsync(Guid codeId, Guid itemId, IReadOnlyList<Guid> chosen, VoteChannel channel, CancellationToken cancellationToken)
     {
         _ = context.CodeUses.Add(new CodeUse { VotingCodeId = codeId, AgendaItemId = itemId });
 
@@ -169,7 +169,7 @@ public sealed class BallotLogic(VoxaContext context, ICodeService codes, IAttemp
 
     /// <summary>The chosen option ids, checked against the item: one choice for a proposal; for an election up to the
     /// number of seats of different candidates, or only the blank option.</summary>
-    private static List<int> ValidChoice(AgendaItem item, IReadOnlyList<int> optionIds)
+    private static List<Guid> ValidChoice(AgendaItem item, IReadOnlyList<Guid> optionIds)
     {
         var ids = optionIds.Distinct().ToList();
         var options = item.Options.Where(o => ids.Contains(o.Id)).ToList();

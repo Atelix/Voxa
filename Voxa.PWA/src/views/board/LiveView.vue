@@ -121,7 +121,7 @@ const props = defineProps<{ id: string }>()
 const api = useApi()
 const { t } = useI18n()
 const live = ref<LiveModel | null>(null)
-const busy = ref<number | null>(null)
+const busy = ref<string | null>(null)
 const snackbar = ref(false)
 const snackbarText = ref("")
 const origin = window.location.origin
@@ -131,7 +131,7 @@ const archived = computed(() => live.value?.meeting.status === MeetingStatus.Arc
 
 async function load(): Promise<void> {
 	try {
-		live.value = (await api.admin.adminMeetingsLiveList(Number(props.id))).data
+		live.value = (await api.admin.adminMeetingsLiveList(props.id)).data
 	} catch (error) {
 		snackbarText.value = t(normalizeApiError(error).messageKey)
 		snackbar.value = true
@@ -172,7 +172,7 @@ function stateLabel(item: LiveItemModel): string {
 	return t(`board.live.state.${item.state}`)
 }
 
-async function toggle(itemId: number, open: boolean): Promise<void> {
+async function toggle(itemId: string, open: boolean): Promise<void> {
 	busy.value = itemId
 	try {
 		if (open) await api.admin.adminItemsOpenCreate(itemId)

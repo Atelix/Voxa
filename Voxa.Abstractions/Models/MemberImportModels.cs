@@ -56,7 +56,7 @@ public sealed class GuardianImportItem
 /// <summary>A meeting the import API can send the member list to: every meeting that is not archived.</summary>
 public sealed record ImportMeetingModel
 {
-    public required int Id { get; init; }
+    public required Guid Id { get; init; }
 
     public required string Name { get; init; }
 

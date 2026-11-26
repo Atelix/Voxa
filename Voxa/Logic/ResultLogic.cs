@@ -13,7 +13,7 @@ namespace Voxa.Logic;
 /// </summary>
 public sealed class ResultLogic(VoxaContext context, TimeProvider time) : IResultLogic
 {
-    public async Task<LiveModel> LiveAsync(int meetingId, CancellationToken cancellationToken)
+    public async Task<LiveModel> LiveAsync(Guid meetingId, CancellationToken cancellationToken)
     {
         var meeting = await context.Meetings.AsNoTracking()
                                    .Include(static m => m.Items).ThenInclude(static i => i.Ballots)
@@ -32,14 +32,14 @@ public sealed class ResultLogic(VoxaContext context, TimeProvider time) : IResul
         };
     }
 
-    public async Task<ResultModel> ResultAsync(int itemId, CancellationToken cancellationToken)
+    public async Task<ResultModel> ResultAsync(Guid itemId, CancellationToken cancellationToken)
     {
         var item = await LoadAsync(itemId, cancellationToken);
         EnsureClosed(item);
         return ResultCalculator.Calculate(item);
     }
 
-    public async Task<ResultModel> SetPaperVotesAsync(int itemId, PaperVotesRequest request, CancellationToken cancellationToken)
+    public async Task<ResultModel> SetPaperVotesAsync(Guid itemId, PaperVotesRequest request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
         var item = await LoadAsync(itemId, cancellationToken, tracking: true);
@@ -89,7 +89,7 @@ public sealed class ResultLogic(VoxaContext context, TimeProvider time) : IResul
         return ResultCalculator.Calculate(item);
     }
 
-    public async Task SetScreenAsync(int meetingId, ScreenRequest request, CancellationToken cancellationToken)
+    public async Task SetScreenAsync(Guid meetingId, ScreenRequest request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
         var meeting = await context.Meetings.Include(static m => m.Items).FirstOrDefaultAsync(m => m.Id == meetingId, cancellationToken)
@@ -103,7 +103,7 @@ public sealed class ResultLogic(VoxaContext context, TimeProvider time) : IResul
         _ = await context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<ScreenModel> ScreenAsync(int meetingId, CancellationToken cancellationToken)
+    public async Task<ScreenModel> ScreenAsync(Guid meetingId, CancellationToken cancellationToken)
     {
         var meeting = await context.Meetings.AsNoTracking()
                                    .Include(static m => m.Items).ThenInclude(static i => i.Ballots)
@@ -121,7 +121,7 @@ public sealed class ResultLogic(VoxaContext context, TimeProvider time) : IResul
         };
     }
 
-    private static void SetTally(ICollection<BallotTally> tallies, int itemId, int count)
+    private static void SetTally(ICollection<BallotTally> tallies, Guid itemId, int count)
     {
         var tally = tallies.FirstOrDefault(static t => t.Channel == VoteChannel.Paper);
         if (tally is null)
@@ -143,7 +143,7 @@ public sealed class ResultLogic(VoxaContext context, TimeProvider time) : IResul
         }
     }
 
-    private async Task<AgendaItem> LoadAsync(int itemId, CancellationToken cancellationToken, bool tracking = false)
+    private async Task<AgendaItem> LoadAsync(Guid itemId, CancellationToken cancellationToken, bool tracking = false)
     {
         var query = context.AgendaItems.Include(static i => i.Meeting)
                            .Include(static i => i.Ballots)

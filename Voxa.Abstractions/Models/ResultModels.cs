@@ -33,7 +33,7 @@ public sealed record ChannelCountModel
 
 public sealed record OptionResultModel
 {
-    public required int OptionId { get; init; }
+    public required Guid OptionId { get; init; }
 
     public required string Label { get; init; }
 
@@ -47,9 +47,9 @@ public sealed record OptionResultModel
 /// <summary>The totals of a closed item.</summary>
 public sealed record ResultModel
 {
-    public required int ItemId { get; init; }
+    public required Guid ItemId { get; init; }
 
-    public required int MeetingId { get; init; }
+    public required Guid MeetingId { get; init; }
 
     public required int Position { get; init; }
 
@@ -76,7 +76,7 @@ public sealed record ResultModel
 
 public sealed record LiveItemModel
 {
-    public required int Id { get; init; }
+    public required Guid Id { get; init; }
 
     public required int Position { get; init; }
 
@@ -98,7 +98,7 @@ public sealed record LiveModel
 
     public required bool AdvanceOpenNow { get; init; }
 
-    public required int? ScreenItemId { get; init; }
+    public required Guid? ScreenItemId { get; init; }
 
     public required IReadOnlyList<LiveItemModel> Items { get; init; }
 }
@@ -115,7 +115,7 @@ public sealed class PaperVotesRequest
 
 public sealed class PaperOptionCount
 {
-    public int OptionId { get; init; }
+    public Guid OptionId { get; init; }
 
     [Range(0, 100000)]
     public int Count { get; init; }
@@ -124,7 +124,7 @@ public sealed class PaperOptionCount
 public sealed class ScreenRequest
 {
     /// <summary>A closed item to show on the hall screen, or empty to show the open item again.</summary>
-    public int? ItemId { get; init; }
+    public Guid? ItemId { get; init; }
 }
 
 /// <summary>What the hall screen shows: the open item and its count, or a result the board put on screen.</summary>

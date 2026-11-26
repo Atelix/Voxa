@@ -32,7 +32,7 @@ The meetings that can receive a member list: every meeting that is not archived,
 ```json
 [
   {
-    "id": 3,
+    "id": "0b7e6f2a-4c1d-4e8b-9a3f-2d5c8e1f4a6b",
     "name": "ALV 2027",
     "startsAt": "2027-02-02T17:45:00Z",
     "status": "Draft",
@@ -45,6 +45,8 @@ The meetings that can receive a member list: every meeting that is not archived,
 `importMode` says what a push does now: `Replaced` until the first code is sent, `Added` after that.
 
 ### `POST /api/import/meetings/{meetingId}/members`
+
+`meetingId` is the meeting's `id` from the list above, a GUID.
 
 Sends the members. `name` is required; everything else is optional.
 
@@ -59,7 +61,7 @@ Sends the members. `name` is required; everything else is optional.
 At most 10,000 members per request.
 
 ```bash
-curl -X POST "https://stem.example.org/api/import/meetings/3/members" \
+curl -X POST "https://stem.example.org/api/import/meetings/0b7e6f2a-4c1d-4e8b-9a3f-2d5c8e1f4a6b/members" \
   -H "Authorization: Bearer $VOXA_IMPORT_KEY" \
   -H "Content-Type: application/json" \
   -d '{

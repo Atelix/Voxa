@@ -8,7 +8,7 @@ public class VotingCode
 {
     public Guid Id { get; set; }
 
-    public int MeetingId { get; set; }
+    public Guid MeetingId { get; set; }
 
     public Meeting Meeting { get; set; } = null!;
 
@@ -24,5 +24,5 @@ public class CodeUse
 
     public VotingCode VotingCode { get; set; } = null!;
 
-    public int AgendaItemId { get; set; }
+    public Guid AgendaItemId { get; set; }
 }

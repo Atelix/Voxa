@@ -6,6 +6,9 @@ type LazyView = () => Promise<{ default: RouteComponent }>
 
 const view = (load: LazyView): LazyView => load
 
+/** Ids in paths are GUIDs (paths match case-insensitively); anything else falls through to the not-found page. */
+const guid = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+
 const router = createRouter({
 	history: createWebHistory(import.meta.env.BASE_URL),
 	scrollBehavior: () => ({ top: 0 }),
@@ -17,7 +20,7 @@ const router = createRouter({
 				{ path: "", name: "start", component: view(() => import("@/views/voter/StartView.vue")) },
 				{ path: "items", name: "items", component: view(() => import("@/views/voter/ItemsView.vue")) },
 				{
-					path: "item/:id(\\d+)",
+					path: `item/:id(${guid})`,
 					name: "vote",
 					component: view(() => import("@/views/voter/VoteView.vue")),
 					props: true,
@@ -26,7 +29,7 @@ const router = createRouter({
 			],
 		},
 		{
-			path: "/hall/:meetingId(\\d+)",
+			path: `/hall/:meetingId(${guid})`,
 			name: "hall",
 			component: view(() => import("@/views/HallView.vue")),
 			props: true,
@@ -43,19 +46,19 @@ const router = createRouter({
 			children: [
 				{ path: "", name: "meetings", component: view(() => import("@/views/board/MeetingsView.vue")) },
 				{
-					path: "meeting/:id(\\d+)",
+					path: `meeting/:id(${guid})`,
 					name: "meeting",
 					component: view(() => import("@/views/board/MeetingView.vue")),
 					props: true,
 				},
 				{
-					path: "meeting/:id(\\d+)/live",
+					path: `meeting/:id(${guid})/live`,
 					name: "live",
 					component: view(() => import("@/views/board/LiveView.vue")),
 					props: true,
 				},
 				{
-					path: "item/:id(\\d+)/result",
+					path: `item/:id(${guid})/result`,
 					name: "result",
 					component: view(() => import("@/views/board/ResultView.vue")),
 					props: true,

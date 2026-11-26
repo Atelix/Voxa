@@ -62,7 +62,7 @@ public sealed class ImportApiTests(TestApi api) : IClassFixture<TestApi>
         using var board = api.CreateClient();
         using var signIn = await board.PostAsJsonAsync(new Uri("/api/admin/session", UriKind.Relative), new SignInRequest { Password = TestApi.Password });
         using var created = await board.PostAsJsonAsync(new Uri("/api/admin/meetings", UriKind.Relative), new MeetingRequest { Name = "ALV import", StartsAt = DateTime.UtcNow.AddDays(20) });
-        var meetingId = (await created.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetInt32();
+        var meetingId = (await created.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("id").GetGuid();
         using var import = ImportClient();
 
         var targets = await import.GetFromJsonAsync<JsonElement>(s_meetings);
@@ -76,9 +76,9 @@ public sealed class ImportApiTests(TestApi api) : IClassFixture<TestApi>
             """, System.Text.Encoding.UTF8, "application/json");
         using var response = await import.PostAsync(new Uri($"/api/import/meetings/{meetingId}/members", UriKind.Relative), body);
         using var invalid = await import.PostAsJsonAsync(new Uri($"/api/import/meetings/{meetingId}/members", UriKind.Relative), new { members = Array.Empty<object>() });
-        using var missing = await import.PostAsJsonAsync(new Uri("/api/import/meetings/999999/members", UriKind.Relative), new { members = new[] { new { name = "Anna" } } });
+        using var missing = await import.PostAsJsonAsync(new Uri($"/api/import/meetings/{Guid.NewGuid()}/members", UriKind.Relative), new { members = new[] { new { name = "Anna" } } });
 
-        Assert.Contains(targets.EnumerateArray(), t => t.GetProperty("id").GetInt32() == meetingId && t.GetProperty("importMode").GetString() == "Replaced");
+        Assert.Contains(targets.EnumerateArray(), t => t.GetProperty("id").GetGuid() == meetingId && t.GetProperty("importMode").GetString() == "Replaced");
         response.EnsureSuccessStatusCode();
         using var result = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
         Assert.Equal("Replaced", result.RootElement.GetProperty("mode").GetString());

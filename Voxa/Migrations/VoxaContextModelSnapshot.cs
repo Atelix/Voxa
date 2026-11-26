@@ -24,11 +24,9 @@ namespace Voxa.Migrations
 
             modelBuilder.Entity("Voxa.Persistence.Entity.AgendaItem", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("AdvanceVoting")
                         .HasColumnType("boolean");
@@ -43,8 +41,8 @@ namespace Voxa.Migrations
                     b.Property<int>("Majority")
                         .HasColumnType("integer");
 
-                    b.Property<int>("MeetingId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("MeetingId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Position")
                         .HasColumnType("integer");
@@ -69,8 +67,8 @@ namespace Voxa.Migrations
 
             modelBuilder.Entity("Voxa.Persistence.Entity.BallotTally", b =>
                 {
-                    b.Property<int>("AgendaItemId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("AgendaItemId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Channel")
                         .HasColumnType("integer");
@@ -165,8 +163,8 @@ namespace Voxa.Migrations
                     b.Property<Guid>("VotingCodeId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("AgendaItemId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("AgendaItemId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("VotingCodeId", "AgendaItemId");
 
@@ -177,14 +175,12 @@ namespace Voxa.Migrations
 
             modelBuilder.Entity("Voxa.Persistence.Entity.ItemOption", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("uuid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AgendaItemId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("AgendaItemId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Label")
                         .IsRequired()
@@ -210,11 +206,9 @@ namespace Voxa.Migrations
 
             modelBuilder.Entity("Voxa.Persistence.Entity.Meeting", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime?>("AdvanceOpensAt")
                         .HasColumnType("timestamp with time zone");
@@ -250,8 +244,8 @@ namespace Voxa.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<int?>("ScreenItemId")
-                        .HasColumnType("integer");
+                    b.Property<Guid?>("ScreenItemId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("StartsAt")
                         .HasColumnType("timestamp with time zone");
@@ -266,8 +260,8 @@ namespace Voxa.Migrations
 
             modelBuilder.Entity("Voxa.Persistence.Entity.OptionTally", b =>
                 {
-                    b.Property<int>("ItemOptionId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("ItemOptionId")
+                        .HasColumnType("uuid");
 
                     b.Property<int>("Channel")
                         .HasColumnType("integer");
@@ -286,11 +280,9 @@ namespace Voxa.Migrations
 
             modelBuilder.Entity("Voxa.Persistence.Entity.Voter", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("CodeSent")
                         .HasColumnType("boolean");
@@ -303,8 +295,8 @@ namespace Voxa.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
 
-                    b.Property<int>("MeetingId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("MeetingId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -329,8 +321,8 @@ namespace Voxa.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("character varying(64)");
 
-                    b.Property<int>("MeetingId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("MeetingId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
