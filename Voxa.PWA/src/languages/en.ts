@@ -23,6 +23,7 @@ export default {
 		title: "Digital voting",
 		home: "Back to the start",
 		codeShown: "Code {code}",
+		codesShown: "{n} codes",
 		signOut: "Sign out",
 	},
 	start: {
@@ -38,6 +39,18 @@ export default {
 		unknownCode: "We don't know this code. Check the characters and try again.",
 		blocked: "Too many wrong codes. Wait ten minutes and try again.",
 	},
+	codes: {
+		title: "Your code | Your codes ({n})",
+		one: "Do you vote for several members, for example as a parent of youth members? Add their codes here and vote for everyone at once.",
+		several:
+			"Each code is the vote of one member. You vote for all codes at once, or untick a code to vote differently for that member.",
+		addAnother: "Add a code",
+		addLabel: "Another voting code",
+		add: "Add",
+		cancel: "Cancel",
+		alreadyAdded: "This code is already on this device.",
+		otherMeeting: "This code is for another meeting.",
+	},
 	items: {
 		title: "Agenda items",
 		live: "Live",
@@ -48,6 +61,7 @@ export default {
 		meetingStarts: "The meeting starts {date}.",
 		ended: "All items are closed. Thank you for voting.",
 		refreshes: "This page refreshes by itself when the board opens or closes an item.",
+		openCodes: "Open, {open} of {total} codes can still vote",
 		status: {
 			Pending: "Not open yet",
 			Open: "Open, vote now",
@@ -61,6 +75,14 @@ export default {
 		receivedTitle: "Your vote was received",
 		receivedSecret: "Your vote was counted without your name or code. Nobody can see what you chose.",
 		receivedResult: "The result is shown once the board closes this item.",
+		receivedFor: "Counted once for each of the {n} codes.",
+		voteOthers: "Vote for the other code | Vote for the other codes ({n})",
+		countsFor: "Counts for",
+		codeCount: "{n} code | {n} codes",
+		forWhich: "For which codes?",
+		forWhichHelp:
+			"Each code is the vote of one member. Untick a code to vote differently for that member; check your mail to see which code is whose.",
+		alreadyTextSeveral: "All codes on this device have already voted on “{title}”. A vote cannot be changed.",
 		backToItems: "Back to the items",
 		alreadyTitle: "You have already voted",
 		alreadyText: "This code has already voted on “{title}”. A vote cannot be changed.",

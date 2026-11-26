@@ -52,7 +52,7 @@
 import { computed, onMounted, ref } from "vue"
 import { useI18n } from "vue-i18n"
 import { useRouter } from "vue-router"
-import { codeFromHash, formatCode, isCompleteCode } from "@/services/votingCode"
+import { codesFromHash, formatCode, isCompleteCode } from "@/services/votingCode"
 import { useClubStore } from "@/store/ClubStore"
 import { useVoterStore } from "@/store/VoterStore"
 
@@ -78,17 +78,18 @@ function onInput(value: string): void {
 
 async function submit(): Promise<void> {
 	if (!complete.value) return
-	if (await voter.signIn(code.value)) await router.push({ name: "items" })
+	if (await voter.signIn([code.value])) await router.push({ name: "items" })
 }
 
 onMounted(async () => {
-	// A link from the mail carries the code after the #, which never reaches a server.
-	const fromLink = codeFromHash(window.location.hash)
-	if (fromLink) {
+	// A link from the mail carries the codes after the #, which never reaches a server. A parent of several members
+	// gets one link with a code for each of them.
+	const fromLink = codesFromHash(window.location.hash)
+	if (fromLink.length) {
 		history.replaceState(null, "", window.location.pathname)
-		code.value = fromLink
-		await submit()
-	} else if (voter.code) {
+		code.value = fromLink[0] ?? ""
+		if (await voter.signIn(fromLink)) await router.push({ name: "items" })
+	} else if (voter.signedIn) {
 		await router.replace({ name: "items" })
 	}
 })

@@ -52,6 +52,7 @@ public sealed class TrialLogic(IMeetingLogic meetings, IAgendaLogic agenda, IVot
             "Test Lid 4;lid4@example.org;1988-06-15;;;",
             "Test Lid 5;lid5@example.org;2001-11-03;;;",
             $"Test Jeugdlid;;{today.Year - 12}-05-05;Test Ouder;ouder@example.org;",
+            $"Test Jeugdlid 2;;{today.Year - 9}-08-08;Test Ouder;ouder@example.org;",
             "Test Lid zonder e-mail;;1970-02-02;;;",
             "Test Geschorst Lid;geschorst@example.org;1985-03-03;;;geschorst");
         _ = await voters.ImportAsync(meeting.Id, new VoterImportRequest { Csv = csv }, cancellationToken);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { codeFromHash, formatCode, isCompleteCode, maskCode } from "@/services/votingCode"
+import { codesFromHash, formatCode, isCompleteCode, maskCode } from "@/services/votingCode"
 
 describe("voting codes", () => {
 	it("formats what people type", () => {
@@ -22,7 +22,11 @@ describe("voting codes", () => {
 	})
 
 	it("reads the code from a mail link", () => {
-		expect(codeFromHash("#code=K7Q2M9XD")).toBe("K7Q2-M9XD")
-		expect(codeFromHash("#other")).toBeNull()
+		expect(codesFromHash("#code=K7Q2M9XD")).toEqual(["K7Q2-M9XD"])
+		expect(codesFromHash("#other")).toEqual([])
+	})
+
+	it("reads every code from a link for several members", () => {
+		expect(codesFromHash("#code=K7Q2M9XD,ABCD2345,K7Q2M9XD,XYZ")).toEqual(["K7Q2-M9XD", "ABCD-2345"])
 	})
 })

@@ -12,11 +12,11 @@
 					{{ voter.session?.meetingName ?? $t("voter.title") }}
 				</span>
 				<span class="text-body-small text-medium-emphasis text-truncate">
-					{{ voter.code ? $t("voter.codeShown", { code: maskCode(voter.code) }) : club.brand.clubName }}
+					{{ codeLine }}
 				</span>
 			</div>
 			<v-spacer />
-			<v-btn v-if="voter.code" variant="text" size="small" @click="signOut">{{ $t("voter.signOut") }}</v-btn>
+			<v-btn v-if="voter.signedIn" variant="text" size="small" @click="signOut">{{ $t("voter.signOut") }}</v-btn>
 		</div>
 	</v-app-bar>
 	<v-main>
@@ -27,6 +27,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue"
+import { useI18n } from "vue-i18n"
 import { useRouter } from "vue-router"
 import ClubLogo from "@/components/ClubLogo.vue"
 import { maskCode } from "@/services/votingCode"
@@ -36,6 +38,14 @@ import { useVoterStore } from "@/store/VoterStore"
 const club = useClubStore()
 const voter = useVoterStore()
 const router = useRouter()
+const { t } = useI18n()
+
+const codeLine = computed(() => {
+	const [first] = voter.codes
+	if (!first) return club.brand.clubName
+	if (voter.codes.length > 1) return t("voter.codesShown", { n: voter.codes.length })
+	return t("voter.codeShown", { code: maskCode(first) })
+})
 
 function signOut(): void {
 	voter.signOut()

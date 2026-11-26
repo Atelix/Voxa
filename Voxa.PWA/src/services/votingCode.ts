@@ -20,8 +20,12 @@ export function maskCode(code: string): string {
 	return formatted.length === 9 ? `••••-${formatted.slice(5)}` : formatted
 }
 
-/** The code from a mail link (#code=K7Q2M9XD). The fragment never reaches a server, so the code is not logged. */
-export function codeFromHash(hash: string): string | null {
-	const match = /code=([A-Za-z0-9-]+)/.exec(hash)
-	return match?.[1] ? formatCode(match[1]) : null
+/**
+ * The codes from a mail link: #code=K7Q2M9XD, or several separated by commas when one address serves several members
+ * (#code=K7Q2M9XD,ABCD2345). The fragment never reaches a server, so the codes are not logged.
+ */
+export function codesFromHash(hash: string): string[] {
+	const match = /code=([A-Za-z0-9,-]+)/.exec(hash)
+	const codes = (match?.[1] ?? "").split(",").map(formatCode).filter(isCompleteCode)
+	return [...new Set(codes)]
 }
