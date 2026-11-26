@@ -1,6 +1,9 @@
+using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Voxa;
+using Voxa.Services;
 using Voxa.WebApi;
 
 #pragma warning disable CA1812
@@ -10,16 +13,44 @@ var builder = WebApplication.CreateBuilder(args);
 if (!builder.Environment.IsDevelopment())
 {
     // Fail at start-up instead of on the first request. Add every secret the API cannot run without.
-    string[] requiredSecrets = ["ConnectionString"];
+    string[] requiredSecrets = ["ConnectionString", "Admin:Password", "Codes:Pepper"];
     var missingSecrets = requiredSecrets.Where(key => string.IsNullOrWhiteSpace(builder.Configuration[key])).ToArray();
     if (missingSecrets.Length > 0)
     {
         throw new InvalidOperationException($"Missing required secrets: {string.Join(", ", missingSecrets)}. Configure them through environment variables or a secret provider.");
     }
+
+    var mail = builder.Configuration.GetSection(MailOptions.Section).Get<MailOptions>() ?? new MailOptions();
+    if (mail.IsMailgun && (string.IsNullOrWhiteSpace(mail.Mailgun.ApiKey) || string.IsNullOrWhiteSpace(mail.Mailgun.Domain)))
+    {
+        throw new InvalidOperationException("Mail:Mode is Mailgun, so Mail:Mailgun:ApiKey and Mail:Mailgun:Domain are required.");
+    }
 }
 
 builder.Services.AddDbContext<VoxaContext>(options => options.UseNpgsql(VoxaContextFactory.Configure(builder.Configuration["ConnectionString"])));
-builder.Services.AddVoxaLogic();
+builder.Services.AddVoxaLogic(builder.Configuration);
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(static options =>
+                {
+                    options.Cookie.Name = "voxa_board";
+                    options.Cookie.HttpOnly = true;
+                    options.Cookie.SameSite = SameSiteMode.Strict;
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+                    options.ExpireTimeSpan = TimeSpan.FromHours(12);
+                    options.SlidingExpiration = true;
+                    // An API answers 401 and 403 instead of redirecting to a login page.
+                    options.Events.OnRedirectToLogin = static context =>
+                    {
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        return Task.CompletedTask;
+                    };
+                    options.Events.OnRedirectToAccessDenied = static context =>
+                    {
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        return Task.CompletedTask;
+                    };
+                });
+builder.Services.AddAuthorization();
 builder.Services.AddVoxaForwardedHeaders(builder.Configuration);
 builder.Services.AddHsts(static options =>
 {
@@ -27,7 +58,7 @@ builder.Services.AddHsts(static options =>
     options.IncludeSubDomains = true;
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(static options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddExceptionHandler<DomainExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddEndpointsApiExplorer();
@@ -77,11 +108,14 @@ app.UseCors(policy =>
         policy.WithOrigins(allowedOrigins);
     }
 
-    policy.AllowAnyHeader().AllowAnyMethod().WithExposedHeaders(AppVersion.HeaderName);
+    // Credentials carry the board's sign-in cookie; it is SameSite=Strict, so other sites cannot send it.
+    policy.AllowAnyHeader().AllowAnyMethod().AllowCredentials().WithExposedHeaders(AppVersion.HeaderName, "Retry-After");
 });
 
 // The deploy workflows wait until /api/health reports the version they just published.
 app.MapGet("/health", () => Results.Ok(new { status = "ok", version = appVersion })).AllowAnonymous().ExcludeFromDescription();
 app.MapGet("/api/health", () => Results.Ok(new { status = "ok", version = appVersion })).AllowAnonymous().ExcludeFromDescription();
+app.UseAuthentication();
+app.UseAuthorization();
 app.MapControllers();
 await app.RunAsync();

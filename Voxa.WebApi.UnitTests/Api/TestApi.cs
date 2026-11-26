@@ -10,6 +10,8 @@ namespace Voxa.WebApi.UnitTests.Api;
 /// <summary>Hosts the whole API in memory, in Development (no migrations), on an EF in-memory database.</summary>
 public sealed class TestApi : WebApplicationFactory<Program>
 {
+    public const string Password = "test-board-password";
+
     private readonly string _database = Guid.NewGuid().ToString();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -17,6 +19,7 @@ public sealed class TestApi : WebApplicationFactory<Program>
         ArgumentNullException.ThrowIfNull(builder);
         builder.UseEnvironment("Development");
         builder.UseSetting("APP_VERSION", "1.2.3");
+        builder.UseSetting("Admin:Password", Password);
         builder.ConfigureServices(services =>
         {
             // Drop the Npgsql registration from Program.cs, or EF sees two database providers.
