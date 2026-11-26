@@ -121,10 +121,6 @@ namespace Voxa.Migrations
                         .HasMaxLength(60)
                         .HasColumnType("character varying(60)");
 
-                    b.Property<string>("KeevaUrl")
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
                     b.Property<string>("Language")
                         .IsRequired()
                         .HasMaxLength(8)
@@ -145,9 +141,6 @@ namespace Voxa.Migrations
                     b.Property<string>("MailReplyTo")
                         .HasMaxLength(320)
                         .HasColumnType("character varying(320)");
-
-                    b.Property<int>("MemberSource")
-                        .HasColumnType("integer");
 
                     b.Property<int>("MinorVoting")
                         .HasColumnType("integer");

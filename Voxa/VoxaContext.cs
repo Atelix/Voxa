@@ -91,7 +91,6 @@ public class VoxaContext(DbContextOptions<VoxaContext> options) : DbContext(opti
             club.Property(static c => c.MailFromAddress).HasMaxLength(320);
             club.Property(static c => c.MailReplyTo).HasMaxLength(320);
             club.Property(static c => c.AdvanceVotingArticle).HasMaxLength(100);
-            club.Property(static c => c.KeevaUrl).HasMaxLength(300);
         });
         modelBuilder.Entity<Voter>(static voter =>
         {

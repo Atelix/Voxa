@@ -12,8 +12,8 @@ using Voxa;
 namespace Voxa.Migrations
 {
     [DbContext(typeof(VoxaContext))]
-    [Migration("20261126192109_AddLanguages")]
-    partial class AddLanguages
+    [Migration("20261126191855_RemoveKeeva")]
+    partial class RemoveKeeva
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -124,15 +124,6 @@ namespace Voxa.Migrations
                         .HasMaxLength(60)
                         .HasColumnType("character varying(60)");
 
-                    b.Property<string>("KeevaUrl")
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
-                    b.Property<string>("Language")
-                        .IsRequired()
-                        .HasMaxLength(8)
-                        .HasColumnType("character varying(8)");
-
                     b.Property<string>("LogoDataUrl")
                         .HasColumnType("text");
 
@@ -148,9 +139,6 @@ namespace Voxa.Migrations
                     b.Property<string>("MailReplyTo")
                         .HasMaxLength(320)
                         .HasColumnType("character varying(320)");
-
-                    b.Property<int>("MemberSource")
-                        .HasColumnType("integer");
 
                     b.Property<int>("MinorVoting")
                         .HasColumnType("integer");
@@ -246,10 +234,6 @@ namespace Voxa.Migrations
 
                     b.Property<int>("Kind")
                         .HasColumnType("integer");
-
-                    b.Property<string>("Language")
-                        .HasMaxLength(8)
-                        .HasColumnType("character varying(8)");
 
                     b.Property<string>("Location")
                         .HasMaxLength(300)

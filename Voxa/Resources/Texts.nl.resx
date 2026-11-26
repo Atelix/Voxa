@@ -114,6 +114,9 @@
   <data name="Error.ChooseOne" xml:space="preserve">
     <value>Kies één mogelijkheid.</value>
   </data>
+  <data name="Error.TooManyCandidates" xml:space="preserve">
+    <value>Kies maximaal {0} kandidaten.</value>
+  </data>
   <data name="Error.BlankNoCandidates" xml:space="preserve">
     <value>Een blanco stem noemt geen kandidaten.</value>
   </data>

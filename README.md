@@ -56,6 +56,7 @@ After changing a controller or an API model, regenerate the client with
 
 ## Documentation
 
+- [docs/import-api.md](docs/import-api.md): the member import API for member administrations and n8n
 - [docs/architecture.md](docs/architecture.md): the projects, how a request flows, adding a feature
 - [docs/languages.md](docs/languages.md): how the language is chosen, and adding a language
 - [docs/continuous-integration.md](docs/continuous-integration.md): CI jobs, `CI result`, repository settings

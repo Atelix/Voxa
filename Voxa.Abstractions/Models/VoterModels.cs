@@ -36,9 +36,25 @@ public sealed class VoterImportRequest
     public required string Csv { get; init; }
 }
 
+/// <summary>What an import did with the voter list.</summary>
+public enum VoterImportMode
+{
+    /// <summary>No code had been sent yet, so the list was replaced.</summary>
+    Replaced = 0,
+
+    /// <summary>Codes had been sent, so only members who were not on the list yet were added. Nobody was removed.</summary>
+    Added = 1,
+}
+
 public sealed record VoterImportResultModel
 {
+    public required VoterImportMode Mode { get; init; }
+
+    /// <summary>Voters put on the list: the whole list when replaced, the new voters when added.</summary>
     public required int Imported { get; init; }
+
+    /// <summary>When adding: members who were already on the list (by name) and were left as they were.</summary>
+    public required int AlreadyListed { get; init; }
 
     public required int ViaGuardian { get; init; }
 

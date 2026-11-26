@@ -13,7 +13,5 @@
   "advanceVotingMaxDays": 30,
   "advanceVotingArticle": "art. 20.8",
   "minorVoting": "Guardian",
-  "adultAge": 18,
-  "memberSource": "Keeva",
-  "keevaUrl": "https://sittardcondors.keeva.app"
+  "adultAge": 18
 }

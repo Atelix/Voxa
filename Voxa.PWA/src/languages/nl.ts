@@ -277,7 +277,6 @@ export default {
 			viaGuardian: "via ouder of verzorger",
 			withoutEmail: "zonder e-mail",
 			sent: "code verstuurd",
-			fromSource: "Ophalen uit ledenadministratie",
 			fromCsv: "CSV uploaden",
 			csvHelp:
 				"CSV met kolommen naam, e-mail, geboortedatum, status, naam ouder en e-mail ouder. Scheiding met ; of , mag allebei.",
@@ -399,12 +398,10 @@ export default {
 			adultAge: "Meerderjarig vanaf",
 			secretNote: "Stemmen bij volmacht is niet mogelijk. Elke code is één stem.",
 			members: "Ledenadministratie",
-			source: "Ledenlijst ophalen uit",
-			sourceCsv: "CSV-bestand",
-			sourceKeeva: "Keeva",
-			keevaUrl: "Adres van de Keeva-omgeving",
-			keevaKey: "De API-sleutel van Keeva is op de server ingesteld.",
-			keevaNoKey: "Er is nog geen API-sleutel van Keeva op de server ingesteld. Vraag de beheerder.",
+			importApi:
+				"De import-API staat aan: de ledenadministratie kan de ledenlijst naar een vergadering sturen. Tot de eerste code verstuurd is, vervangt die lijst de stemgerechtigden; daarna worden alleen nieuwe leden toegevoegd.",
+			importApiOff:
+				"Upload de ledenlijst per vergadering als CSV. Wil je dat de ledenadministratie hem stuurt, dan stelt de beheerder een importsleutel in op de server.",
 			export: "Instellingen exporteren",
 			import: "Instellingen importeren",
 			imported: "Instellingen ingelezen. Sla op om ze te bewaren.",

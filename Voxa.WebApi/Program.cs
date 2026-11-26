@@ -27,6 +27,12 @@ if (!builder.Environment.IsDevelopment())
     {
         throw new InvalidOperationException("Mail:Mode is Mailgun, so Mail:Mailgun:ApiKey and Mail:Mailgun:Domain are required.");
     }
+
+    var importKey = builder.Configuration[$"{ImportOptions.Section}:{nameof(ImportOptions.ApiKey)}"];
+    if (!string.IsNullOrWhiteSpace(importKey) && importKey.Trim().Length < ImportOptions.MinKeyLength)
+    {
+        throw new InvalidOperationException($"Import:ApiKey must be at least {ImportOptions.MinKeyLength} characters. Generate one with: openssl rand -hex 32");
+    }
 }
 
 builder.Services.AddDbContext<VoxaContext>(options => options.UseNpgsql(VoxaContextFactory.Configure(builder.Configuration["ConnectionString"])));
@@ -51,7 +57,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
                         context.Response.StatusCode = StatusCodes.Status403Forbidden;
                         return Task.CompletedTask;
                     };
-                });
+                })
+                .AddImportApiKey();
 builder.Services.AddAuthorization();
 builder.Services.AddVoxaForwardedHeaders(builder.Configuration);
 builder.Services.AddHsts(static options =>
@@ -77,6 +84,9 @@ builder.Services.AddSwaggerGen(static c =>
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Voxa", Version = "v1" });
     // string? stays nullable and string does not, so the generated client (Voxa.PWA/src/logic/api.ts) matches C#.
     c.SupportNonNullableReferenceTypes();
+    c.IncludeXmlComments(typeof(Program).Assembly, includeControllerXmlComments: true);
+    c.IncludeXmlComments(typeof(Voxa.Abstractions.Models.MemberImportRequest).Assembly);
+    c.AddImportDocument();
 });
 
 var app = builder.Build();
@@ -85,7 +95,11 @@ var appVersion = AppVersion.Resolve(app.Configuration);
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI(static c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Voxa v1"));
+    app.UseSwaggerUI(static c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Voxa v1");
+        c.SwaggerEndpoint($"/swagger/{ImportApi.DocumentName}/swagger.json", "Voxa member import");
+    });
 }
 else
 {
@@ -126,6 +140,7 @@ app.UseCors(policy =>
 // The deploy workflows wait until /api/health reports the version they just published.
 app.MapGet("/health", () => Results.Ok(new { status = "ok", version = appVersion })).AllowAnonymous().ExcludeFromDescription();
 app.MapGet("/api/health", () => Results.Ok(new { status = "ok", version = appVersion })).AllowAnonymous().ExcludeFromDescription();
+app.UseImportDocument();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

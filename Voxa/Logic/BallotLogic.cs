@@ -188,7 +188,7 @@ public sealed class BallotLogic(VoxaContext context, ICodeService codes, IAttemp
             return ids.Count == 1 ? ids : throw new DomainValidationException(Texts.Get("Error.BlankNoCandidates"));
         }
 
-        return ids.Count <= item.Seats ? ids : throw new DomainValidationException($"Choose at most {item.Seats} candidates.");
+        return ids.Count <= item.Seats ? ids : throw new DomainValidationException(Texts.Format("Error.TooManyCandidates", item.Seats));
     }
 
     private async Task<VotingCode> FindCodeAsync(string? input, CancellationToken cancellationToken)

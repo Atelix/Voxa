@@ -108,16 +108,9 @@
 
 				<v-card class="pa-5 mb-4">
 					<h2 class="voxa-heading mb-3" style="font-size: 1.1rem">{{ $t("board.settings.members") }}</h2>
-					<v-select v-model="form.memberSource" :items="sourceOptions" :label="$t('board.settings.source')" />
-					<template v-if="form.memberSource === MemberSourceKind.Keeva">
-						<v-text-field
-							v-model="form.keevaUrl"
-							:label="$t('board.settings.keevaUrl')"
-							placeholder="https://club.keeva.app" />
-						<v-alert :type="settings.keevaKeyConfigured ? 'success' : 'warning'" variant="tonal" density="compact">
-							{{ settings.keevaKeyConfigured ? $t("board.settings.keevaKey") : $t("board.settings.keevaNoKey") }}
-						</v-alert>
-					</template>
+					<v-alert :type="settings.importApiConfigured ? 'success' : 'info'" variant="tonal" density="compact">
+						{{ settings.importApiConfigured ? $t("board.settings.importApi") : $t("board.settings.importApiOff") }}
+					</v-alert>
 				</v-card>
 
 				<div class="d-flex flex-wrap ga-2">
@@ -208,7 +201,7 @@
 import { computed, onMounted, reactive, ref, watch } from "vue"
 import { useI18n } from "vue-i18n"
 import ConfirmDialog from "@/components/ConfirmDialog.vue"
-import { MemberSourceKind, MinorVoting, type ClubSettingsModel, type ClubSettingsRequest } from "@/logic/api"
+import { MinorVoting, type ClubSettingsModel, type ClubSettingsRequest } from "@/logic/api"
 import { normalizeApiError } from "@/logic/ApiError"
 import { defaultLocale, languageName, supportedLocales } from "@/plugins/i18n"
 import { contrast, onColor } from "@/services/theme"
@@ -247,8 +240,6 @@ const form = reactive<ClubSettingsRequest>({
 	advanceVotingArticle: null,
 	minorVoting: MinorVoting.Guardian,
 	adultAge: 18,
-	memberSource: MemberSourceKind.Csv,
-	keevaUrl: null,
 })
 
 const languages = supportedLocales.map((locale) => ({ title: languageName(locale), value: locale }))
@@ -256,10 +247,6 @@ const minorOptions = computed(() => [
 	{ title: t("board.settings.minorGuardian"), value: MinorVoting.Guardian },
 	{ title: t("board.settings.minorSelf"), value: MinorVoting.Self },
 	{ title: t("board.settings.minorNone"), value: MinorVoting.None },
-])
-const sourceOptions = computed(() => [
-	{ title: t("board.settings.sourceCsv"), value: MemberSourceKind.Csv },
-	{ title: t("board.settings.sourceKeeva"), value: MemberSourceKind.Keeva },
 ])
 const lowContrast = computed(
 	() => /^#[0-9A-Fa-f]{6}$/.test(form.primaryColor) && contrast(form.primaryColor, "#FFFFFF") < 4.5
@@ -289,7 +276,6 @@ function clean(): ClubSettingsRequest {
 		mailFromAddress: empty(form.mailFromAddress),
 		mailReplyTo: empty(form.mailReplyTo),
 		advanceVotingArticle: empty(form.advanceVotingArticle),
-		keevaUrl: empty(form.keevaUrl),
 		mailFromName: form.mailFromName || form.clubName,
 	}
 }
