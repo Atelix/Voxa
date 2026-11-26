@@ -121,6 +121,11 @@ namespace Voxa.Migrations
                         .HasMaxLength(60)
                         .HasColumnType("character varying(60)");
 
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
+
                     b.Property<string>("LogoDataUrl")
                         .HasColumnType("text");
 
@@ -231,6 +236,10 @@ namespace Voxa.Migrations
 
                     b.Property<int>("Kind")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Language")
+                        .HasMaxLength(8)
+                        .HasColumnType("character varying(8)");
 
                     b.Property<string>("Location")
                         .HasMaxLength(300)

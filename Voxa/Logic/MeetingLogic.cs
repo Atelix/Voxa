@@ -9,8 +9,6 @@ namespace Voxa.Logic;
 
 public sealed class MeetingLogic(VoxaContext context, ClubSettingsStore club, TimeProvider time) : IMeetingLogic
 {
-    public const string WipeWord = "WISSEN";
-
     public async Task<IReadOnlyList<MeetingSummaryModel>> ListAsync(CancellationToken cancellationToken)
     {
         var meetings = await context.Meetings.AsNoTracking().Include(static m => m.Items)
@@ -52,7 +50,7 @@ public sealed class MeetingLogic(VoxaContext context, ClubSettingsStore club, Ti
         var meeting = await LoadAsync(id, cancellationToken);
         if (meeting.Status == MeetingStatus.Ready)
         {
-            throw new DomainConflictException("Codes have been sent for this meeting. Archive it instead.");
+            throw new DomainConflictException(Texts.Get("Error.MeetingCodesSent"));
         }
 
         _ = context.Meetings.Remove(meeting);
@@ -70,6 +68,7 @@ public sealed class MeetingLogic(VoxaContext context, ClubSettingsStore club, Ti
             Kind = source.Kind,
             StartsAt = startsAt,
             Location = source.Location,
+            Language = source.Language,
             AdvanceVoting = source.AdvanceVoting,
             AdvanceOpensAt = source.AdvanceVoting ? EarliestAdvance(startsAt, settings.AdvanceVotingMaxDays) : null,
             Status = MeetingStatus.Draft,
@@ -134,9 +133,11 @@ public sealed class MeetingLogic(VoxaContext context, ClubSettingsStore club, Ti
     public async Task WipeAsync(WipeRequest request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
-        if (!string.Equals(request.Confirm?.Trim(), WipeWord, StringComparison.Ordinal))
+        // The word in any language counts, so a board that switches language is not locked out of its own data.
+        var confirm = request.Confirm?.Trim();
+        if (!Languages.Supported.Any(l => string.Equals(confirm, Texts.GetIn(Texts.Culture(l), "Meeting.WipeWord"), StringComparison.Ordinal)))
         {
-            throw new DomainValidationException($"Type {WipeWord} to confirm.");
+            throw new DomainValidationException(Texts.Format("Error.WipeConfirm", Texts.Get("Meeting.WipeWord")));
         }
 
         // Codes first: their uses refer to agenda items as well as codes.
@@ -166,13 +167,19 @@ public sealed class MeetingLogic(VoxaContext context, ClubSettingsStore club, Ti
     {
         if (meeting.Status == MeetingStatus.Archived)
         {
-            throw new DomainConflictException("This meeting is archived.");
+            throw new DomainConflictException(Texts.Get("Error.MeetingArchived"));
         }
     }
 
     private async Task ApplyAsync(Meeting meeting, MeetingRequest request, CancellationToken cancellationToken)
     {
-        var name = Mapping.Clean(request.Name) ?? throw new DomainValidationException("A meeting needs a name.");
+        var name = Mapping.Clean(request.Name) ?? throw new DomainValidationException(Texts.Get("Error.MeetingNameRequired"));
+        var language = Mapping.Clean(request.Language);
+        if (language is not null && !Languages.IsSupported(language))
+        {
+            throw new DomainValidationException(Texts.Format("Error.LanguageInvalid", string.Join(", ", Languages.Supported)));
+        }
+
         var startsAt = DateTime.SpecifyKind(request.StartsAt.ToUniversalTime(), DateTimeKind.Utc);
         var settings = await club.GetAsync(cancellationToken);
         DateTime? opensAt = null;
@@ -182,12 +189,12 @@ public sealed class MeetingLogic(VoxaContext context, ClubSettingsStore club, Ti
             opensAt = request.AdvanceOpensAt is { } requested ? DateTime.SpecifyKind(requested.ToUniversalTime(), DateTimeKind.Utc) : earliest;
             if (opensAt < earliest)
             {
-                throw new DomainValidationException($"Advance voting may open at most {settings.AdvanceVotingMaxDays} days before the meeting.");
+                throw new DomainValidationException(Texts.Format("Error.AdvanceTooEarly", settings.AdvanceVotingMaxDays));
             }
 
             if (opensAt >= startsAt)
             {
-                throw new DomainValidationException("Advance voting has to open before the meeting starts.");
+                throw new DomainValidationException(Texts.Get("Error.AdvanceAfterStart"));
             }
         }
 
@@ -195,6 +202,7 @@ public sealed class MeetingLogic(VoxaContext context, ClubSettingsStore club, Ti
         meeting.Kind = request.Kind;
         meeting.StartsAt = startsAt;
         meeting.Location = Mapping.Clean(request.Location);
+        meeting.Language = language;
         meeting.AdvanceVoting = request.AdvanceVoting;
         meeting.AdvanceOpensAt = opensAt;
     }
@@ -211,6 +219,7 @@ public sealed class MeetingLogic(VoxaContext context, ClubSettingsStore club, Ti
             Kind = summary.Kind,
             StartsAt = summary.StartsAt,
             Location = summary.Location,
+            Language = summary.Language,
             Status = summary.Status,
             AdvanceVoting = summary.AdvanceVoting,
             AdvanceOpensAt = summary.AdvanceOpensAt,
@@ -233,13 +242,13 @@ public sealed class MeetingLogic(VoxaContext context, ClubSettingsStore club, Ti
                      .Select(static g => new { g.Key, Count = g.Count() })
                      .ToDictionaryAsync(static g => g.Key, static g => g.Count, cancellationToken);
 
-    /// <summary>"ALV 2027" becomes "ALV 2028"; other names get "(kopie)".</summary>
+    /// <summary>"ALV 2027" becomes "ALV 2028"; other names get "(copy)" in the board's language.</summary>
     private static string NextName(string name)
     {
         var match = System.Text.RegularExpressions.Regex.Match(name, @"(19|20)\d{2}");
         if (!match.Success)
         {
-            return $"{name} (kopie)";
+            return Texts.Format("Meeting.CopyName", name);
         }
 
         var year = int.Parse(match.Value, System.Globalization.CultureInfo.InvariantCulture) + 1;

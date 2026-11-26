@@ -1,14 +1,16 @@
+import { intlLocale } from "@/plugins/i18n"
+
 const zone = "Europe/Amsterdam"
 
-/** "dinsdag 2 februari 2027, 18:45" in the club's time zone. */
-export function formatDateTime(iso: string, locale = "nl-NL"): string {
+/** "dinsdag 2 februari 2027 om 18:45" in the club's time zone, in the app's language. */
+export function formatDateTime(iso: string, locale = intlLocale()): string {
 	return new Intl.DateTimeFormat(locale, { dateStyle: "full", timeStyle: "short", timeZone: zone }).format(
 		new Date(iso)
 	)
 }
 
-/** "3 januari 2027". */
-export function formatDate(iso: string, locale = "nl-NL"): string {
+/** "3 januari 2027", in the app's language. */
+export function formatDate(iso: string, locale = intlLocale()): string {
 	return new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric", timeZone: zone }).format(
 		new Date(iso)
 	)

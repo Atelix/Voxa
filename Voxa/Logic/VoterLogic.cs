@@ -97,7 +97,7 @@ public sealed class VoterLogic(
         var voter = new Voter
         {
             MeetingId = meeting.Id,
-            Name = Mapping.Clean(request.Name) ?? throw new DomainValidationException("A voter needs a name."),
+            Name = Mapping.Clean(request.Name) ?? throw new DomainValidationException(Texts.Get("Error.VoterNameRequired")),
             Email = Mapping.Clean(request.Email),
             GuardianName = Mapping.Clean(request.GuardianName),
         };
@@ -112,7 +112,7 @@ public sealed class VoterLogic(
                     ?? throw new ObjectNotFoundException(nameof(Voter), voterId);
         if (voter.CodeSent)
         {
-            throw new DomainConflictException("This voter already received a code.");
+            throw new DomainConflictException(Texts.Get("Error.VoterHasCode"));
         }
 
         _ = context.Voters.Remove(voter);
@@ -192,12 +192,12 @@ public sealed class VoterLogic(
         var meeting = await EnsureMeetingAsync(meetingId, cancellationToken);
         var settings = await club.GetAsync(cancellationToken);
         EnsureSender(settings);
-        var example = new Voter { Name = "[naam lid]", GuardianName = null };
+        var example = new Voter { Name = Texts.GetIn(CodeMail.Language(meeting, settings), "Mail.ExampleName"), GuardianName = null };
         // A fresh code that is never stored, so the example cannot be used to vote.
         var message = CodeMail.Build(meeting, settings, [new MailedCode(example, codes.Generate())], request.Email, app.Value);
         if (!await mail.SendAsync(message with { Subject = "[Test] " + message.Subject }, cancellationToken))
         {
-            throw new DomainValidationException("The mail provider refused the test mail.");
+            throw new DomainValidationException(Texts.Get("Error.TestMailRefused"));
         }
     }
 
@@ -213,7 +213,7 @@ public sealed class VoterLogic(
         var adding = existing.Any(static v => v.CodeSent);
         if (adding && !addAfterCodes)
         {
-            throw new DomainConflictException("Codes have been sent from this list. Add new members one by one.");
+            throw new DomainConflictException(Texts.Get("Error.ListCodesSent"));
         }
 
         var settings = await club.GetAsync(cancellationToken);
@@ -224,14 +224,14 @@ public sealed class VoterLogic(
         {
             if (member.Suspended)
             {
-                skipped.Add($"{member.Name}: geschorst");
+                skipped.Add(Texts.Format("Voter.SkippedSuspended", member.Name));
                 continue;
             }
 
             var minor = member.BirthDate is { } birth && birth.AddYears(settings.AdultAge) > meetingDay;
             if (minor && settings.MinorVoting == MinorVoting.None)
             {
-                skipped.Add($"{member.Name}: minderjarig");
+                skipped.Add(Texts.Format("Voter.SkippedMinor", member.Name));
                 continue;
             }
 
@@ -241,11 +241,11 @@ public sealed class VoterLogic(
                 MeetingId = meetingId,
                 Name = member.Name.Trim(),
                 Email = Mapping.Clean(viaGuardian ? member.GuardianEmail : member.Email),
-                GuardianName = viaGuardian ? Mapping.Clean(member.GuardianName) ?? "ouder of verzorger" : null,
+                GuardianName = viaGuardian ? Mapping.Clean(member.GuardianName) ?? Texts.GetIn(CodeMail.Language(meeting, settings), "Voter.Guardian") : null,
             };
             if (voters.Any(v => SameVoter(v, voter)))
             {
-                skipped.Add($"{member.Name}: dubbel");
+                skipped.Add(Texts.Format("Voter.SkippedDuplicate", member.Name));
                 continue;
             }
 
@@ -263,7 +263,7 @@ public sealed class VoterLogic(
         {
             if (voters.Count == 0)
             {
-                throw new DomainValidationException("The list has no members entitled to vote.");
+                throw new DomainValidationException(Texts.Get("Error.ListEmpty"));
             }
 
             context.Voters.RemoveRange(existing);
@@ -297,7 +297,7 @@ public sealed class VoterLogic(
     {
         if (!mail.IsTrial && string.IsNullOrWhiteSpace(settings.MailFromAddress))
         {
-            throw new DomainValidationException("Set the club's sending address in the settings first.");
+            throw new DomainValidationException(Texts.Get("Error.SenderMissing"));
         }
     }
 

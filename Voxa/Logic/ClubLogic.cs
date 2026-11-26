@@ -22,6 +22,7 @@ public sealed class ClubLogic(VoxaContext context, ClubSettingsStore store, IOpt
         {
             ClubName = club.ClubName,
             ContactEmail = club.ContactEmail,
+            Language = club.Language,
             PrimaryColor = club.PrimaryColor,
             SecondaryColor = club.SecondaryColor,
             HeadingFont = club.HeadingFont,
@@ -37,18 +38,24 @@ public sealed class ClubLogic(VoxaContext context, ClubSettingsStore store, IOpt
         ArgumentNullException.ThrowIfNull(request);
         if (!ClubSettingsStore.Fonts.Contains(request.HeadingFont) || !ClubSettingsStore.Fonts.Contains(request.BodyFont))
         {
-            throw new DomainValidationException($"Choose a font from: {string.Join(", ", ClubSettingsStore.Fonts)}.");
+            throw new DomainValidationException(Texts.Format("Error.FontInvalid", string.Join(", ", ClubSettingsStore.Fonts)));
+        }
+
+        var language = Mapping.Clean(request.Language) ?? Languages.Default;
+        if (!Languages.IsSupported(language))
+        {
+            throw new DomainValidationException(Texts.Format("Error.LanguageInvalid", string.Join(", ", Languages.Supported)));
         }
 
         var logo = Mapping.Clean(request.LogoDataUrl);
         if (logo is not null && !s_logoTypes.Any(t => logo.StartsWith(t, StringComparison.Ordinal)))
         {
-            throw new DomainValidationException("The logo must be a PNG, JPEG, SVG or WebP image.");
+            throw new DomainValidationException(Texts.Get("Error.LogoType"));
         }
 
         if (logo?.Length > MaxLogoLength)
         {
-            throw new DomainValidationException("The logo is too large; keep it under 700 kB.");
+            throw new DomainValidationException(Texts.Get("Error.LogoTooLarge"));
         }
 
         var club = await context.ClubSettings.FirstOrDefaultAsync(cancellationToken);
@@ -58,8 +65,9 @@ public sealed class ClubLogic(VoxaContext context, ClubSettingsStore store, IOpt
             _ = context.ClubSettings.Add(club);
         }
 
-        club.ClubName = Mapping.Clean(request.ClubName) ?? throw new DomainValidationException("The club needs a name.");
+        club.ClubName = Mapping.Clean(request.ClubName) ?? throw new DomainValidationException(Texts.Get("Error.ClubNameRequired"));
         club.ContactEmail = Mapping.Clean(request.ContactEmail);
+        club.Language = language;
         club.PrimaryColor = request.PrimaryColor.ToUpperInvariant();
         club.SecondaryColor = request.SecondaryColor.ToUpperInvariant();
         club.HeadingFont = request.HeadingFont;
@@ -80,6 +88,7 @@ public sealed class ClubLogic(VoxaContext context, ClubSettingsStore store, IOpt
     {
         ClubName = club.ClubName,
         ContactEmail = club.ContactEmail,
+        Language = club.Language,
         PrimaryColor = club.PrimaryColor,
         SecondaryColor = club.SecondaryColor,
         HeadingFont = club.HeadingFont,

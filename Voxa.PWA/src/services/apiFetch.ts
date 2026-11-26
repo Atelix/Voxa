@@ -1,4 +1,5 @@
 import { ApiError, normalizeApiError } from "@/logic/ApiError"
+import { currentLocale } from "@/plugins/i18n"
 import { recordApiVersion } from "@/services/appVersion"
 import { deviceId } from "@/services/deviceId"
 
@@ -16,6 +17,8 @@ export const apiFetch: typeof fetch = async (input, init = {}) => {
 	const canRetry = method === "GET" || method === "HEAD"
 	const headers = new Headers(init.headers)
 	headers.set("X-Voxa-Device", deviceId())
+	// The API writes its messages in the language the app shows.
+	headers.set("Accept-Language", currentLocale())
 	init = { ...init, headers, credentials: "include" }
 
 	for (let attempt = 0; ; attempt++) {

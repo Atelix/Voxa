@@ -33,7 +33,7 @@ dotnet tool restore
 dotnet ef database update --project Voxa --startup-project Voxa.WebApi
 dotnet run --project Voxa.WebApi
 
-# 3. App on http://localhost:3000 (board at /bestuur, password "bestuur" in Development)
+# 3. App on http://localhost:3000 (board at /admin, password "bestuur" in Development)
 pnpm --dir Voxa.PWA install
 pnpm --dir Voxa.PWA dev
 ```
@@ -58,6 +58,7 @@ After changing a controller or an API model, regenerate the client with
 
 - [docs/import-api.md](docs/import-api.md): the member import API for member administrations and n8n
 - [docs/architecture.md](docs/architecture.md): the projects, how a request flows, adding a feature
+- [docs/languages.md](docs/languages.md): how the language is chosen, and adding a language
 - [docs/continuous-integration.md](docs/continuous-integration.md): CI jobs, `CI result`, repository settings
 - [docs/deployment.md](docs/deployment.md): beta and production, secrets, server and Cloudflare setup, rollbacks
 - [docs/security-configuration.md](docs/security-configuration.md): settings, secrets and what is in place

@@ -12,6 +12,9 @@ public class Meeting
 
     public string? Location { get; set; }
 
+    /// <summary>The language of this meeting's mails, as a two-letter code; empty means the club's language.</summary>
+    public string? Language { get; set; }
+
     /// <summary>Members may vote online before the meeting, from <see cref="AdvanceOpensAt"/> until it starts.</summary>
     public bool AdvanceVoting { get; set; }
 

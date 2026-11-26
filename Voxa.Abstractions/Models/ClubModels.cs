@@ -10,6 +10,9 @@ public sealed record ClubBrandModel
 
     public required string? ContactEmail { get; init; }
 
+    /// <summary>The club's language (<see cref="Languages.Supported"/>), for mails and for devices whose language Voxa lacks.</summary>
+    public required string Language { get; init; }
+
     public required string PrimaryColor { get; init; }
 
     public required string SecondaryColor { get; init; }
@@ -27,6 +30,9 @@ public sealed record ClubSettingsModel
     public required string ClubName { get; init; }
 
     public required string? ContactEmail { get; init; }
+
+    /// <summary>The club's language (<see cref="Languages.Supported"/>), for mails and for devices whose language Voxa lacks.</summary>
+    public required string Language { get; init; }
 
     public required string PrimaryColor { get; init; }
 
@@ -71,6 +77,10 @@ public sealed class ClubSettingsRequest
     [StringLength(320)]
     [EmailAddress]
     public string? ContactEmail { get; init; }
+
+    /// <summary>One of <see cref="Languages.Supported"/>; empty keeps the default language.</summary>
+    [StringLength(8)]
+    public string? Language { get; init; }
 
     [Required]
     [RegularExpression("^#[0-9A-Fa-f]{6}$")]

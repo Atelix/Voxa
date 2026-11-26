@@ -15,9 +15,9 @@ const router = createRouter({
 			component: view(() => import("@/views/voter/VoterLayout.vue")),
 			children: [
 				{ path: "", name: "start", component: view(() => import("@/views/voter/StartView.vue")) },
-				{ path: "stempunten", name: "items", component: view(() => import("@/views/voter/ItemsView.vue")) },
+				{ path: "items", name: "items", component: view(() => import("@/views/voter/ItemsView.vue")) },
 				{
-					path: "stempunt/:id(\\d+)",
+					path: "item/:id(\\d+)",
 					name: "vote",
 					component: view(() => import("@/views/voter/VoteView.vue")),
 					props: true,
@@ -26,42 +26,42 @@ const router = createRouter({
 			],
 		},
 		{
-			path: "/zaal/:meetingId(\\d+)",
+			path: "/hall/:meetingId(\\d+)",
 			name: "hall",
 			component: view(() => import("@/views/HallView.vue")),
 			props: true,
 		},
 		{
-			path: "/bestuur/inloggen",
+			path: "/admin/login",
 			name: "board-login",
 			component: view(() => import("@/views/board/LoginView.vue")),
 		},
 		{
-			path: "/bestuur",
+			path: "/admin",
 			component: view(() => import("@/views/board/BoardLayout.vue")),
 			meta: { board: true },
 			children: [
 				{ path: "", name: "meetings", component: view(() => import("@/views/board/MeetingsView.vue")) },
 				{
-					path: "vergadering/:id(\\d+)",
+					path: "meeting/:id(\\d+)",
 					name: "meeting",
 					component: view(() => import("@/views/board/MeetingView.vue")),
 					props: true,
 				},
 				{
-					path: "vergadering/:id(\\d+)/live",
+					path: "meeting/:id(\\d+)/live",
 					name: "live",
 					component: view(() => import("@/views/board/LiveView.vue")),
 					props: true,
 				},
 				{
-					path: "stempunt/:id(\\d+)/uitslag",
+					path: "item/:id(\\d+)/result",
 					name: "result",
 					component: view(() => import("@/views/board/ResultView.vue")),
 					props: true,
 				},
-				{ path: "instellingen", name: "settings", component: view(() => import("@/views/board/SettingsView.vue")) },
-				{ path: "proefmailbox", name: "outbox", component: view(() => import("@/views/board/OutboxView.vue")) },
+				{ path: "settings", name: "settings", component: view(() => import("@/views/board/SettingsView.vue")) },
+				{ path: "test-mailbox", name: "outbox", component: view(() => import("@/views/board/OutboxView.vue")) },
 			],
 		},
 		{
@@ -77,7 +77,7 @@ router.beforeEach(async (to) => {
 	if (!to.matched.some((record) => record.meta.board)) return true
 	const board = useBoardStore()
 	if (board.signedIn || (await board.check())) return true
-	return { name: "board-login", query: { terug: to.fullPath } }
+	return { name: "board-login", query: { return: to.fullPath } }
 })
 
 export default router

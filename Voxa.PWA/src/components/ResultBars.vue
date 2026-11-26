@@ -2,7 +2,7 @@
 	<div class="d-flex flex-column ga-3">
 		<div v-for="(option, index) in rows" :key="option.optionId">
 			<div class="d-flex align-center mb-1" :style="{ fontSize: large ? '1.6rem' : undefined }">
-				<span class="font-weight-bold">{{ option.role === OptionRole.Blank ? $t("vote.blank") : option.label }}</span>
+				<span class="font-weight-bold">{{ optionLabel(option, t) }}</span>
 				<v-icon
 					v-if="option.elected"
 					icon="mdi-check-decagram"
@@ -25,10 +25,13 @@
 
 <script setup lang="ts">
 import { computed } from "vue"
+import { useI18n } from "vue-i18n"
 import { OptionRole, type ResultModel } from "@/logic/api"
 import { percentage } from "@/services/format"
+import { optionLabel } from "@/services/optionLabel"
 
 const props = defineProps<{ result: ResultModel; large?: boolean }>()
+const { t } = useI18n()
 const rows = computed(() => props.result.options)
 // Bars are a share of the ballots; abstentions and blank votes are shown but do not count for the outcome.
 const base = computed(() => Math.max(props.result.ballots.total, 1))

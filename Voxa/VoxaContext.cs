@@ -37,6 +37,7 @@ public class VoxaContext(DbContextOptions<VoxaContext> options) : DbContext(opti
         {
             meeting.Property(static m => m.Name).HasMaxLength(200);
             meeting.Property(static m => m.Location).HasMaxLength(300);
+            meeting.Property(static m => m.Language).HasMaxLength(8);
             meeting.HasMany(static m => m.Items).WithOne(static i => i.Meeting).HasForeignKey(static i => i.MeetingId).OnDelete(DeleteBehavior.Cascade);
             meeting.HasMany(static m => m.Voters).WithOne(static v => v.Meeting).HasForeignKey(static v => v.MeetingId).OnDelete(DeleteBehavior.Cascade);
         });
@@ -81,6 +82,7 @@ public class VoxaContext(DbContextOptions<VoxaContext> options) : DbContext(opti
             club.Property(static c => c.Id).ValueGeneratedNever();
             club.Property(static c => c.ClubName).HasMaxLength(200);
             club.Property(static c => c.ContactEmail).HasMaxLength(320);
+            club.Property(static c => c.Language).HasMaxLength(8);
             club.Property(static c => c.PrimaryColor).HasMaxLength(9);
             club.Property(static c => c.SecondaryColor).HasMaxLength(9);
             club.Property(static c => c.HeadingFont).HasMaxLength(60);

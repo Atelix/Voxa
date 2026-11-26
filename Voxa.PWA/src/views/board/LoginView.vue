@@ -17,8 +17,9 @@
 					</v-btn>
 				</form>
 			</v-card>
-			<div class="text-center mt-4">
+			<div class="d-flex justify-center align-center mt-4">
 				<v-btn variant="text" :to="{ name: 'start' }">{{ $t("board.login.toVoting") }}</v-btn>
+				<language-menu />
 			</div>
 		</v-container>
 	</v-main>
@@ -29,6 +30,7 @@ import { computed, ref } from "vue"
 import { useI18n } from "vue-i18n"
 import { useRoute, useRouter } from "vue-router"
 import ClubLogo from "@/components/ClubLogo.vue"
+import LanguageMenu from "@/components/LanguageMenu.vue"
 import { useAsyncAction } from "@/services/useAsyncAction"
 import { useBoardStore } from "@/store/BoardStore"
 
@@ -50,7 +52,7 @@ async function submit(): Promise<void> {
 	await action.run(() => board.signIn(password.value))
 	if (board.signedIn) {
 		const back =
-			typeof route.query.terug === "string" && route.query.terug.startsWith("/bestuur") ? route.query.terug : "/bestuur"
+			typeof route.query.return === "string" && route.query.return.startsWith("/admin/") ? route.query.return : "/admin"
 		await router.replace(back)
 	}
 }

@@ -30,7 +30,7 @@ public sealed class MemberImportTests : IDisposable
         Assert.Equal(3, result.Imported);
         Assert.Equal(1, result.ViaGuardian);
         Assert.Equal(1, result.WithoutEmail);
-        Assert.Equal(["Gerda Geschorst: geschorst", "Anna Adult: dubbel"], result.Skipped);
+        Assert.Equal(["Gerda Geschorst: suspended", "Anna Adult: duplicate"], result.Skipped);
         var list = await _services.Voters.ListAsync(meetingId, CancellationToken.None);
         Assert.DoesNotContain(list.Voters, static v => v.Name == "Oud Lid");
         var kees = Assert.Single(list.Voters, static v => v.Name == "Kees Kind");
@@ -72,7 +72,7 @@ public sealed class MemberImportTests : IDisposable
             Member("Kees Kind", "kees@example.org", new DateOnly(2014, 3, 3))), CancellationToken.None);
 
         Assert.Equal(1, result.Imported);
-        Assert.Equal(["Kees Kind: minderjarig"], result.Skipped);
+        Assert.Equal(["Kees Kind: minor"], result.Skipped);
     }
 
     [Fact]

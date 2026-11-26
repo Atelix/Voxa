@@ -28,7 +28,7 @@ public static class MemberCsv
         var lines = csv.Replace("\r\n", "\n", StringComparison.Ordinal).Split('\n').Where(static l => !string.IsNullOrWhiteSpace(l)).ToList();
         if (lines.Count < 2)
         {
-            throw new DomainValidationException("The CSV needs a header row and at least one member.");
+            throw new DomainValidationException(Texts.Get("Error.CsvEmpty"));
         }
 
         var separator = new[] { ';', '\t', ',' }.OrderByDescending(s => lines[0].Count(c => c == s)).First();
@@ -41,7 +41,7 @@ public static class MemberCsv
         var last = Column(s_lastName);
         if (name < 0 && (first < 0 || last < 0))
         {
-            throw new DomainValidationException("The CSV needs a column 'naam', or 'voornaam' and 'achternaam'.");
+            throw new DomainValidationException(Texts.Get("Error.CsvNameColumn"));
         }
 
         var email = Column(s_email);

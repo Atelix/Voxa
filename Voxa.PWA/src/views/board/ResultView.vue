@@ -65,7 +65,7 @@
 						type="number"
 						min="0"
 						density="compact"
-						:label="option.role === OptionRole.Blank ? $t('vote.blank') : option.label" />
+						:label="optionLabel(option, t)" />
 					<v-btn color="primary" block :loading="save.pending.value" @click="savePaper">{{
 						$t("board.result.paperSave")
 					}}</v-btn>
@@ -83,6 +83,7 @@ import { useI18n } from "vue-i18n"
 import ResultBars from "@/components/ResultBars.vue"
 import { AgendaItemKind, OptionRole, ResultOutcome, type ResultModel } from "@/logic/api"
 import { useApi } from "@/services/useApi"
+import { optionLabel } from "@/services/optionLabel"
 import { useAsyncAction } from "@/services/useAsyncAction"
 import { useLoader } from "@/services/useLoader"
 

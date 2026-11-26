@@ -4,6 +4,7 @@ using Voxa.Abstractions.Logic;
 using Voxa.Abstractions.Models;
 using Voxa.Abstractions.Services;
 using Voxa.Persistence.Entity;
+using Voxa.Services;
 
 namespace Voxa.Logic;
 
@@ -63,12 +64,12 @@ public sealed class BallotLogic(VoxaContext context, ICodeService codes, IAttemp
         var now = time.GetUtcNow().UtcDateTime;
         if (!IsVotable(code.Meeting, item, now))
         {
-            throw new DomainForbiddenException("This item is not open for voting.");
+            throw new DomainForbiddenException(Texts.Get("Error.ItemNotOpen"));
         }
 
         if (code.Uses.Any(u => u.AgendaItemId == item.Id))
         {
-            throw new DomainConflictException("This code has already voted on this item.");
+            throw new DomainConflictException(Texts.Get("Error.AlreadyVoted"));
         }
 
         var chosen = ValidChoice(item, request.OptionIds);
@@ -89,7 +90,7 @@ public sealed class BallotLogic(VoxaContext context, ICodeService codes, IAttemp
                 context.ChangeTracker.Clear();
                 if (await context.CodeUses.AnyAsync(u => u.VotingCodeId == codeId && u.AgendaItemId == item.Id, cancellationToken))
                 {
-                    throw new DomainConflictException("This code has already voted on this item.");
+                    throw new DomainConflictException(Texts.Get("Error.AlreadyVoted"));
                 }
 
                 if (attempt >= SaveAttempts)
@@ -174,20 +175,20 @@ public sealed class BallotLogic(VoxaContext context, ICodeService codes, IAttemp
         var options = item.Options.Where(o => ids.Contains(o.Id)).ToList();
         if (options.Count != ids.Count || ids.Count != optionIds.Count || ids.Count == 0)
         {
-            throw new DomainValidationException("Choose from the options of this item.");
+            throw new DomainValidationException(Texts.Get("Error.ChooseFromOptions"));
         }
 
         if (item.Kind == AgendaItemKind.Proposal)
         {
-            return ids.Count == 1 ? ids : throw new DomainValidationException("Choose one option.");
+            return ids.Count == 1 ? ids : throw new DomainValidationException(Texts.Get("Error.ChooseOne"));
         }
 
         if (options.Any(static o => o.Role == OptionRole.Blank))
         {
-            return ids.Count == 1 ? ids : throw new DomainValidationException("A blank vote names no candidates.");
+            return ids.Count == 1 ? ids : throw new DomainValidationException(Texts.Get("Error.BlankNoCandidates"));
         }
 
-        return ids.Count <= item.Seats ? ids : throw new DomainValidationException($"Choose at most {item.Seats} candidates.");
+        return ids.Count <= item.Seats ? ids : throw new DomainValidationException(Texts.Format("Error.TooManyCandidates", item.Seats));
     }
 
     private async Task<VotingCode> FindCodeAsync(string? input, CancellationToken cancellationToken)
@@ -206,7 +207,7 @@ public sealed class BallotLogic(VoxaContext context, ICodeService codes, IAttemp
         if (code is null || code.Meeting.Status == MeetingStatus.Archived)
         {
             limiter.RecordFailure(keys);
-            throw new ObjectNotFoundException("This code is not known.");
+            throw new ObjectNotFoundException(Texts.Get("Error.CodeUnknown"));
         }
 
         return code;

@@ -3,12 +3,16 @@ using Voxa.Abstractions;
 using Voxa.Abstractions.Logic;
 using Voxa.Abstractions.Models;
 using Voxa.Persistence.Entity;
+using Voxa.Services;
 
 namespace Voxa.Logic;
 
 public sealed class AgendaLogic(VoxaContext context) : IAgendaLogic
 {
-    /// <summary>The fixed options of a proposal, in ballot order.</summary>
+    /// <summary>
+    /// The fixed options of a proposal, in ballot order. The stored labels are Dutch; the app shows these options by
+    /// their role, in the reader's language.
+    /// </summary>
     public static readonly IReadOnlyList<(OptionRole Role, string Label)> ProposalOptions =
         [(OptionRole.For, "Voor"), (OptionRole.Against, "Tegen"), (OptionRole.Abstain, "Onthouding")];
 
@@ -54,7 +58,7 @@ public sealed class AgendaLogic(VoxaContext context) : IAgendaLogic
                                  .Where(i => i.MeetingId == meetingId).ToListAsync(cancellationToken);
         if (items.Count != request.ItemIds.Count || items.Any(i => !request.ItemIds.Contains(i.Id)) || request.ItemIds.Distinct().Count() != items.Count)
         {
-            throw new DomainValidationException("Name every agenda item of the meeting exactly once.");
+            throw new DomainValidationException(Texts.Get("Error.ItemOrder"));
         }
 
         for (var index = 0; index < request.ItemIds.Count; index++)
@@ -71,12 +75,12 @@ public sealed class AgendaLogic(VoxaContext context) : IAgendaLogic
         var item = await LoadAsync(itemId, cancellationToken);
         if (item.Meeting.Status != MeetingStatus.Ready)
         {
-            throw new DomainConflictException("Send the codes before opening an item.");
+            throw new DomainConflictException(Texts.Get("Error.SendCodesFirst"));
         }
 
         if (item.State == AgendaItemState.Closed)
         {
-            throw new DomainConflictException("A closed item cannot be opened again; add a new item for a new round.");
+            throw new DomainConflictException(Texts.Get("Error.ItemClosed"));
         }
 
         item.State = AgendaItemState.Open;
@@ -89,7 +93,7 @@ public sealed class AgendaLogic(VoxaContext context) : IAgendaLogic
         var item = await LoadAsync(itemId, cancellationToken);
         if (item.Meeting.Status == MeetingStatus.Draft)
         {
-            throw new DomainConflictException("Voting has not started for this meeting.");
+            throw new DomainConflictException(Texts.Get("Error.VotingNotStarted"));
         }
 
         item.State = AgendaItemState.Closed;
@@ -107,13 +111,13 @@ public sealed class AgendaLogic(VoxaContext context) : IAgendaLogic
         MeetingLogic.EnsureNotArchived(item.Meeting);
         if (Mapping.IsLocked(item))
         {
-            throw new DomainConflictException("This item has been opened or has votes, so it can no longer change.");
+            throw new DomainConflictException(Texts.Get("Error.ItemLocked"));
         }
     }
 
     private static void Apply(AgendaItem item, AgendaItemRequest request)
     {
-        item.Title = Mapping.Clean(request.Title) ?? throw new DomainValidationException("An agenda item needs a title.");
+        item.Title = Mapping.Clean(request.Title) ?? throw new DomainValidationException(Texts.Get("Error.ItemTitleRequired"));
         item.Description = Mapping.Clean(request.Description);
         item.Kind = request.Kind;
         item.AdvanceVoting = request.AdvanceVoting;
@@ -129,17 +133,17 @@ public sealed class AgendaLogic(VoxaContext context) : IAgendaLogic
                                 .Where(static c => c.Label is not null).ToList();
         if (candidates.Count == 0)
         {
-            throw new DomainValidationException("An election needs at least one candidate.");
+            throw new DomainValidationException(Texts.Get("Error.ElectionNoCandidates"));
         }
 
         if (request.Seats < 1)
         {
-            throw new DomainValidationException("An election needs at least one seat.");
+            throw new DomainValidationException(Texts.Get("Error.ElectionNoSeats"));
         }
 
         if (candidates.Select(static c => c.Label!.ToUpperInvariant()).Distinct().Count() != candidates.Count)
         {
-            throw new DomainValidationException("Every candidate needs a different name.");
+            throw new DomainValidationException(Texts.Get("Error.CandidatesUnique"));
         }
 
         item.Majority = MajorityRule.Absolute;

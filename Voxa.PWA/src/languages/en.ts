@@ -7,6 +7,8 @@ export default {
 		themeDark: "Dark",
 		versionMismatch: "A new version is being rolled out. Reload the page in a minute.",
 		reload: "Reload",
+		language: "Language",
+		languageDevice: "Same as this device",
 	},
 	common: {
 		cancel: "Cancel",
@@ -98,6 +100,11 @@ export default {
 		back: "Change choice",
 		itemOf: "Item {n} of {total}",
 		whatDoYouVote: "How do you vote?",
+		option: {
+			For: "For",
+			Against: "Against",
+			Abstain: "Abstain",
+		},
 		hint: {
 			For: "You agree with the proposal",
 			Against: "You disagree with the proposal",
@@ -227,6 +234,9 @@ export default {
 			kind: "Kind of meeting",
 			startsAt: "Starts",
 			location: "Location",
+			language: "Language of the mails",
+			languageHint: "The voting codes are mailed in this language.",
+			languageClub: "Club language ({language})",
 			advance: "Allow advance voting",
 			advanceOpens: "Advance voting opens on",
 			advanceHint: "Members can vote from this moment until the meeting starts.",
@@ -356,6 +366,9 @@ export default {
 			clubName: "Club name",
 			contactEmail: "Contact address",
 			contactHint: "Members without a code can write here.",
+			language: "Language",
+			languageHint:
+				"Mails are in this language unless a meeting has its own. Devices set to a language Voxa does not have see it too.",
 			brand: "Branding",
 			primary: "Primary colour",
 			secondary: "Accent colour",
@@ -395,8 +408,9 @@ export default {
 			exportResults: "Export results",
 			wipe: "Wipe everything",
 			wipeText:
-				"All meetings, results, codes and member lists are deleted for good. The settings stay. Type WISSEN to confirm.",
-			wipeLabel: "Type WISSEN",
+				"All meetings, results, codes and member lists are deleted for good. The settings stay. Type WIPE to confirm.",
+			wipeLabel: "Type WIPE",
+			wipeWord: "WIPE",
 			wiped: "All data was wiped.",
 		},
 		outbox: {

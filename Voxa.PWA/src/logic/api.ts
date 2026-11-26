@@ -200,6 +200,8 @@ export interface ChannelCountModel {
 export interface ClubBrandModel {
   clubName: string;
   contactEmail: string | null;
+  /** The club's language (Voxa.Abstractions.Languages.Supported), for mails and for devices whose language Voxa lacks. */
+  language: string;
   primaryColor: string;
   secondaryColor: string;
   headingFont: string;
@@ -211,6 +213,8 @@ export interface ClubBrandModel {
 export interface ClubSettingsModel {
   clubName: string;
   contactEmail: string | null;
+  /** The club's language (Voxa.Abstractions.Languages.Supported), for mails and for devices whose language Voxa lacks. */
+  language: string;
   primaryColor: string;
   secondaryColor: string;
   headingFont: string;
@@ -256,6 +260,12 @@ export interface ClubSettingsRequest {
    * @maxLength 320
    */
   contactEmail?: string | null;
+  /**
+   * One of Voxa.Abstractions.Languages.Supported; empty keeps the default language.
+   * @minLength 0
+   * @maxLength 8
+   */
+  language?: string | null;
   /**
    * @minLength 1
    * @pattern ^#[0-9A-Fa-f]{6}$
@@ -367,6 +377,8 @@ export interface MeetingModel {
   /** @format date-time */
   startsAt: string;
   location: string | null;
+  /** The language of the meeting's mails; empty means the club's language. */
+  language: string | null;
   status: MeetingStatus;
   advanceVoting: boolean;
   /** @format date-time */
@@ -408,6 +420,12 @@ export interface MeetingRequest {
    * @maxLength 300
    */
   location?: string | null;
+  /**
+   * One of Voxa.Abstractions.Languages.Supported for the meeting's mails, or empty for the club's language.
+   * @minLength 0
+   * @maxLength 8
+   */
+  language?: string | null;
   advanceVoting?: boolean;
   /**
    * When advance voting opens; empty means the earliest moment the statutes allow.
@@ -425,6 +443,8 @@ export interface MeetingSummaryModel {
   /** @format date-time */
   startsAt: string;
   location: string | null;
+  /** The language of the meeting's mails; empty means the club's language. */
+  language: string | null;
   status: MeetingStatus;
   advanceVoting: boolean;
   /** @format date-time */
@@ -663,7 +683,7 @@ export interface VoterRequest {
 
 export interface WipeRequest {
   /**
-   * Must be the word WISSEN, so nobody wipes the data by accident.
+   * Must be the confirm word (WISSEN in Dutch, WIPE in English), so nobody wipes the data by accident.
    * @minLength 1
    */
   confirm: string;

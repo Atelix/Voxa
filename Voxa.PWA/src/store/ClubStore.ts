@@ -7,6 +7,7 @@ import { useApi } from "@/services/useApi"
 export const DEFAULT_BRAND: ClubBrandModel = {
 	clubName: "Voxa",
 	contactEmail: null,
+	language: "nl",
 	primaryColor: "#1F2A44",
 	secondaryColor: "#4FB3D9",
 	headingFont: "Montserrat",

@@ -7,6 +7,8 @@ export default {
 		themeDark: "Donker",
 		versionMismatch: "Er wordt een nieuwe versie uitgerold. Laad de pagina over een minuut opnieuw.",
 		reload: "Opnieuw laden",
+		language: "Taal",
+		languageDevice: "Zoals dit apparaat",
 	},
 	common: {
 		cancel: "Annuleren",
@@ -100,6 +102,11 @@ export default {
 		back: "Keuze aanpassen",
 		itemOf: "Punt {n} van {total}",
 		whatDoYouVote: "Wat stem je?",
+		option: {
+			For: "Voor",
+			Against: "Tegen",
+			Abstain: "Onthouding",
+		},
 		hint: {
 			For: "Je bent het eens met het voorstel",
 			Against: "Je bent het niet eens met het voorstel",
@@ -230,6 +237,9 @@ export default {
 			kind: "Soort vergadering",
 			startsAt: "Begin",
 			location: "Locatie",
+			language: "Taal van de mails",
+			languageHint: "De stemcodes worden in deze taal gemaild.",
+			languageClub: "Taal van de vereniging ({language})",
 			advance: "Vooraf stemmen toestaan",
 			advanceOpens: "Vooraf stemmen opent op",
 			advanceHint: "Leden kunnen stemmen vanaf dit moment tot het begin van de vergadering.",
@@ -360,6 +370,9 @@ export default {
 			clubName: "Naam vereniging",
 			contactEmail: "Contactadres",
 			contactHint: "Leden zonder code kunnen hierheen mailen.",
+			language: "Taal",
+			languageHint:
+				"Mails gaan in deze taal, tenzij een vergadering een eigen taal heeft. Ook apparaten in een taal die Voxa niet heeft, zien deze taal.",
 			brand: "Huisstijl",
 			primary: "Hoofdkleur",
 			secondary: "Accentkleur",
@@ -402,6 +415,7 @@ export default {
 			wipeText:
 				"Alle vergaderingen, uitslagen, codes en ledenlijsten worden definitief verwijderd. De instellingen blijven. Typ WISSEN om te bevestigen.",
 			wipeLabel: "Typ WISSEN",
+			wipeWord: "WISSEN",
 			wiped: "Alle gegevens zijn gewist.",
 		},
 		outbox: {

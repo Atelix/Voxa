@@ -86,7 +86,7 @@
 						@click="picked = [option.id]">
 						<v-icon :icon="picked.includes(option.id) ? 'mdi-radiobox-marked' : 'mdi-radiobox-blank'" color="primary" />
 						<span class="d-flex flex-column">
-							<span class="font-weight-bold">{{ option.label }}</span>
+							<span class="font-weight-bold">{{ optionLabel(option, t) }}</span>
 							<span class="text-body-small text-medium-emphasis">{{ $t(`vote.hint.${option.role}`) }}</span>
 						</span>
 					</button>
@@ -167,6 +167,7 @@ import { computed, onMounted, ref, watch } from "vue"
 import { useI18n } from "vue-i18n"
 import { useRouter } from "vue-router"
 import { AgendaItemKind, BallotItemStatus, OptionRole } from "@/logic/api"
+import { optionLabel } from "@/services/optionLabel"
 import { useAsyncAction } from "@/services/useAsyncAction"
 import { maskCode } from "@/services/votingCode"
 import { useVoterStore } from "@/store/VoterStore"
@@ -199,10 +200,7 @@ const blank = computed(() => item.value?.options.find((o) => o.role === OptionRo
 const blankPicked = computed(() => !!blank.value && picked.value.includes(blank.value.id))
 const candidatesPicked = computed(() => picked.value.filter((id) => id !== blank.value?.id).length)
 const chosenLabels = computed(
-	() =>
-		item.value?.options
-			.filter((o) => picked.value.includes(o.id))
-			.map((o) => (o.role === OptionRole.Blank ? t("vote.blank") : o.label)) ?? []
+	() => item.value?.options.filter((o) => picked.value.includes(o.id)).map((o) => optionLabel(o, t)) ?? []
 )
 
 const errorText = computed(() => {

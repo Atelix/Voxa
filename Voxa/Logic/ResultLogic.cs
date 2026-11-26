@@ -3,6 +3,7 @@ using Voxa.Abstractions;
 using Voxa.Abstractions.Logic;
 using Voxa.Abstractions.Models;
 using Voxa.Persistence.Entity;
+using Voxa.Services;
 
 namespace Voxa.Logic;
 
@@ -48,7 +49,7 @@ public sealed class ResultLogic(VoxaContext context, TimeProvider time) : IResul
         var counts = request.Options.GroupBy(static o => o.OptionId).ToDictionary(static g => g.Key, static g => g.Sum(static o => o.Count));
         if (counts.Keys.Any(id => item.Options.All(o => o.Id != id)) || counts.Values.Any(static c => c < 0) || request.Ballots < 0)
         {
-            throw new DomainValidationException("Paper votes can only be counted for the options of this item.");
+            throw new DomainValidationException(Texts.Get("Error.PaperOptions"));
         }
 
         int CountFor(Func<ItemOption, bool> match) => item.Options.Where(match).Sum(o => counts.GetValueOrDefault(o.Id));
@@ -64,7 +65,7 @@ public sealed class ResultLogic(VoxaContext context, TimeProvider time) : IResul
             var candidates = CountFor(static o => o.Role == OptionRole.Candidate);
             if (blank > ballots || candidates > (ballots - blank) * item.Seats || item.Options.Any(o => counts.GetValueOrDefault(o.Id) > ballots))
             {
-                throw new DomainValidationException("The counts do not fit the number of ballots.");
+                throw new DomainValidationException(Texts.Get("Error.PaperTotals"));
             }
         }
 
@@ -95,7 +96,7 @@ public sealed class ResultLogic(VoxaContext context, TimeProvider time) : IResul
                       ?? throw new ObjectNotFoundException(nameof(Meeting), meetingId);
         if (request.ItemId is { } itemId && meeting.Items.All(i => i.Id != itemId || i.State != AgendaItemState.Closed))
         {
-            throw new DomainValidationException("Only a closed item of this meeting can be shown on the hall screen.");
+            throw new DomainValidationException(Texts.Get("Error.ScreenClosedOnly"));
         }
 
         meeting.ScreenItemId = request.ItemId;
@@ -138,7 +139,7 @@ public sealed class ResultLogic(VoxaContext context, TimeProvider time) : IResul
     {
         if (item.State != AgendaItemState.Closed)
         {
-            throw new DomainForbiddenException("The result stays hidden until the item is closed.");
+            throw new DomainForbiddenException(Texts.Get("Error.ResultHidden"));
         }
     }
 

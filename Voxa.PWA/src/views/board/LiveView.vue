@@ -126,7 +126,7 @@ const snackbar = ref(false)
 const snackbarText = ref("")
 const origin = window.location.origin
 const host = window.location.host
-const hallUrl = computed(() => `/zaal/${props.id}`)
+const hallUrl = computed(() => `/hall/${props.id}`)
 const archived = computed(() => live.value?.meeting.status === MeetingStatus.Archived)
 
 async function load(): Promise<void> {

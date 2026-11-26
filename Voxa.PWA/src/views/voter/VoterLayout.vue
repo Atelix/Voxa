@@ -16,6 +16,7 @@
 				</span>
 			</div>
 			<v-spacer />
+			<language-menu size="small" />
 			<v-btn v-if="voter.signedIn" variant="text" size="small" @click="signOut">{{ $t("voter.signOut") }}</v-btn>
 		</div>
 	</v-app-bar>
@@ -31,6 +32,7 @@ import { computed } from "vue"
 import { useI18n } from "vue-i18n"
 import { useRouter } from "vue-router"
 import ClubLogo from "@/components/ClubLogo.vue"
+import LanguageMenu from "@/components/LanguageMenu.vue"
 import { maskCode } from "@/services/votingCode"
 import { useClubStore } from "@/store/ClubStore"
 import { useVoterStore } from "@/store/VoterStore"

@@ -7,6 +7,7 @@
 			<v-btn variant="text" :to="{ name: 'meetings' }" exact>{{ $t("board.nav.meetings") }}</v-btn>
 			<v-btn variant="text" :to="{ name: 'settings' }">{{ $t("board.nav.settings") }}</v-btn>
 			<v-btn v-if="board.trialMode" variant="text" :to="{ name: 'outbox' }">{{ $t("board.nav.outbox") }}</v-btn>
+			<language-menu />
 			<v-btn icon="mdi-logout" variant="text" :aria-label="$t('board.nav.signOut')" @click="signOut" />
 		</div>
 	</v-app-bar>
@@ -23,6 +24,7 @@
 <script setup lang="ts">
 import { useRouter } from "vue-router"
 import ClubLogo from "@/components/ClubLogo.vue"
+import LanguageMenu from "@/components/LanguageMenu.vue"
 import { useBoardStore } from "@/store/BoardStore"
 
 const board = useBoardStore()

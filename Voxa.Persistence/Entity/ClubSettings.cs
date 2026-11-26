@@ -28,6 +28,12 @@ public class ClubSettings
     /// <summary>The address members can write to, shown when a code did not arrive.</summary>
     public string? ContactEmail { get; set; }
 
+    /// <summary>
+    /// The club's language as a two-letter code (Voxa.Abstractions.Languages): mails use it unless the meeting has its
+    /// own, and the app shows it to people whose device asks for a language Voxa does not have.
+    /// </summary>
+    public string Language { get; set; } = "nl";
+
     public required string PrimaryColor { get; set; }
 
     public required string SecondaryColor { get; set; }

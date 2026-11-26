@@ -18,6 +18,13 @@
 						:hint="$t('board.settings.contactHint')"
 						persistent-hint
 						class="mb-2" />
+					<v-select
+						v-model="form.language"
+						:items="languages"
+						:label="$t('board.settings.language')"
+						:hint="$t('board.settings.languageHint')"
+						persistent-hint
+						class="mt-4 mb-2" />
 				</v-card>
 
 				<v-card class="pa-5 mb-4">
@@ -180,7 +187,7 @@
 			:title="$t('board.settings.wipe')"
 			:text="$t('board.settings.wipeText')"
 			:confirm="$t('board.settings.wipe')"
-			:disabled="wipeWord !== 'WISSEN'"
+			:disabled="wipeWord.trim() !== $t('board.settings.wipeWord')"
 			@confirm="wipe">
 			<v-card-text class="pt-0"
 				><v-text-field v-model="wipeWord" :label="$t('board.settings.wipeLabel')"
@@ -196,6 +203,7 @@ import { useI18n } from "vue-i18n"
 import ConfirmDialog from "@/components/ConfirmDialog.vue"
 import { MinorVoting, type ClubSettingsModel, type ClubSettingsRequest } from "@/logic/api"
 import { normalizeApiError } from "@/logic/ApiError"
+import { defaultLocale, languageName, supportedLocales } from "@/plugins/i18n"
 import { contrast, onColor } from "@/services/theme"
 import { useApi } from "@/services/useApi"
 import { useAsyncAction } from "@/services/useAsyncAction"
@@ -219,6 +227,7 @@ const snackbarText = ref("")
 const form = reactive<ClubSettingsRequest>({
 	clubName: "",
 	contactEmail: null,
+	language: defaultLocale,
 	primaryColor: "#1F2A44",
 	secondaryColor: "#4FB3D9",
 	headingFont: "Montserrat",
@@ -233,6 +242,7 @@ const form = reactive<ClubSettingsRequest>({
 	adultAge: 18,
 })
 
+const languages = supportedLocales.map((locale) => ({ title: languageName(locale), value: locale }))
 const minorOptions = computed(() => [
 	{ title: t("board.settings.minorGuardian"), value: MinorVoting.Guardian },
 	{ title: t("board.settings.minorSelf"), value: MinorVoting.Self },

@@ -20,10 +20,10 @@ public sealed class TrialLogic(IMeetingLogic meetings, IAgendaLogic agenda, IVot
         var startsAt = ClubTime.ToUtc(today.AddDays(3).AddHours(19).AddMinutes(30));
         var meeting = await meetings.CreateAsync(new MeetingRequest
         {
-            Name = $"Proef-ALV {today.Year}",
+            Name = Texts.Format("Trial.MeetingName", today.Year),
             Kind = MeetingKind.Annual,
             StartsAt = startsAt,
-            Location = "Kantine (proef)",
+            Location = Texts.Get("Trial.Location"),
             AdvanceVoting = true,
             AdvanceOpensAt = ClubTime.ToUtc(today),
         }, cancellationToken);
@@ -31,17 +31,23 @@ public sealed class TrialLogic(IMeetingLogic meetings, IAgendaLogic agenda, IVot
         static AgendaItemRequest Proposal(string title, string description, MajorityRule majority = MajorityRule.Absolute, bool advance = true) =>
             new() { Title = title, Description = description, Kind = AgendaItemKind.Proposal, Majority = majority, AdvanceVoting = advance };
 
-        _ = await agenda.AddAsync(meeting.Id, Proposal("Notulen vorige ALV vaststellen", "De ALV stelt de notulen van de vorige vergadering vast."), cancellationToken);
-        _ = await agenda.AddAsync(meeting.Id, Proposal("Begroting vaststellen", "De ALV stelt de begroting vast zoals de penningmeester die heeft gepresenteerd."), cancellationToken);
-        _ = await agenda.AddAsync(meeting.Id, Proposal("Statutenwijziging", "Voorbeeld van een besluit dat twee derde van de stemmen nodig heeft. Alleen in de zaal.", MajorityRule.TwoThirds, advance: false), cancellationToken);
+        // The demo is written in the board's language: the language of this request.
+        _ = await agenda.AddAsync(meeting.Id, Proposal(Texts.Get("Trial.MinutesTitle"), Texts.Get("Trial.MinutesText")), cancellationToken);
+        _ = await agenda.AddAsync(meeting.Id, Proposal(Texts.Get("Trial.BudgetTitle"), Texts.Get("Trial.BudgetText")), cancellationToken);
+        _ = await agenda.AddAsync(meeting.Id, Proposal(Texts.Get("Trial.StatutesTitle"), Texts.Get("Trial.StatutesText"), MajorityRule.TwoThirds, advance: false), cancellationToken);
         _ = await agenda.AddAsync(meeting.Id, new AgendaItemRequest
         {
-            Title = "Verkiezing bestuursleden",
-            Description = "Er zijn 2 plaatsen. Kies maximaal 2 kandidaten, of stem blanco.",
+            Title = Texts.Get("Trial.ElectionTitle"),
+            Description = Texts.Get("Trial.ElectionText"),
             Kind = AgendaItemKind.Election,
             Seats = 2,
             AdvanceVoting = true,
-            Candidates = [new() { Label = "Kandidaat A", Note = "Herkiesbaar" }, new() { Label = "Kandidaat B", Note = "Nieuwe kandidaat" }, new() { Label = "Kandidaat C", Note = "Nieuwe kandidaat" }],
+            Candidates =
+            [
+                new() { Label = Texts.Format("Trial.Candidate", "A"), Note = Texts.Get("Trial.Reelection") },
+                new() { Label = Texts.Format("Trial.Candidate", "B"), Note = Texts.Get("Trial.NewCandidate") },
+                new() { Label = Texts.Format("Trial.Candidate", "C"), Note = Texts.Get("Trial.NewCandidate") },
+            ],
         }, cancellationToken);
 
         var csv = string.Join("\n",
@@ -70,7 +76,7 @@ public sealed class TrialLogic(IMeetingLogic meetings, IAgendaLogic agenda, IVot
     {
         if (!mail.IsTrial)
         {
-            throw new DomainForbiddenException("Demo data and the test mailbox only exist in the trial setup (Mail__Mode=Outbox).");
+            throw new DomainForbiddenException(Texts.Get("Error.TrialOnly"));
         }
     }
 }

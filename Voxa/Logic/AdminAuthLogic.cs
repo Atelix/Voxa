@@ -9,6 +9,7 @@ using Voxa.Abstractions;
 using Voxa.Abstractions.Logic;
 using Voxa.Abstractions.Models;
 using Voxa.Abstractions.Services;
+using Voxa.Services;
 
 namespace Voxa.Logic;
 
@@ -41,7 +42,7 @@ public sealed class AdminAuthLogic(IHttpContextAccessor accessor, IOptions<Admin
         if (string.IsNullOrEmpty(expected) || !CryptographicOperations.FixedTimeEquals(Digest(request.Password), Digest(expected)))
         {
             limiter.RecordFailure(keys);
-            throw new DomainValidationException("The password is wrong.");
+            throw new DomainValidationException(Texts.Get("Error.PasswordWrong"));
         }
 
         var context = accessor.HttpContext ?? throw new InvalidOperationException("Signing in needs a request.");

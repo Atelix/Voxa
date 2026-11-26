@@ -9,6 +9,13 @@
 				<v-select v-model="form.kind" :items="kinds" :label="$t('board.meeting.kind')" />
 				<v-text-field v-model="form.startsAt" type="datetime-local" :label="$t('board.meeting.startsAt')" />
 				<v-text-field v-model="form.location" :label="$t('board.meeting.location')" />
+				<v-select
+					v-model="form.language"
+					:items="languages"
+					:label="$t('board.meeting.language')"
+					:hint="$t('board.meeting.languageHint')"
+					persistent-hint
+					class="mb-2" />
 				<v-switch
 					v-model="form.advanceVoting"
 					color="primary"
@@ -49,13 +56,16 @@
 import { computed, reactive, watch } from "vue"
 import { useI18n } from "vue-i18n"
 import { MeetingKind, type MeetingModel } from "@/logic/api"
+import { isAppLocale, languageName, supportedLocales } from "@/plugins/i18n"
 import { fromLocalInput, toLocalInput } from "@/services/format"
 import { useApi } from "@/services/useApi"
 import { useAsyncAction } from "@/services/useAsyncAction"
+import { useClubStore } from "@/store/ClubStore"
 
 const props = defineProps<{ modelValue: boolean; meeting: MeetingModel | null }>()
 const emit = defineEmits<{ "update:modelValue": [boolean]; saved: [MeetingModel] }>()
 const api = useApi()
+const club = useClubStore()
 const { t } = useI18n()
 const action = useAsyncAction<MeetingModel>()
 const form = reactive({
@@ -63,12 +73,23 @@ const form = reactive({
 	kind: MeetingKind.Annual,
 	startsAt: "",
 	location: "",
+	// "" is the club's language; Vuetify's select does not take null as an item value.
+	language: "",
 	advanceVoting: true,
 	advanceOpensAt: "",
 })
 const kinds = computed(() => [
 	{ title: t("board.meeting.kindAnnual"), value: MeetingKind.Annual },
 	{ title: t("board.meeting.kindExtra"), value: MeetingKind.Extra },
+])
+const languages = computed(() => [
+	{
+		title: t("board.meeting.languageClub", {
+			language: isAppLocale(club.brand.language) ? languageName(club.brand.language) : club.brand.language,
+		}),
+		value: "",
+	},
+	...supportedLocales.map((locale) => ({ title: languageName(locale), value: locale })),
 ])
 
 watch(
@@ -82,6 +103,7 @@ watch(
 			kind: m?.kind ?? MeetingKind.Annual,
 			startsAt: toLocalInput(m?.startsAt),
 			location: m?.location ?? "",
+			language: m?.language ?? "",
 			advanceVoting: m?.advanceVoting ?? true,
 			advanceOpensAt: toLocalInput(m?.advanceOpensAt),
 		})
@@ -95,6 +117,7 @@ async function save(): Promise<void> {
 		kind: form.kind,
 		startsAt: fromLocalInput(form.startsAt) ?? "",
 		location: form.location || null,
+		language: form.language || null,
 		advanceVoting: form.advanceVoting,
 		// Empty: the earliest moment the club's rules allow.
 		advanceOpensAt: form.advanceVoting ? fromLocalInput(form.advanceOpensAt) : null,

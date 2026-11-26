@@ -1,8 +1,10 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Voxa;
+using Voxa.Abstractions;
 using Voxa.Services;
 using Voxa.WebApi;
 
@@ -65,6 +67,14 @@ builder.Services.AddHsts(static options =>
     options.IncludeSubDomains = true;
 });
 
+// The API answers in the language the app asks for; the PWA sends its own language as Accept-Language.
+builder.Services.AddRequestLocalization(static options =>
+{
+    string[] cultures = [.. Languages.Supported];
+    options.SetDefaultCulture(Languages.Default).AddSupportedCultures(cultures).AddSupportedUICultures(cultures);
+    // Only the header counts: no query string or cookie can change the language behind the app's back.
+    options.RequestCultureProviders = [new AcceptLanguageHeaderRequestCultureProvider()];
+});
 builder.Services.AddControllers().AddJsonOptions(static options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddExceptionHandler<DomainExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -106,6 +116,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseRequestLocalization();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
 app.UseAppVersionHeader(appVersion);

@@ -13,6 +13,7 @@
 <script setup lang="ts">
 import { computed, onMounted, watchEffect } from "vue"
 import { useTheme } from "vuetify"
+import { resolveLocale, setLocale } from "@/plugins/i18n"
 import { APP_VERSION, apiVersion, versionsDiffer } from "@/services/appVersion"
 import { onColor, tint } from "@/services/theme"
 import { useClubStore } from "@/store/ClubStore"
@@ -26,6 +27,11 @@ onMounted(() => void club.load())
 
 watchEffect(() => {
 	void theme.change(preferences.theme === "system" ? "light" : preferences.theme)
+})
+
+// The person's choice, else the device's language, else the club's.
+watchEffect(() => {
+	setLocale(resolveLocale(preferences.language, navigator.languages, club.brand.language))
 })
 
 // The club's brand drives the theme: primary and secondary colours, fonts and the page title.

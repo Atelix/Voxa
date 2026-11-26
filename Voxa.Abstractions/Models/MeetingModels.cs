@@ -16,6 +16,9 @@ public record MeetingSummaryModel
 
     public required string? Location { get; init; }
 
+    /// <summary>The language of the meeting's mails; empty means the club's language.</summary>
+    public required string? Language { get; init; }
+
     public required MeetingStatus Status { get; init; }
 
     public required bool AdvanceVoting { get; init; }
@@ -100,6 +103,10 @@ public sealed class MeetingRequest
     [StringLength(300)]
     public string? Location { get; init; }
 
+    /// <summary>One of <see cref="Languages.Supported"/> for the meeting's mails, or empty for the club's language.</summary>
+    [StringLength(8)]
+    public string? Language { get; init; }
+
     public bool AdvanceVoting { get; init; }
 
     /// <summary>When advance voting opens; empty means the earliest moment the statutes allow.</summary>
@@ -149,7 +156,7 @@ public sealed class ItemOrderRequest
 
 public sealed class WipeRequest
 {
-    /// <summary>Must be the word WISSEN, so nobody wipes the data by accident.</summary>
+    /// <summary>Must be the confirm word (WISSEN in Dutch, WIPE in English), so nobody wipes the data by accident.</summary>
     [Required]
     public required string Confirm { get; init; }
 }

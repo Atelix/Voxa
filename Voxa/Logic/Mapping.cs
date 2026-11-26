@@ -13,6 +13,7 @@ internal static class Mapping
         Kind = meeting.Kind,
         StartsAt = meeting.StartsAt,
         Location = meeting.Location,
+        Language = meeting.Language,
         Status = meeting.Status,
         AdvanceVoting = meeting.AdvanceVoting,
         AdvanceOpensAt = meeting.AdvanceOpensAt,
