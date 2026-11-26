@@ -1,23 +1,10 @@
-import { createRouter, createWebHistory, type RouteComponent, type RouteRecordRaw } from "vue-router"
+import { createRouter, createWebHistory, type RouteComponent } from "vue-router"
 import { useBoardStore } from "@/store/BoardStore"
 
 /** Views load on first visit, so the first page only downloads what it shows. */
 type LazyView = () => Promise<{ default: RouteComponent }>
 
 const view = (load: LazyView): LazyView => load
-
-const legacyRedirects: RouteRecordRaw[] = [
-	{ path: "/stempunten", redirect: "/items" },
-	{ path: "/stempunt/:id(\\d+)", redirect: (to) => `/item/${String(to.params.id)}` },
-	{ path: "/zaal/:id(\\d+)", redirect: (to) => `/hall/${String(to.params.id)}` },
-	{ path: "/bestuur", redirect: "/admin" },
-	{ path: "/bestuur/inloggen", redirect: "/admin/login" },
-	{ path: "/bestuur/instellingen", redirect: "/admin/settings" },
-	{ path: "/bestuur/proefmailbox", redirect: "/admin/test-mailbox" },
-	{ path: "/bestuur/vergadering/:id(\\d+)", redirect: (to) => `/admin/meeting/${String(to.params.id)}` },
-	{ path: "/bestuur/vergadering/:id(\\d+)/live", redirect: (to) => `/admin/meeting/${String(to.params.id)}/live` },
-	{ path: "/bestuur/stempunt/:id(\\d+)/uitslag", redirect: (to) => `/admin/item/${String(to.params.id)}/result` },
-]
 
 const router = createRouter({
 	history: createWebHistory(import.meta.env.BASE_URL),
@@ -77,8 +64,6 @@ const router = createRouter({
 				{ path: "test-mailbox", name: "outbox", component: view(() => import("@/views/board/OutboxView.vue")) },
 			],
 		},
-		// The Dutch paths of the first release, so bookmarks such as a hall screen's keep working.
-		...legacyRedirects,
 		{
 			path: "/:pathMatch(.*)*",
 			name: "not-found",
