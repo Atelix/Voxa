@@ -15,12 +15,12 @@
     "generate-api-schema": "pnpm dlx swagger-typescript-api generate -p http://localhost:5143/swagger/v1/swagger.json -o src/logic/ -n api.ts --module-name-index 1"
   },
   "dependencies": {
-    "@fontsource/hind": "5.2.8",
-    "@fontsource/lato": "5.2.7",
-    "@fontsource/montserrat": "5.2.8",
-    "@fontsource/open-sans": "5.2.7",
-    "@fontsource/oswald": "5.2.8",
-    "@fontsource/roboto": "5.2.10",
+    "@fontsource/hind": "5.3.0",
+    "@fontsource/lato": "5.3.0",
+    "@fontsource/montserrat": "5.3.0",
+    "@fontsource/open-sans": "5.3.0",
+    "@fontsource/oswald": "5.3.0",
+    "@fontsource/roboto": "5.3.0",
     "@mdi/font": "7.4.47",
     "pinia": "^4.1.0",
     "qrcode": "1.5.4",
