@@ -13,7 +13,7 @@ Apply the project adaptations below before the generic upstream examples.
 ## Project adaptations
 
 - Use Vue 3, TypeScript, Vuetify, Pinia and the existing Vite layout. Read the canonical `material-design` skill; this is not a Nuxt application.
-- Use the existing `useLoader` and `useAsyncAction` helpers in Starter.PWA as required by AGENTS.md, with Vuetify skeletons for content loading.
+- Use the existing `useLoader` and `useAsyncAction` helpers in Voxa.PWA as required by AGENTS.md, with Vuetify skeletons for content loading.
 - Use the existing API wrapper and generated client; never hand-edit src/logic/api.ts or replace the API lifecycle with sample fetch helpers.
 - Preserve current store/component conventions and the English/Dutch translations; avoid unrelated folder or store rewrites.
 - Use configured Vitest tests and the canonical `webapp-testing` skill for browser checks at phone and desktop widths. Run the PWA's required pnpm checks.

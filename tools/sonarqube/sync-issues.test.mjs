@@ -14,12 +14,12 @@ import {
     toFindings,
 } from "./sync-issues.mjs";
 
-const projectKey = "Atelix_Starter";
+const projectKey = "Atelix_Voxa";
 const settings = {
     sonarUrl: "https://sonarcloud.io",
     organization: "atelix",
     projectKey,
-    repository: "Atelix/starter",
+    repository: "Atelix/voxa",
     revision: "abc123",
     minSeverity: "MEDIUM",
     maxNewIssues: 25,
@@ -31,7 +31,7 @@ function issue(rule, overrides = {}) {
         rule,
         type: "CODE_SMELL",
         severity: "MAJOR",
-        component: `${projectKey}:Starter/Logic/Example.cs`,
+        component: `${projectKey}:Voxa/Logic/Example.cs`,
         line: 10,
         message: "Fix <this> for @someone",
         ...overrides,
@@ -56,7 +56,7 @@ describe("toFindings and groupByRule", () => {
                 issue("csharpsquid:S1", { line: 20 }),
                 issue("csharpsquid:S1", { line: 5, severity: "CRITICAL" }),
                 issue("csharpsquid:S2", { severity: "MINOR" }),
-                issue("typescript:S3", { type: "BUG", component: `${projectKey}:Starter.PWA/src/main.ts` }),
+                issue("typescript:S3", { type: "BUG", component: `${projectKey}:Voxa.PWA/src/main.ts` }),
             ],
             hotspots: [{ ruleKey: "githubactions:S4", vulnerabilityProbability: "LOW", component: `${projectKey}:.github/workflows/a.yml`, line: 3 }],
             projectKey,
@@ -67,7 +67,7 @@ describe("toFindings and groupByRule", () => {
         assert.deepEqual(groups.map(group => group.rule), ["csharpsquid:S1", "typescript:S3"]);
         assert.equal(groups[0].severity, "HIGH");
         assert.deepEqual(groups[0].findings.map(finding => finding.line), [5, 20]);
-        assert.equal(groups[0].findings[0].path, "Starter/Logic/Example.cs");
+        assert.equal(groups[0].findings[0].path, "Voxa/Logic/Example.cs");
     });
 
     it("keeps security hotspots at or above the minimum severity", () => {
@@ -95,7 +95,7 @@ describe("bodyFor", () => {
         const body = bodyFor(group, { ...settings, ruleName: "Example rule" });
 
         assert.equal(ruleFromBody(body), "csharpsquid:S1");
-        assert.match(body, /\[`Starter\/Logic\/Example\.cs:10`\]\(https:\/\/github\.com\/Atelix\/starter\/blob\/abc123\/Starter\/Logic\/Example\.cs#L10\)/);
+        assert.match(body, /\[`Voxa\/Logic\/Example\.cs:10`\]\(https:\/\/github\.com\/Atelix\/voxa\/blob\/abc123\/Voxa\/Logic\/Example\.cs#L10\)/);
         assert.match(body, /Fix &lt;this&gt; for &#64;someone/);
         assert.doesNotMatch(body, /@someone/);
     });
@@ -173,7 +173,7 @@ describe("createSonarClient", () => {
         assert.equal(items.length, 501);
         assert.deepEqual(rules.map(rule => rule.name), ["Rule A", "Rule B"]);
         assert.equal(calls.length, 2);
-        assert.match(calls[0], /componentKeys=Atelix_Starter/);
+        assert.match(calls[0], /componentKeys=Atelix_Voxa/);
         assert.match(calls[0], /resolved=false/);
     });
 
@@ -193,7 +193,7 @@ describe("createSonarClient", () => {
         const sonar = createSonarClient({ fetchImpl: impl, sonarUrl: "https://sonarcloud.io", token: "t", organization: "atelix", projectKey });
 
         assert.equal(await sonar.mainBranch(), "master");
-        assert.match(calls[0], /project=Atelix_Starter/);
+        assert.match(calls[0], /project=Atelix_Voxa/);
     });
 });
 

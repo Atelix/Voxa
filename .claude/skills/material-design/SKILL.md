@@ -1,6 +1,6 @@
 ---
 name: material-design
-description: Use when designing, building or reviewing the visual UI of Starter.PWA. Owns Vuetify components, branding, layout, accessibility and Material Design 3 audits; detailed MD3 principles live in its reference files. Reactive state and application logic belong to ecc-vue-patterns.
+description: Use when designing, building or reviewing the visual UI of Voxa.PWA. Owns Vuetify components, branding, layout, accessibility and Material Design 3 audits; detailed MD3 principles live in its reference files. Reactive state and application logic belong to ecc-vue-patterns.
 ---
 
 # Material Design in the project
@@ -9,7 +9,7 @@ The front end is a Vue 3 app built on **Vuetify 4**, which implements
 Material Design 3 (its type scale, elevation levels and grid). Good Material UI here means using Vuetify the way it is meant
 to be used, not adding another design library on top.
 
-- `Starter.PWA`: the app. Its theme (light and dark) is in `src/plugins/vuetify.ts`,
+- `Voxa.PWA`: the app. Its theme (light and dark) is in `src/plugins/vuetify.ts`,
   together with the component defaults (corner radius, field variants). Change the
   brand there, not per component.
 - Accessibility fixes that apply everywhere live in `src/styles/main.css`.
@@ -34,7 +34,7 @@ screens, and match what they do. Consistency with the rest of the app beats a
    no longer exist), flex (`d-flex align-center`) and display
    (`d-none d-md-flex`). Spacing follows the Material 4/8 px grid; use the scale
    steps, not arbitrary pixel values. Component `<style>` blocks go in
-   `@layer starter { }`, which ranks above Vuetify's components and below its
+   `@layer voxa { }`, which ranks above Vuetify's components and below its
    utility classes (each app's `index.html`), so a utility class always wins.
 4. **Icons are MDI** (`mdi-*` from `@mdi/font`). Pick the outline variant when
    the surrounding screen uses outlines.
@@ -78,7 +78,7 @@ of building a near-copy.
 
 ## Layout and responsiveness
 
-- Design mobile first; Starter.PWA is installed on phones. Use `v-container`,
+- Design mobile first; Voxa.PWA is installed on phones. Use `v-container`,
   `v-row` (spaced with `gap`; `density="compact"` for forms), `v-col cols="12" md="6"`
   and Vuetify 4's breakpoints (md 840 px, lg 1145 px)
   (`useDisplay()` / `$vuetify.display.smAndDown`) rather than media queries.

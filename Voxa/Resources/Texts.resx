@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Problem.BadRequest" xml:space="preserve">
+    <value>Bad request</value>
+  </data>
+  <data name="Problem.Forbidden" xml:space="preserve">
+    <value>Not allowed</value>
+  </data>
+  <data name="Problem.NotFound" xml:space="preserve">
+    <value>Not found</value>
+  </data>
+  <data name="Problem.Conflict" xml:space="preserve">
+    <value>The change could not be applied</value>
+  </data>
+  <data name="Problem.TooManyAttempts" xml:space="preserve">
+    <value>Too many attempts</value>
+  </data>
+  <data name="Error.NotFound" xml:space="preserve">
+    <value>This was not found. It may have been deleted.</value>
+  </data>
+  <data name="Error.TooManyAttempts" xml:space="preserve">
+    <value>Too many failed attempts. Try again later.</value>
+  </data>
+  <data name="Error.FontInvalid" xml:space="preserve">
+    <value>Choose a font from: {0}.</value>
+  </data>
+  <data name="Error.LanguageInvalid" xml:space="preserve">
+    <value>Choose a language from: {0}.</value>
+  </data>
+  <data name="Error.LogoType" xml:space="preserve">
+    <value>The logo must be a PNG, JPEG, SVG or WebP image.</value>
+  </data>
+  <data name="Error.LogoTooLarge" xml:space="preserve">
+    <value>The logo is too large; keep it under 700 kB.</value>
+  </data>
+  <data name="Error.ClubNameRequired" xml:space="preserve">
+    <value>The club needs a name.</value>
+  </data>
+  <data name="Error.PasswordWrong" xml:space="preserve">
+    <value>The password is wrong.</value>
+  </data>
+  <data name="Error.MeetingCodesSent" xml:space="preserve">
+    <value>Codes have been sent for this meeting. Archive it instead.</value>
+  </data>
+  <data name="Error.MeetingArchived" xml:space="preserve">
+    <value>This meeting is archived.</value>
+  </data>
+  <data name="Error.MeetingNameRequired" xml:space="preserve">
+    <value>A meeting needs a name.</value>
+  </data>
+  <data name="Error.AdvanceTooEarly" xml:space="preserve">
+    <value>Advance voting may open at most {0} days before the meeting.</value>
+  </data>
+  <data name="Error.AdvanceAfterStart" xml:space="preserve">
+    <value>Advance voting has to open before the meeting starts.</value>
+  </data>
+  <data name="Error.WipeConfirm" xml:space="preserve">
+    <value>Type {0} to confirm.</value>
+  </data>
+  <data name="Meeting.CopyName" xml:space="preserve">
+    <value>{0} (copy)</value>
+  </data>
+  <data name="Meeting.WipeWord" xml:space="preserve">
+    <value>WIPE</value>
+  </data>
+  <data name="Error.ItemOrder" xml:space="preserve">
+    <value>Name every agenda item of the meeting exactly once.</value>
+  </data>
+  <data name="Error.SendCodesFirst" xml:space="preserve">
+    <value>Send the codes before opening an item.</value>
+  </data>
+  <data name="Error.ItemClosed" xml:space="preserve">
+    <value>A closed item cannot be opened again; add a new item for a new round.</value>
+  </data>
+  <data name="Error.VotingNotStarted" xml:space="preserve">
+    <value>Voting has not started for this meeting.</value>
+  </data>
+  <data name="Error.ItemLocked" xml:space="preserve">
+    <value>This item has been opened or has votes, so it can no longer change.</value>
+  </data>
+  <data name="Error.ItemTitleRequired" xml:space="preserve">
+    <value>An agenda item needs a title.</value>
+  </data>
+  <data name="Error.ElectionNoCandidates" xml:space="preserve">
+    <value>An election needs at least one candidate.</value>
+  </data>
+  <data name="Error.ElectionNoSeats" xml:space="preserve">
+    <value>An election needs at least one seat.</value>
+  </data>
+  <data name="Error.CandidatesUnique" xml:space="preserve">
+    <value>Every candidate needs a different name.</value>
+  </data>
+  <data name="Error.ItemNotOpen" xml:space="preserve">
+    <value>This item is not open for voting.</value>
+  </data>
+  <data name="Error.AlreadyVoted" xml:space="preserve">
+    <value>This code has already voted on this item.</value>
+  </data>
+  <data name="Error.ChooseFromOptions" xml:space="preserve">
+    <value>Choose from the options of this item.</value>
+  </data>
+  <data name="Error.ChooseOne" xml:space="preserve">
+    <value>Choose one option.</value>
+  </data>
+  <data name="Error.BlankNoCandidates" xml:space="preserve">
+    <value>A blank vote names no candidates.</value>
+  </data>
+  <data name="Error.CodeUnknown" xml:space="preserve">
+    <value>This code is not known.</value>
+  </data>
+  <data name="Error.PaperOptions" xml:space="preserve">
+    <value>Paper votes can only be counted for the options of this item.</value>
+  </data>
+  <data name="Error.PaperTotals" xml:space="preserve">
+    <value>The counts do not fit the number of ballots.</value>
+  </data>
+  <data name="Error.ScreenClosedOnly" xml:space="preserve">
+    <value>Only a closed item of this meeting can be shown on the hall screen.</value>
+  </data>
+  <data name="Error.ResultHidden" xml:space="preserve">
+    <value>The result stays hidden until the item is closed.</value>
+  </data>
+  <data name="Error.VoterNameRequired" xml:space="preserve">
+    <value>A voter needs a name.</value>
+  </data>
+  <data name="Error.VoterHasCode" xml:space="preserve">
+    <value>This voter already received a code.</value>
+  </data>
+  <data name="Error.TestMailRefused" xml:space="preserve">
+    <value>The mail provider refused the test mail.</value>
+  </data>
+  <data name="Error.ListCodesSent" xml:space="preserve">
+    <value>Codes have been sent from this list. Add new members one by one.</value>
+  </data>
+  <data name="Error.ListEmpty" xml:space="preserve">
+    <value>The list has no members entitled to vote.</value>
+  </data>
+  <data name="Error.SenderMissing" xml:space="preserve">
+    <value>Set the club's sending address in the settings first.</value>
+  </data>
+  <data name="Error.CsvEmpty" xml:space="preserve">
+    <value>The CSV needs a header row and at least one member.</value>
+  </data>
+  <data name="Error.CsvNameColumn" xml:space="preserve">
+    <value>The CSV needs a column 'naam' (name), or 'voornaam' and 'achternaam' (first and last name).</value>
+  </data>
+  <data name="Voter.SkippedSuspended" xml:space="preserve">
+    <value>{0}: suspended</value>
+  </data>
+  <data name="Voter.SkippedMinor" xml:space="preserve">
+    <value>{0}: minor</value>
+  </data>
+  <data name="Voter.SkippedDuplicate" xml:space="preserve">
+    <value>{0}: duplicate</value>
+  </data>
+  <data name="Voter.Guardian" xml:space="preserve">
+    <value>parent or guardian</value>
+  </data>
+  <data name="Error.TrialOnly" xml:space="preserve">
+    <value>Demo data and the test mailbox only exist in the trial setup (Mail__Mode=Outbox).</value>
+  </data>
+  <data name="Mail.SubjectOne" xml:space="preserve">
+    <value>Your personal voting code for the {0}</value>
+  </data>
+  <data name="Mail.SubjectSeveral" xml:space="preserve">
+    <value>Your personal voting codes for the {0}</value>
+  </data>
+  <data name="Mail.Greeting" xml:space="preserve">
+    <value>Hi {0},</value>
+  </data>
+  <data name="Mail.Member" xml:space="preserve">
+    <value>member</value>
+  </data>
+  <data name="Mail.Intro" xml:space="preserve">
+    <value>On {0}{1}, {2} holds the {3}. You can vote digitally with your phone, in advance or in the hall.</value>
+  </data>
+  <data name="Mail.Location" xml:space="preserve">
+    <value> in {0}</value>
+  </data>
+  <data name="Mail.OnBehalf" xml:space="preserve">
+    <value>With this code you vote on behalf of {0}.</value>
+  </data>
+  <data name="Mail.Several" xml:space="preserve">
+    <value>This address belongs to {0} members entitled to vote, so you get {0} codes: each code is the vote of one member. The button opens the voting page with all the codes. You then vote for all members at once, or for each member separately.</value>
+  </data>
+  <data name="Mail.CodeFor" xml:space="preserve">
+    <value>Voting code for {0}</value>
+  </data>
+  <data name="Mail.YourCode" xml:space="preserve">
+    <value>Your voting code</value>
+  </data>
+  <data name="Mail.VotingPage" xml:space="preserve">
+    <value>Voting page</value>
+  </data>
+  <data name="Mail.OpenVotingPage" xml:space="preserve">
+    <value>Open the voting page</value>
+  </data>
+  <data name="Mail.KeepOne" xml:space="preserve">
+    <value>This code is only for you. Do not share it: whoever has the code can vote with it once per item.</value>
+  </data>
+  <data name="Mail.KeepSeveral" xml:space="preserve">
+    <value>These codes are only for you. Do not share them: whoever has a code can vote with it once per item.</value>
+  </data>
+  <data name="Mail.Advance" xml:space="preserve">
+    <value>You can vote in advance from {0} until the meeting starts.</value>
+  </data>
+  <data name="Mail.DuringMeeting" xml:space="preserve">
+    <value>You can vote during the meeting.</value>
+  </data>
+  <data name="Mail.Secret" xml:space="preserve">
+    <value>Your vote is secret: nobody, not even the board, can see how you voted.</value>
+  </data>
+  <data name="Mail.SignOff" xml:space="preserve">
+    <value>Regards, the board of {0}</value>
+  </data>
+  <data name="Mail.ExampleName" xml:space="preserve">
+    <value>[member name]</value>
+  </data>
+  <data name="Trial.MeetingName" xml:space="preserve">
+    <value>Trial general meeting {0}</value>
+  </data>
+  <data name="Trial.Location" xml:space="preserve">
+    <value>Clubhouse (trial)</value>
+  </data>
+  <data name="Trial.MinutesTitle" xml:space="preserve">
+    <value>Approve the minutes of the last meeting</value>
+  </data>
+  <data name="Trial.MinutesText" xml:space="preserve">
+    <value>The meeting approves the minutes of the previous meeting.</value>
+  </data>
+  <data name="Trial.BudgetTitle" xml:space="preserve">
+    <value>Approve the budget</value>
+  </data>
+  <data name="Trial.BudgetText" xml:space="preserve">
+    <value>The meeting approves the budget as the treasurer presented it.</value>
+  </data>
+  <data name="Trial.StatutesTitle" xml:space="preserve">
+    <value>Amend the statutes</value>
+  </data>
+  <data name="Trial.StatutesText" xml:space="preserve">
+    <value>Example of a decision that needs two thirds of the votes. Only in the hall.</value>
+  </data>
+  <data name="Trial.ElectionTitle" xml:space="preserve">
+    <value>Election of board members</value>
+  </data>
+  <data name="Trial.ElectionText" xml:space="preserve">
+    <value>There are 2 seats. Choose at most 2 candidates, or vote blank.</value>
+  </data>
+  <data name="Trial.Candidate" xml:space="preserve">
+    <value>Candidate {0}</value>
+  </data>
+  <data name="Trial.Reelection" xml:space="preserve">
+    <value>Up for re-election</value>
+  </data>
+  <data name="Trial.NewCandidate" xml:space="preserve">
+    <value>New candidate</value>
+  </data>
+</root>

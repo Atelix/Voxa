@@ -38,9 +38,9 @@ if [ "$(node --version 2>/dev/null)" != "v$node_version" ]; then
 fi
 
 # The PWA pins its pnpm version in package.json (packageManager); corepack provides exactly that one.
-corepack enable >/dev/null 2>&1 || npm install -g "$(node -p "require('./Starter.PWA/package.json').packageManager")" >/dev/null
+corepack enable >/dev/null 2>&1 || npm install -g "$(node -p "require('./Voxa.PWA/package.json').packageManager")" >/dev/null
 
-dotnet restore Starter.sln --nologo -v quiet
+dotnet restore Voxa.sln --nologo -v quiet
 dotnet tool restore >/dev/null
 
 # The webapp-testing skill drives the preinstalled Chromium (/opt/pw-browsers) from Python.
@@ -48,4 +48,4 @@ if ! python3 -c "import playwright" >/dev/null 2>&1; then
   PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 python3 -m pip install -q playwright
 fi
 
-pnpm --dir Starter.PWA install --prefer-offline
+pnpm --dir Voxa.PWA install --prefer-offline

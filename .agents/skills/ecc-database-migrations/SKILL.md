@@ -12,11 +12,11 @@ Apply the project adaptations below before the generic upstream examples.
 
 ## Project adaptations
 
-- The project uses EF Core with PostgreSQL. Inspect StarterContext, existing migrations and affected mappings before editing.
-- Use EF migrations in the Starter project with Starter.WebApi as the startup project. Review generated SQL and the model snapshot.
+- The project uses EF Core with PostgreSQL. Inspect VoxaContext, existing migrations and affected mappings before editing.
+- Use EF migrations in the Voxa project with Voxa.WebApi as the startup project. Review generated SQL and the model snapshot.
 - Plan rollout compatibility, data backfill, nullability, defaults, index locking and recovery for each schema change; prefer small additive steps when appropriate.
 - Use a disposable local/test database for validation. An application code task does not authorize applying a migration to a production or shared remote database.
-- Validate affected queries and constraints with Starter.WebApi.PostgresTests when Docker is available, and run the full required solution/PWA suite.
+- Validate affected queries and constraints with Voxa.WebApi.PostgresTests when Docker is available, and run the full required solution/PWA suite.
 - Treat Prisma, Django, Alembic and standalone production SQL examples as reference material; keep the EF Core migration mechanism.
 
 ## Upstream reference

@@ -16,7 +16,7 @@ services:
     # and an inspect also returns each container's environment; that read access cannot be narrowed further here
     # (docs/security-configuration.md). The network list is only used in Swarm mode, so it stays off.
     docker-socket-proxy:
-        image: tecnativa/docker-socket-proxy:0.5.0
+        image: tecnativa/docker-socket-proxy:3.4
         container_name: docker-socket-proxy
         restart: unless-stopped
         logging: *logging
@@ -46,7 +46,7 @@ services:
             - "--providers.docker=true"
             - "--providers.docker.endpoint=tcp://docker-socket-proxy:2375"
             - "--providers.docker.exposedbydefault=false"
-            - "--providers.docker.network=starter-proxy"
+            - "--providers.docker.network=voxa-proxy"
             - "--entrypoints.web.address=:80"
             - "--entrypoints.web-secure.address=:443"
             # Keep the X-Forwarded-For that Cloudflare sends (it carries the real client) only when the request comes
@@ -76,7 +76,7 @@ services:
             - no-new-privileges:true
 
     api:
-        container_name: Starter-API
+        container_name: Voxa-API
         # latest follows published releases through Watchtower; set APP_VERSION (for example 1.4.2) to pin a release.
         image: ghcr.io/${IMAGE_REPOSITORY}/api:${APP_VERSION:-latest}
         restart: unless-stopped
@@ -108,7 +108,7 @@ services:
             - database
 
     db:
-        container_name: Starter-DB
+        container_name: Voxa-DB
         # Published on the server's loopback address only, for maintenance through an SSH tunnel
         # (ssh -L 5432:127.0.0.1:5432 <server>). Docker's published ports bypass host firewalls such as ufw,
         # so never publish it on all interfaces. The API uses the internal database network.
@@ -137,7 +137,7 @@ services:
     watchtower:
         # Pinned by digest, so a changed tag on ghcr.io cannot change what runs with the Docker socket.
         # Update both the version and the digest together (docs/deployment.md).
-        image: ghcr.io/nicholas-fedor/watchtower:1.24.1@sha256:617a7d5523280cb73adac4d7977604afbe66b7ea86211f2ae0cbfa2043041d61
+        image: ghcr.io/nicholas-fedor/watchtower:1.24.2@sha256:2d4f5c528311959333d57ff4630e695aa4df297806d3a5ff213ce4964f22d813
         container_name: watchtower
         restart: always
         logging: *logging
@@ -175,7 +175,7 @@ services:
 
 networks:
     proxy:
-        name: starter-proxy
+        name: voxa-proxy
     database: {}
     docker-socket:
         internal: true

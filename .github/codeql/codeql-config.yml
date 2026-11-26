@@ -1,0 +1,9 @@
+# Used by .github/workflows/codeql.yml.
+name: Voxa CodeQL configuration
+# security-extended runs the default security queries plus the lower-precision ones.
+queries:
+  - uses: security-extended
+# Generated code: EF Core migrations and the API client generated from the Swagger schema.
+paths-ignore:
+  - Voxa/Migrations
+  - Voxa.PWA/src/logic/api.ts

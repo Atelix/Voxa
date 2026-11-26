@@ -1,0 +1,68 @@
+name: CodeQL
+# Static security analysis of the C#, TypeScript/Vue and workflow code. Findings appear under Security → Code scanning;
+# the "Protect main" ruleset (.github/rulesets/protect-main.json) blocks a pull request that adds a high or critical
+# alert. The languages come from code-analysis-languages in .github/CICD-Config.yml. Use this advanced setup instead of
+# GitHub's default setup: the two cannot run side by side. See docs/continuous-integration.md.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  # Pushes to main give the pull request analyses a baseline to compare against.
+  push:
+    branches: [main]
+  # Weekly, so new CodeQL queries also run on code that has not changed.
+  schedule:
+    - cron: '41 3 * * 2'
+  workflow_dispatch:
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}"
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  config:
+    name: Load languages
+    # Drafts wait until they are ready, like the CI workflow.
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.draft == false }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      languages: ${{ steps.config.outputs.languages }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # yq is preinstalled on the GitHub-hosted Ubuntu runners. false (no analysis) becomes an empty list.
+      - name: Load configuration
+        id: config
+        run: |
+          languages="$(yq -o=json -I=0 '.code-analysis-languages' .github/CICD-Config.yml | jq -c 'if type == "array" then . else [] end')"
+          echo "languages=$languages" >> "$GITHUB_OUTPUT"
+          echo "Languages: $languages"
+
+  analyze:
+    name: Analyze ${{ matrix.language }}
+    needs: config
+    if: ${{ needs.config.outputs.languages != '[]' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      # Uploads the results to code scanning.
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: ${{ fromJson(needs.config.outputs.languages) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # build-mode none analyses the source without compiling it, so no .NET SDK or pnpm install is needed.
+      # The generated EF Core migrations and API client are left out (.github/codeql/codeql-config.yml).
+      - uses: github/codeql-action/init@915412ff23e8b7659517e607487dbeae018f2934 # v4.39.5
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+          config-file: ./.github/codeql/codeql-config.yml
+      - uses: github/codeql-action/analyze@915412ff23e8b7659517e607487dbeae018f2934 # v4.39.5
+        with:
+          category: "/language:${{ matrix.language }}"

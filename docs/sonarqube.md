@@ -30,13 +30,13 @@ These steps are done by an organization administrator and are not stored in the 
 The workflow runs SonarScanner for .NET (pinned as `SONAR_SCANNER_VERSION`) from the repository root:
 
 1. `dotnet-sonarscanner begin` with the project and exclusion settings.
-2. `dotnet build Starter.sln --no-incremental`.
-3. `dotnet test Starter.sln` with the Coverlet collector writing OpenCover reports, imported through `sonar.cs.opencover.reportsPaths`.
+2. `dotnet build Voxa.sln --no-incremental`.
+3. `dotnet test Voxa.sln` with the Coverlet collector writing OpenCover reports, imported through `sonar.cs.opencover.reportsPaths`.
 4. `dotnet-sonarscanner end`, which uploads the analysis.
 
 The scanner swaps in its own ruleset and turns off `WarningsAsErrors` for its instrumented build, so this never replaces the normal CI build.
 
-`Starter.WebApi.UnitTests` counts as test code because it is an `IsTestProject` project. Excluded: `bin/`, `obj/` and the generated `Starter/Migrations`.
+`Voxa.WebApi.UnitTests` counts as test code because it is an `IsTestProject` project. Excluded: `bin/`, `obj/` and the generated `Voxa/Migrations`.
 
 ## Issues
 

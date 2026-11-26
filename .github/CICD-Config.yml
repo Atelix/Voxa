@@ -1,8 +1,8 @@
 # The main frontend, exposed as the `frontend` output of the CI workflow for callers that need it.
-frontend-location: Starter.PWA
+frontend-location: Voxa.PWA
 # Every frontend project that is type-checked, linted, built (and tested when `test` is true) in CI.
 frontends:
-  - location: Starter.PWA
+  - location: Voxa.PWA
     test: true
 # Every Docker image that is tested and published.
 # The PWA has no image: it is served from a Cloudflare Worker.
@@ -13,8 +13,12 @@ frontends:
 docker:
   - image: api
     context: .
-    file: ./Starter.WebApi/Dockerfile
+    file: ./Voxa.WebApi/Dockerfile
 
-# False means that the code analysis will not be performed
-# Otherwise give a list of languages to be analyzed according to GitHub CodeQL documentation
-code-analysis-languages: false
+# The languages CodeQL analyses (.github/workflows/codeql.yml), as named in the GitHub CodeQL documentation.
+# false turns the analysis off; then also remove the code_scanning rule from .github/rulesets/protect-main.json,
+# or pull requests wait for CodeQL results that never come.
+code-analysis-languages:
+  - actions
+  - csharp
+  - javascript-typescript

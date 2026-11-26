@@ -12,8 +12,8 @@ license: Complete terms in LICENSE.txt
 
 ## Using this skill in the project
 
-- Front end: `pnpm --dir Starter.PWA dev` serves the app on port 3000. It loads its data from the
-  Web API (`dotnet run --project Starter.WebApi`, http://localhost:5143), which needs its PostgreSQL
+- Front end: `pnpm --dir Voxa.PWA dev` serves the app on port 3000. It loads its data from the
+  Web API (`dotnet run --project Voxa.WebApi`, http://localhost:5143), which needs its PostgreSQL
   database (see `docker-compose.yml`). Without the API, data views show their error state; say so
   instead of reporting that as the app's behavior.
 - In Claude Code on the web, the session start hook installs the Python `playwright` package, but the

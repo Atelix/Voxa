@@ -47,7 +47,6 @@ jobs:
       docker-build: ${{ steps.config.outputs.docker-build }}
       frontend: ${{ steps.config.outputs.frontend }}
       frontends: ${{ steps.config.outputs.frontends }}
-      code-analysis: ${{ steps.config.outputs.code-analysis }}
       backend-changed: ${{ steps.changes.outputs.backend }}
       frontend-changed: ${{ steps.changes.outputs.frontend }}
       docker-changed: ${{ steps.changes.outputs.docker }}
@@ -79,9 +78,11 @@ jobs:
               base="$MERGE_GROUP_BASE_SHA"
               ;;
             *)
-              echo "backend=true" >> "$GITHUB_OUTPUT"
-              echo "frontend=true" >> "$GITHUB_OUTPUT"
-              echo "docker=true" >> "$GITHUB_OUTPUT"
+              {
+                echo "backend=true"
+                echo "frontend=true"
+                echo "docker=true"
+              } >> "$GITHUB_OUTPUT"
               exit 0
               ;;
           esac
@@ -96,16 +97,18 @@ jobs:
             frontend=true
           else
             # The backend covers everything except the front end, documentation and root markdown files.
-            backend="$(grep -qvE '^(Starter\.PWA/|docs/|[^/]+\.md$|\.node-version$)' <<< "$changed" && echo true || echo false)"
-            frontend="$(grep -qE '^(Starter\.PWA/|\.node-version$)' <<< "$changed" && echo true || echo false)"
+            backend="$(grep -qvE '^(Voxa\.PWA/|docs/|[^/]+\.md$|\.node-version$)' <<< "$changed" && echo true || echo false)"
+            frontend="$(grep -qE '^(Voxa\.PWA/|\.node-version$)' <<< "$changed" && echo true || echo false)"
           fi
 
           # The Docker images are only built when a Dockerfile, a .dockerignore, a Compose file or the image list changed.
           docker="$(grep -qE '(^|/)Dockerfile[^/]*$|(^|/)\.dockerignore$|^docker-compose[^/]*\.ya?ml$|^\.github/CICD-Config\.yml$' <<< "$changed" && echo true || echo false)"
 
-          echo "backend=$backend" >> "$GITHUB_OUTPUT"
-          echo "frontend=$frontend" >> "$GITHUB_OUTPUT"
-          echo "docker=$docker" >> "$GITHUB_OUTPUT"
+          {
+            echo "backend=$backend"
+            echo "frontend=$frontend"
+            echo "docker=$docker"
+          } >> "$GITHUB_OUTPUT"
           echo "Backend changed: $backend, frontend changed: $frontend, Docker changed: $docker"
       # yq is preinstalled on the GitHub-hosted Ubuntu runners.
       - name: Load configuration
@@ -123,12 +126,54 @@ jobs:
             docker_build="$docker"
           fi
 
-          echo "docker=$docker" >> "$GITHUB_OUTPUT"
-          echo "docker-build=$docker_build" >> "$GITHUB_OUTPUT"
-          echo "frontend=$(yq '.frontend-location' "$config")" >> "$GITHUB_OUTPUT"
-          echo "frontends=$(yq -o=json -I=0 '.frontends' "$config")" >> "$GITHUB_OUTPUT"
-          echo "code-analysis=$(yq -o=json -I=0 '.code-analysis-languages' "$config")" >> "$GITHUB_OUTPUT"
+          {
+            echo "docker=$docker"
+            echo "docker-build=$docker_build"
+            echo "frontend=$(yq '.frontend-location' "$config")"
+            echo "frontends=$(yq -o=json -I=0 '.frontends' "$config")"
+          } >> "$GITHUB_OUTPUT"
           cat "$GITHUB_OUTPUT"
+
+  # actionlint checks the workflow syntax, expressions, action inputs and (with the runner's shellcheck) the run scripts.
+  # It is not an action, so Dependabot does not update it: bump the version and checksum together from
+  # https://github.com/rhysd/actionlint/releases (actionlint_<version>_checksums.txt).
+  workflow-lint:
+    name: Lint workflows
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    needs: [ config ]
+    env:
+      ACTIONLINT_VERSION: '1.7.12'
+      ACTIONLINT_SHA256: '8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+      - name: Install actionlint
+        shell: bash
+        run: |
+          archive="actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          curl --fail --silent --show-error --location --retry 3 --output "$RUNNER_TEMP/$archive" \
+            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/$archive"
+          echo "$ACTIONLINT_SHA256  $RUNNER_TEMP/$archive" | sha256sum --check --strict
+          tar -xzf "$RUNNER_TEMP/$archive" -C "$RUNNER_TEMP" actionlint
+      - name: Lint workflows
+        run: '"$RUNNER_TEMP/actionlint" -color'
+
+  # Fails a pull request that adds or upgrades to a dependency (NuGet, npm, Docker, actions) with a known high or
+  # critical vulnerability. Vulnerabilities found later in dependencies already on main come as Dependabot alerts.
+  dependency-review:
+    name: Review dependency changes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    needs: [ config ]
+    if: ${{ github.event_name == 'pull_request' }}
+    steps:
+      - uses: actions/dependency-review-action@bbc44d14a204704ccc493733616cd1e93a0321ec # v5.0.1
+        with:
+          fail-on-severity: high
+          # Development-only packages (test and build tools) count too: they run in CI with its token.
+          fail-on-scopes: runtime, development, unknown
 
   backend:
     name: Build and test .NET solution
@@ -145,12 +190,12 @@ jobs:
           # 10.0.403 is listed but its download returns HTTP 409 (2026-10-25); go back to 10.0.x once it downloads.
           dotnet-version: '10.0.402'
       - name: Restore dependencies
-        run: dotnet restore Starter.sln
+        run: dotnet restore Voxa.sln
       # Analyzers take about two thirds of the build; the analyzers job runs them next to the tests.
       - name: Build
-        run: dotnet build Starter.sln --no-restore -p:RunAnalyzers=false
+        run: dotnet build Voxa.sln --no-restore -p:RunAnalyzers=false
       - name: Run unit tests
-        run: dotnet test Starter.sln --no-build
+        run: dotnet test Voxa.sln --no-build
 
   backend-analyzers:
     name: Build .NET solution with analyzers
@@ -167,12 +212,12 @@ jobs:
           # 10.0.403 is listed but its download returns HTTP 409 (2026-10-25); go back to 10.0.x once it downloads.
           dotnet-version: '10.0.402'
       - name: Restore dependencies
-        run: dotnet restore Starter.sln
+        run: dotnet restore Voxa.sln
       # Analyzer errors fail the build here; the PostgreSQL test project is built too, since its job skips analyzers.
       - name: Build
         run: |
-          dotnet build Starter.sln --no-restore
-          dotnet build Starter.WebApi.PostgresTests
+          dotnet build Voxa.sln --no-restore
+          dotnet build Voxa.WebApi.PostgresTests
 
   backend-postgres:
     name: Run PostgreSQL tests
@@ -196,9 +241,9 @@ jobs:
           current="$(sudo cat "$config" 2>/dev/null || echo '{}')"
           jq '."registry-mirrors" = ["https://mirror.gcr.io"]' <<< "$current" | sudo tee "$config" > /dev/null
           sudo systemctl restart docker
-      # Not part of Starter.sln, so local test runs need no Docker; the runner has Docker for Testcontainers.
+      # Not part of Voxa.sln, so local test runs need no Docker; the runner has Docker for Testcontainers.
       - name: Run PostgreSQL tests
-        run: dotnet test Starter.WebApi.PostgresTests -p:RunAnalyzers=false
+        run: dotnet test Voxa.WebApi.PostgresTests -p:RunAnalyzers=false
 
   # The style check compiles the solution itself, so it runs next to the build and tests instead of before them.
   backend-format:
@@ -216,16 +261,16 @@ jobs:
           # 10.0.403 is listed but its download returns HTTP 409 (2026-10-25); go back to 10.0.x once it downloads.
           dotnet-version: '10.0.402'
       - name: Restore dependencies
-        run: dotnet restore Starter.sln
+        run: dotnet restore Voxa.sln
       # Every check runs so a single run reports every failure.
       # Only whitespace and code style are checked; analyzer warnings stay build warnings.
       # Fix locally with the same commands without --verify-no-changes; see docs/continuous-integration.md.
       - name: Check formatting
         run: |
           status=0
-          for project in Starter.sln Starter.WebApi.PostgresTests; do
-            dotnet format whitespace "$project" --verify-no-changes --exclude Starter/Migrations || status=1
-            dotnet format style "$project" --verify-no-changes --exclude Starter/Migrations || status=1
+          for project in Voxa.sln Voxa.WebApi.PostgresTests; do
+            dotnet format whitespace "$project" --verify-no-changes --exclude Voxa/Migrations || status=1
+            dotnet format style "$project" --verify-no-changes --exclude Voxa/Migrations || status=1
           done
           exit $status
 
@@ -308,13 +353,16 @@ jobs:
     name: CI result
     runs-on: ubuntu-24.04
     timeout-minutes: 5
-    needs: [ config, backend, backend-analyzers, backend-postgres, backend-format, frontend, build-docker ]
+    needs: [ config, workflow-lint, dependency-review, backend, backend-analyzers, backend-postgres, backend-format, frontend, build-docker ]
     if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.draft == false) }}
     steps:
       - name: Verify job results
         shell: bash
         env:
           CONFIG_RESULT: ${{ needs.config.result }}
+          WORKFLOW_LINT_RESULT: ${{ needs.workflow-lint.result }}
+          DEPENDENCY_REVIEW_RESULT: ${{ needs.dependency-review.result }}
+          DEPENDENCY_REVIEW_NEEDED: ${{ github.event_name == 'pull_request' }}
           BACKEND_RESULT: ${{ needs.backend.result }}
           BACKEND_ANALYZERS_RESULT: ${{ needs.backend-analyzers.result }}
           BACKEND_POSTGRES_RESULT: ${{ needs.backend-postgres.result }}
@@ -343,6 +391,8 @@ jobs:
           }
 
           check "Load settings" "$CONFIG_RESULT" true
+          check "Workflow lint" "$WORKFLOW_LINT_RESULT" true
+          check "Dependency review" "$DEPENDENCY_REVIEW_RESULT" "$DEPENDENCY_REVIEW_NEEDED"
           check ".NET build and test" "$BACKEND_RESULT" "$BACKEND_NEEDED"
           check ".NET analyzers" "$BACKEND_ANALYZERS_RESULT" "$BACKEND_NEEDED"
           check "PostgreSQL tests" "$BACKEND_POSTGRES_RESULT" "$BACKEND_NEEDED"

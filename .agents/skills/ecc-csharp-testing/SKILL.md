@@ -12,10 +12,10 @@ Apply the project adaptations below before the generic upstream examples.
 
 ## Project adaptations
 
-- Inspect existing tests and project references in Starter.WebApi.UnitTests and Starter.WebApi.PostgresTests; reuse their fixtures and installed assertion/mocking libraries.
+- Inspect existing tests and project references in Voxa.WebApi.UnitTests and Voxa.WebApi.PostgresTests; reuse their fixtures and installed assertion/mocking libraries.
 - Put behavior-focused unit tests in the existing .NET test project. Cover success, invalid input, denied access and missing records as relevant.
-- Use Starter.WebApi.PostgresTests for provider-specific translation, constraints, migrations and concurrency; in-memory EF cannot prove PostgreSQL behavior.
-- Run `dotnet test Starter.sln` for the required solution suite. The PostgreSQL project is outside the solution and additionally runs with `dotnet test Starter.WebApi.PostgresTests` when database behavior changes and Docker is available.
+- Use Voxa.WebApi.PostgresTests for provider-specific translation, constraints, migrations and concurrency; in-memory EF cannot prove PostgreSQL behavior.
+- Run `dotnet test Voxa.sln` for the required solution suite. The PostgreSQL project is outside the solution and additionally runs with `dotnet test Voxa.WebApi.PostgresTests` when database behavior changes and Docker is available.
 - Do not install FluentAssertions, NSubstitute, Bogus or a new test framework solely because upstream examples use them. State unavailable database infrastructure and unrun checks.
 
 ## Upstream reference

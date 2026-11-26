@@ -6,12 +6,12 @@ description: Use when designing or changing the project's API controllers, route
 # API development and the generated client
 
 `AGENTS.md` is the source of truth; this skill is the checklist that applies it.
-The front end talks to `Starter.WebApi` through a generated client that must never
+The front end talks to `Voxa.WebApi` through a generated client that must never
 be edited by hand:
 
 | Client | Generated file | Swagger document | Covers |
 |--------|----------------|------------------|--------|
-| PWA | `Starter.PWA/src/logic/api.ts` | `/swagger/v1/swagger.json` | every controller |
+| PWA | `Voxa.PWA/src/logic/api.ts` | `/swagger/v1/swagger.json` | every controller |
 
 When you add a second front end (for example an admin app), give it its own Swagger
 document and its own generated client rather than sharing one, and add a row here.
@@ -29,24 +29,24 @@ controllers), and cover denied-access cases when changing permissions or exposin
 
 ## 1. Make the backend change
 
-- Service and logic interfaces go in `Starter.Abstractions`, one interface per file. Shared
-  request/response contracts go in `Starter.Abstractions/Models`, not next to the controller.
+- Service and logic interfaces go in `Voxa.Abstractions`, one interface per file. Shared
+  request/response contracts go in `Voxa.Abstractions/Models`, not next to the controller.
 - Interface methods return models, never EF entities, and never take `HttpContext`.
 - Failures are domain exceptions (`ObjectNotFoundException`, `DomainValidationException`,
   `DomainForbiddenException`, `DomainConflictException`); `DomainExceptionHandler` turns them
   into problem responses. Don't build problem responses in controllers.
-- Add or update unit tests in `Starter.WebApi.UnitTests` for the changed behavior.
+- Add or update unit tests in `Voxa.WebApi.UnitTests` for the changed behavior.
 
 ## 2. Regenerate the client
 
 1. Start the API in Development so Swagger is served on port 5143. Swagger needs no
    database; from the repository root:
    ```bash
-   ASPNETCORE_ENVIRONMENT=Development dotnet run --project Starter.WebApi --no-launch-profile --urls http://localhost:5143
+   ASPNETCORE_ENVIRONMENT=Development dotnet run --project Voxa.WebApi --no-launch-profile --urls http://localhost:5143
    ```
    Run it in the background and wait until the next step succeeds (about 20 s).
 2. Check the document responds: `curl -sf http://localhost:5143/swagger/v1/swagger.json >/dev/null`.
-3. From the repository root: `pnpm --dir Starter.PWA run generate-api-schema`.
+3. From the repository root: `pnpm --dir Voxa.PWA run generate-api-schema`.
 4. Stop the API.
 
 If the API cannot start, stop and say so. Do not hand-edit `api.ts` to make the front end compile.

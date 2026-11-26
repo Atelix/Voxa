@@ -1,10 +1,13 @@
-# Security updates are raised as soon as a fix is available. Routine version updates are grouped into one PR
-# per ecosystem per month; set open-pull-requests-limit to 0 on an ecosystem to only get security updates.
+# Security updates are raised as soon as a fix is available (enable Dependabot security updates in the repository's
+# settings, see docs/continuous-integration.md). Routine minor and patch updates are grouped into one PR per ecosystem
+# per month; major updates come on their own so a breaking change is reviewed by itself. Set open-pull-requests-limit
+# to 0 on an ecosystem to only get security updates.
 
 version: 2
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
+    target-branch: "main"
     labels: ["dependencies"]
     schedule:
       interval: "monthly"
@@ -14,16 +17,29 @@ updates:
 
   - package-ecosystem: "nuget"
     directory: "/"
+    target-branch: "main"
     labels: ["dependencies"]
     schedule:
       interval: "monthly"
     groups:
       monthly-version-updates:
-        patterns: ["*"]
+        update-types: ["minor", "patch"]
 
   # Dependabot uses the "npm" ecosystem for pnpm projects too.
   - package-ecosystem: "npm"
-    directory: "/Starter.PWA"
+    directory: "/Voxa.PWA"
+    target-branch: "main"
+    labels: ["dependencies"]
+    schedule:
+      interval: "monthly"
+    groups:
+      monthly-version-updates:
+        update-types: ["minor", "patch"]
+
+  # The base images of the API's Dockerfile.
+  - package-ecosystem: "docker"
+    directory: "/Voxa.WebApi"
+    target-branch: "main"
     labels: ["dependencies"]
     schedule:
       interval: "monthly"
@@ -31,11 +47,19 @@ updates:
       monthly-version-updates:
         patterns: ["*"]
 
-  - package-ecosystem: "docker"
-    directory: "/Starter.WebApi"
+  # The server's images in docker-compose*.yml: Traefik, the socket proxy, Watchtower (version and digest) and PostgreSQL.
+  # Merging such a PR changes nothing on a running server: copy the updated compose file to the server
+  # (docs/deployment.md, "Server").
+  - package-ecosystem: "docker-compose"
+    directory: "/"
+    target-branch: "main"
     labels: ["dependencies"]
     schedule:
       interval: "monthly"
     groups:
       monthly-version-updates:
-        patterns: ["*"]
+        update-types: ["minor", "patch"]
+    ignore:
+      # A new PostgreSQL major version cannot read the old data directory; it needs a dump and restore by hand.
+      - dependency-name: "postgres"
+        update-types: ["version-update:semver-major"]

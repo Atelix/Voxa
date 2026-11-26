@@ -7,7 +7,7 @@ Secrets never go in `appsettings*.json` or the repository.
 
 | Setting | Required | Purpose |
 | --- | --- | --- |
-| `ConnectionString` | Outside Development | PostgreSQL connection string. Development falls back to the local database in `StarterContextFactory`. |
+| `ConnectionString` | Outside Development | PostgreSQL connection string. Development falls back to the local database in `VoxaContextFactory`. |
 | `APP_VERSION` | Set by the image | The release, reported by `/api/health` and the `X-App-Version` header. |
 | `Cors__AllowedOrigins__<n>` | No | Origins that may call the API from a browser. Production sets the app's own host; add PR preview hosts here. Development allows every origin. |
 | `ForwardedHeaders__KnownNetworks__<n>` | No | Extra proxy networks whose `X-Forwarded-*` headers are trusted, next to Docker's private ranges. |
@@ -16,7 +16,7 @@ Secrets never go in `appsettings*.json` or the repository.
 list, to this table and to `.env.api.example`.
 
 In development, keep secrets out of the repository with user secrets:
-`dotnet user-secrets --project Starter.WebApi set "<Key>" "<value>"` (run `dotnet user-secrets init` once).
+`dotnet user-secrets --project Voxa.WebApi set "<Key>" "<value>"` (run `dotnet user-secrets init` once).
 
 ## What is already in place
 
@@ -24,7 +24,7 @@ In development, keep secrets out of the repository with user secrets:
   HTTP. The API sends HSTS outside Development; the Worker sends it on every page.
 - **Forwarded headers**: the API trusts `X-Forwarded-For`/`-Proto` only from Docker's private networks and loopback, so
   a client cannot fake its address or scheme.
-- **Content-Security-Policy** (`Starter.PWA/src/worker.ts`): scripts only from the app itself, connections only to the
+- **Content-Security-Policy** (`Voxa.PWA/src/worker.ts`): scripts only from the app itself, connections only to the
   app's origin (and the API's when `VITE_API_URL` points elsewhere), no framing by other sites, no plugins. Device APIs
   (camera, microphone, location, payment, USB) are switched off with `Permissions-Policy`. Unit tests pin these rules.
 - **Errors**: problem details without stack traces outside Development; unknown exceptions become a bare 500.
@@ -33,6 +33,9 @@ In development, keep secrets out of the repository with user secrets:
   and is rate limited.
 - **CI**: actions pinned to commit SHAs, least-privilege `GITHUB_TOKEN` permissions, deploy secrets only in their
   GitHub environments, releases only from `main`.
+- **Scanning**: CodeQL on every pull request and weekly, dependency review on pull requests, Dependabot updates for
+  every ecosystem including the server's Compose images, and actionlint on the workflows
+  ([continuous-integration.md](continuous-integration.md)).
 
 ## What a real project adds
 

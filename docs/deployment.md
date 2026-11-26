@@ -8,7 +8,7 @@ Traefik, and a single host name for both.
 | Started by | **Actions → Deploy beta → Run workflow** (any branch) | Publishing a GitHub release, then the next midnight (Europe/Amsterdam) |
 | Workflows | `deploy-staging.yml` | `release-images.yml` (on publish), `publish-release.yml` (nightly) |
 | Image tags | `beta`, `sha-<commit>` | `<version>`, `sha-<commit>`, and `latest` once deployed |
-| Worker | `starter-pwa-beta` | `starter-pwa` |
+| Worker | `voxa-pwa-beta` | `voxa-pwa` |
 | GitHub environment | `beta` | `production` |
 
 Every deployment runs in this order:
@@ -17,6 +17,11 @@ Every deployment runs in this order:
 2. Build and publish the Docker images to GitHub Container Registry.
 3. **Update the API server** by calling Watchtower's HTTP API, then wait until `/api/health` reports the new version.
 4. Build and deploy the PWA to Cloudflare Workers.
+5. Check that the app's home page loads and `/api/health` still reports the new version. A failed check leaves the run
+   red; see [Rolling back](#rolling-back).
+
+Watchtower's update call is retried twice when it fails, and the API gets five minutes to report the new version
+(it applies its migrations on start). A new beta run waits for the running one instead of cancelling it halfway.
 
 The Worker goes last so a new front end never runs against an old API. For production, steps 1 and 2 run when the
 release is published and steps 3 and 4 at night, so a release can be published during the day and goes live while
@@ -70,7 +75,7 @@ bypasses Cloudflare.
 In the zone of the app's host:
 
 1. A proxied DNS record for the host pointing at the server, and SSL/TLS mode **Full (strict)**.
-2. **Workers Routes**: `<host>/*` → the Worker (`starter-pwa` or `starter-pwa-beta`), and `<host>/api/*` → **None**.
+2. **Workers Routes**: `<host>/*` → the Worker (`voxa-pwa` or `voxa-pwa-beta`), and `<host>/api/*` → **None**.
    The more specific route wins, so `/api` reaches the server. Without the `None` route the Worker answers every API
    request with a 404.
 3. Deploy each Worker once (run the deploy workflow) before the PR previews can upload versions of it. Enable
@@ -86,6 +91,6 @@ In the zone of the app's host:
 
 ## Renaming the Workers
 
-The Worker names come from `Starter.PWA/wrangler.jsonc` (production) and the `worker:` entries in
+The Worker names come from `Voxa.PWA/wrangler.jsonc` (production) and the `worker:` entries in
 `deploy-staging.yml` and `publish-release.yml`. `tools/init/rename.mjs` renames all of them together; when renaming by
 hand, change them together and update the Workers Routes.

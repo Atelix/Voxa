@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Problem.BadRequest" xml:space="preserve">
+    <value>Ongeldig verzoek</value>
+  </data>
+  <data name="Problem.Forbidden" xml:space="preserve">
+    <value>Niet toegestaan</value>
+  </data>
+  <data name="Problem.NotFound" xml:space="preserve">
+    <value>Niet gevonden</value>
+  </data>
+  <data name="Problem.Conflict" xml:space="preserve">
+    <value>De wijziging kon niet worden doorgevoerd</value>
+  </data>
+  <data name="Problem.TooManyAttempts" xml:space="preserve">
+    <value>Te veel pogingen</value>
+  </data>
+  <data name="Error.NotFound" xml:space="preserve">
+    <value>Dit is niet gevonden. Misschien is het verwijderd.</value>
+  </data>
+  <data name="Error.TooManyAttempts" xml:space="preserve">
+    <value>Te veel mislukte pogingen. Probeer het later opnieuw.</value>
+  </data>
+  <data name="Error.FontInvalid" xml:space="preserve">
+    <value>Kies een lettertype uit: {0}.</value>
+  </data>
+  <data name="Error.LanguageInvalid" xml:space="preserve">
+    <value>Kies een taal uit: {0}.</value>
+  </data>
+  <data name="Error.LogoType" xml:space="preserve">
+    <value>Het logo moet een PNG-, JPEG-, SVG- of WebP-afbeelding zijn.</value>
+  </data>
+  <data name="Error.LogoTooLarge" xml:space="preserve">
+    <value>Het logo is te groot; houd het onder 700 kB.</value>
+  </data>
+  <data name="Error.ClubNameRequired" xml:space="preserve">
+    <value>De vereniging heeft een naam nodig.</value>
+  </data>
+  <data name="Error.PasswordWrong" xml:space="preserve">
+    <value>Het wachtwoord klopt niet.</value>
+  </data>
+  <data name="Error.MeetingCodesSent" xml:space="preserve">
+    <value>Voor deze vergadering zijn al codes verstuurd. Archiveer haar in plaats daarvan.</value>
+  </data>
+  <data name="Error.MeetingArchived" xml:space="preserve">
+    <value>Deze vergadering is gearchiveerd.</value>
+  </data>
+  <data name="Error.MeetingNameRequired" xml:space="preserve">
+    <value>Een vergadering heeft een naam nodig.</value>
+  </data>
+  <data name="Error.AdvanceTooEarly" xml:space="preserve">
+    <value>Vooraf stemmen kan hoogstens {0} dagen voor de vergadering opengaan.</value>
+  </data>
+  <data name="Error.AdvanceAfterStart" xml:space="preserve">
+    <value>Vooraf stemmen moet opengaan voordat de vergadering begint.</value>
+  </data>
+  <data name="Error.WipeConfirm" xml:space="preserve">
+    <value>Typ {0} om te bevestigen.</value>
+  </data>
+  <data name="Meeting.CopyName" xml:space="preserve">
+    <value>{0} (kopie)</value>
+  </data>
+  <data name="Meeting.WipeWord" xml:space="preserve">
+    <value>WISSEN</value>
+  </data>
+  <data name="Error.ItemOrder" xml:space="preserve">
+    <value>Noem elk stempunt van de vergadering precies één keer.</value>
+  </data>
+  <data name="Error.SendCodesFirst" xml:space="preserve">
+    <value>Verstuur de codes voordat je een stempunt opent.</value>
+  </data>
+  <data name="Error.ItemClosed" xml:space="preserve">
+    <value>Een gesloten stempunt kan niet opnieuw open; voeg een nieuw stempunt toe voor een nieuwe ronde.</value>
+  </data>
+  <data name="Error.VotingNotStarted" xml:space="preserve">
+    <value>Het stemmen is voor deze vergadering nog niet begonnen.</value>
+  </data>
+  <data name="Error.ItemLocked" xml:space="preserve">
+    <value>Dit stempunt is al geopend of heeft stemmen, dus het kan niet meer veranderen.</value>
+  </data>
+  <data name="Error.ItemTitleRequired" xml:space="preserve">
+    <value>Een stempunt heeft een titel nodig.</value>
+  </data>
+  <data name="Error.ElectionNoCandidates" xml:space="preserve">
+    <value>Een verkiezing heeft minstens één kandidaat nodig.</value>
+  </data>
+  <data name="Error.ElectionNoSeats" xml:space="preserve">
+    <value>Een verkiezing heeft minstens één plaats nodig.</value>
+  </data>
+  <data name="Error.CandidatesUnique" xml:space="preserve">
+    <value>Elke kandidaat heeft een andere naam nodig.</value>
+  </data>
+  <data name="Error.ItemNotOpen" xml:space="preserve">
+    <value>Op dit stempunt kan nu niet gestemd worden.</value>
+  </data>
+  <data name="Error.AlreadyVoted" xml:space="preserve">
+    <value>Met deze code is op dit stempunt al gestemd.</value>
+  </data>
+  <data name="Error.ChooseFromOptions" xml:space="preserve">
+    <value>Kies uit de mogelijkheden van dit stempunt.</value>
+  </data>
+  <data name="Error.ChooseOne" xml:space="preserve">
+    <value>Kies één mogelijkheid.</value>
+  </data>
+  <data name="Error.BlankNoCandidates" xml:space="preserve">
+    <value>Een blanco stem noemt geen kandidaten.</value>
+  </data>
+  <data name="Error.CodeUnknown" xml:space="preserve">
+    <value>Deze code is niet bekend.</value>
+  </data>
+  <data name="Error.PaperOptions" xml:space="preserve">
+    <value>Papieren stemmen tel je alleen bij de mogelijkheden van dit stempunt.</value>
+  </data>
+  <data name="Error.PaperTotals" xml:space="preserve">
+    <value>De aantallen passen niet bij het aantal stembiljetten.</value>
+  </data>
+  <data name="Error.ScreenClosedOnly" xml:space="preserve">
+    <value>Alleen een gesloten stempunt van deze vergadering kan op het zaalscherm.</value>
+  </data>
+  <data name="Error.ResultHidden" xml:space="preserve">
+    <value>De uitslag blijft verborgen tot het stempunt gesloten is.</value>
+  </data>
+  <data name="Error.VoterNameRequired" xml:space="preserve">
+    <value>Een stemgerechtigde heeft een naam nodig.</value>
+  </data>
+  <data name="Error.VoterHasCode" xml:space="preserve">
+    <value>Deze stemgerechtigde heeft al een code gekregen.</value>
+  </data>
+  <data name="Error.TestMailRefused" xml:space="preserve">
+    <value>De mailprovider heeft de testmail geweigerd.</value>
+  </data>
+  <data name="Error.ListCodesSent" xml:space="preserve">
+    <value>Vanuit deze lijst zijn al codes verstuurd. Voeg nieuwe leden een voor een toe.</value>
+  </data>
+  <data name="Error.ListEmpty" xml:space="preserve">
+    <value>De lijst heeft geen stemgerechtigde leden.</value>
+  </data>
+  <data name="Error.SenderMissing" xml:space="preserve">
+    <value>Stel eerst het afzenderadres van de vereniging in bij de instellingen.</value>
+  </data>
+  <data name="Error.CsvEmpty" xml:space="preserve">
+    <value>De CSV heeft een kopregel en minstens één lid nodig.</value>
+  </data>
+  <data name="Error.CsvNameColumn" xml:space="preserve">
+    <value>De CSV heeft een kolom 'naam' nodig, of 'voornaam' en 'achternaam'.</value>
+  </data>
+  <data name="Voter.SkippedSuspended" xml:space="preserve">
+    <value>{0}: geschorst</value>
+  </data>
+  <data name="Voter.SkippedMinor" xml:space="preserve">
+    <value>{0}: minderjarig</value>
+  </data>
+  <data name="Voter.SkippedDuplicate" xml:space="preserve">
+    <value>{0}: dubbel</value>
+  </data>
+  <data name="Voter.Guardian" xml:space="preserve">
+    <value>ouder of verzorger</value>
+  </data>
+  <data name="Error.TrialOnly" xml:space="preserve">
+    <value>Proefgegevens en de testmailbox bestaan alleen in de proefopstelling (Mail__Mode=Outbox).</value>
+  </data>
+  <data name="Mail.SubjectOne" xml:space="preserve">
+    <value>Je persoonlijke stemcode voor de {0}</value>
+  </data>
+  <data name="Mail.SubjectSeveral" xml:space="preserve">
+    <value>Je persoonlijke stemcodes voor de {0}</value>
+  </data>
+  <data name="Mail.Greeting" xml:space="preserve">
+    <value>Hoi {0},</value>
+  </data>
+  <data name="Mail.Member" xml:space="preserve">
+    <value>lid</value>
+  </data>
+  <data name="Mail.Intro" xml:space="preserve">
+    <value>Op {0}{1} houdt {2} de {3}. Je kunt digitaal stemmen met je telefoon, vooraf of in de zaal.</value>
+  </data>
+  <data name="Mail.Location" xml:space="preserve">
+    <value> in {0}</value>
+  </data>
+  <data name="Mail.OnBehalf" xml:space="preserve">
+    <value>Met deze code stem je namens {0}.</value>
+  </data>
+  <data name="Mail.Several" xml:space="preserve">
+    <value>Dit adres hoort bij {0} stemgerechtigde leden, dus je krijgt {0} codes: elke code is de stem van één lid. Met de knop open je de stempagina met alle codes. Je stemt dan voor alle leden tegelijk, of per lid apart.</value>
+  </data>
+  <data name="Mail.CodeFor" xml:space="preserve">
+    <value>Stemcode voor {0}</value>
+  </data>
+  <data name="Mail.YourCode" xml:space="preserve">
+    <value>Jouw stemcode</value>
+  </data>
+  <data name="Mail.VotingPage" xml:space="preserve">
+    <value>Stempagina</value>
+  </data>
+  <data name="Mail.OpenVotingPage" xml:space="preserve">
+    <value>Open de stempagina</value>
+  </data>
+  <data name="Mail.KeepOne" xml:space="preserve">
+    <value>Deze code is alleen voor jou. Deel hem niet: wie de code heeft, kan er één keer per stempunt mee stemmen.</value>
+  </data>
+  <data name="Mail.KeepSeveral" xml:space="preserve">
+    <value>Deze codes zijn alleen voor jou. Deel ze niet: wie een code heeft, kan er één keer per stempunt mee stemmen.</value>
+  </data>
+  <data name="Mail.Advance" xml:space="preserve">
+    <value>Vooraf stemmen kan vanaf {0} tot het begin van de vergadering.</value>
+  </data>
+  <data name="Mail.DuringMeeting" xml:space="preserve">
+    <value>Stemmen kan tijdens de vergadering.</value>
+  </data>
+  <data name="Mail.Secret" xml:space="preserve">
+    <value>Je stem is geheim: niemand, ook het bestuur niet, kan zien wat jij hebt gestemd.</value>
+  </data>
+  <data name="Mail.SignOff" xml:space="preserve">
+    <value>Groet, het bestuur van {0}</value>
+  </data>
+  <data name="Mail.ExampleName" xml:space="preserve">
+    <value>[naam lid]</value>
+  </data>
+  <data name="Trial.MeetingName" xml:space="preserve">
+    <value>Proef-ALV {0}</value>
+  </data>
+  <data name="Trial.Location" xml:space="preserve">
+    <value>Kantine (proef)</value>
+  </data>
+  <data name="Trial.MinutesTitle" xml:space="preserve">
+    <value>Notulen vorige ALV vaststellen</value>
+  </data>
+  <data name="Trial.MinutesText" xml:space="preserve">
+    <value>De ALV stelt de notulen van de vorige vergadering vast.</value>
+  </data>
+  <data name="Trial.BudgetTitle" xml:space="preserve">
+    <value>Begroting vaststellen</value>
+  </data>
+  <data name="Trial.BudgetText" xml:space="preserve">
+    <value>De ALV stelt de begroting vast zoals de penningmeester die heeft gepresenteerd.</value>
+  </data>
+  <data name="Trial.StatutesTitle" xml:space="preserve">
+    <value>Statutenwijziging</value>
+  </data>
+  <data name="Trial.StatutesText" xml:space="preserve">
+    <value>Voorbeeld van een besluit dat twee derde van de stemmen nodig heeft. Alleen in de zaal.</value>
+  </data>
+  <data name="Trial.ElectionTitle" xml:space="preserve">
+    <value>Verkiezing bestuursleden</value>
+  </data>
+  <data name="Trial.ElectionText" xml:space="preserve">
+    <value>Er zijn 2 plaatsen. Kies maximaal 2 kandidaten, of stem blanco.</value>
+  </data>
+  <data name="Trial.Candidate" xml:space="preserve">
+    <value>Kandidaat {0}</value>
+  </data>
+  <data name="Trial.Reelection" xml:space="preserve">
+    <value>Herkiesbaar</value>
+  </data>
+  <data name="Trial.NewCandidate" xml:space="preserve">
+    <value>Nieuwe kandidaat</value>
+  </data>
+</root>

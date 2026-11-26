@@ -1,0 +1,14 @@
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+    // Rename together with the worker names in .github/workflows (tools/init/rename.mjs does both).
+    "name": "voxa-pwa",
+    "main": "src/worker.ts",
+    "compatibility_date": "2026-11-01",
+    "assets": {
+        "binding": "ASSETS",
+        "not_found_handling": "single-page-application",
+        // Every response, including static files, goes through the Worker so it carries the Content-Security-Policy.
+        "run_worker_first": true
+    },
+    "observability": { "enabled": true }
+}
