@@ -4,7 +4,7 @@ namespace Voxa.Abstractions.Models;
 
 public sealed record VoterModel
 {
-    public required int Id { get; init; }
+    public required Guid Id { get; init; }
 
     public required string Name { get; init; }
 

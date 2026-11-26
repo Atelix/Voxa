@@ -6,9 +6,9 @@ namespace Voxa.Persistence.Entity;
 /// </summary>
 public class Voter
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
-    public int MeetingId { get; set; }
+    public Guid MeetingId { get; set; }
 
     public Meeting Meeting { get; set; } = null!;
 

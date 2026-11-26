@@ -218,7 +218,7 @@ public sealed class VotingFlowTests : IDisposable
         return (await _services.Meetings.GetAsync(meeting.Id, CancellationToken.None), proposal, hallOnly);
     }
 
-    private async Task ImportAndSendAsync(int meetingId)
+    private async Task ImportAndSendAsync(Guid meetingId)
     {
         const string csv = "naam;email\nLid Een;een@example.org\nLid Twee;twee@example.org\nLid Drie;drie@example.org\nLid Vier;vier@example.org";
         _ = await _services.Voters.ImportAsync(meetingId, new VoterImportRequest { Csv = csv }, CancellationToken.None);

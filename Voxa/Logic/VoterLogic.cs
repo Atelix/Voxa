@@ -24,7 +24,7 @@ public sealed class VoterLogic(
 {
     private const int SaveEvery = 25;
 
-    public async Task<VoterListModel> ListAsync(int meetingId, CancellationToken cancellationToken)
+    public async Task<VoterListModel> ListAsync(Guid meetingId, CancellationToken cancellationToken)
     {
         await EnsureMeetingAsync(meetingId, cancellationToken);
         var voters = await context.Voters.AsNoTracking().Where(v => v.MeetingId == meetingId).OrderBy(static v => v.Name).ToListAsync(cancellationToken);
@@ -38,7 +38,7 @@ public sealed class VoterLogic(
         };
     }
 
-    public async Task<VoterImportResultModel> ImportAsync(int meetingId, VoterImportRequest request, CancellationToken cancellationToken)
+    public async Task<VoterImportResultModel> ImportAsync(Guid meetingId, VoterImportRequest request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
         return await ApplyAsync(meetingId, MemberCsv.Parse(request.Csv), addAfterCodes: false, cancellationToken);
@@ -70,7 +70,7 @@ public sealed class VoterLogic(
         })];
     }
 
-    public async Task<VoterImportResultModel> ImportMembersAsync(int meetingId, MemberImportRequest request, CancellationToken cancellationToken)
+    public async Task<VoterImportResultModel> ImportMembersAsync(Guid meetingId, MemberImportRequest request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
         var members = request.Members.Select(static m =>
@@ -90,7 +90,7 @@ public sealed class VoterLogic(
         return await ApplyAsync(meetingId, members, addAfterCodes: true, cancellationToken);
     }
 
-    public async Task<VoterModel> AddAsync(int meetingId, VoterRequest request, CancellationToken cancellationToken)
+    public async Task<VoterModel> AddAsync(Guid meetingId, VoterRequest request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
         var meeting = await EnsureMeetingAsync(meetingId, cancellationToken);
@@ -106,7 +106,7 @@ public sealed class VoterLogic(
         return ToModel(voter);
     }
 
-    public async Task DeleteAsync(int voterId, CancellationToken cancellationToken)
+    public async Task DeleteAsync(Guid voterId, CancellationToken cancellationToken)
     {
         var voter = await context.Voters.FirstOrDefaultAsync(v => v.Id == voterId, cancellationToken)
                     ?? throw new ObjectNotFoundException(nameof(Voter), voterId);
@@ -119,7 +119,7 @@ public sealed class VoterLogic(
         _ = await context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<SendCodesResultModel> SendCodesAsync(int meetingId, CancellationToken cancellationToken)
+    public async Task<SendCodesResultModel> SendCodesAsync(Guid meetingId, CancellationToken cancellationToken)
     {
         var meeting = await EnsureMeetingAsync(meetingId, cancellationToken);
         var settings = await club.GetAsync(cancellationToken);
@@ -162,7 +162,7 @@ public sealed class VoterLogic(
         return new SendCodesResultModel { Sent = sent, Failed = failed, WithoutEmail = withoutEmail };
     }
 
-    public async Task<PaperCodesModel> CreatePaperCodesAsync(int meetingId, PaperCodesRequest request, CancellationToken cancellationToken)
+    public async Task<PaperCodesModel> CreatePaperCodesAsync(Guid meetingId, PaperCodesRequest request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
         var meeting = await EnsureMeetingAsync(meetingId, cancellationToken);
@@ -186,7 +186,7 @@ public sealed class VoterLogic(
         return new PaperCodesModel { Codes = created };
     }
 
-    public async Task SendTestMailAsync(int meetingId, TestMailRequest request, CancellationToken cancellationToken)
+    public async Task SendTestMailAsync(Guid meetingId, TestMailRequest request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
         var meeting = await EnsureMeetingAsync(meetingId, cancellationToken);
@@ -206,7 +206,7 @@ public sealed class VoterLogic(
     /// have been sent the list is never replaced: with <paramref name="addAfterCodes"/> the members who are not on it yet
     /// are added, otherwise the import is refused.
     /// </summary>
-    private async Task<VoterImportResultModel> ApplyAsync(int meetingId, IReadOnlyList<ImportedMember> members, bool addAfterCodes, CancellationToken cancellationToken)
+    private async Task<VoterImportResultModel> ApplyAsync(Guid meetingId, IReadOnlyList<ImportedMember> members, bool addAfterCodes, CancellationToken cancellationToken)
     {
         var meeting = await EnsureMeetingAsync(meetingId, cancellationToken);
         var existing = await context.Voters.Where(v => v.MeetingId == meetingId).ToListAsync(cancellationToken);
@@ -301,7 +301,7 @@ public sealed class VoterLogic(
         }
     }
 
-    private async Task<Meeting> EnsureMeetingAsync(int meetingId, CancellationToken cancellationToken)
+    private async Task<Meeting> EnsureMeetingAsync(Guid meetingId, CancellationToken cancellationToken)
     {
         var meeting = await context.Meetings.FirstOrDefaultAsync(m => m.Id == meetingId, cancellationToken)
                       ?? throw new ObjectNotFoundException(nameof(Meeting), meetingId);

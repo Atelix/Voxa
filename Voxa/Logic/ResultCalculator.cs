@@ -55,7 +55,7 @@ public static class ResultCalculator
                                   .OrderByDescending(static o => o.Votes.Total)
                                   .ToList();
 
-        var elected = new HashSet<int>();
+        var elected = new HashSet<Guid>();
         ResultOutcome outcome;
         if (valid == 0)
         {
@@ -78,7 +78,7 @@ public static class ResultCalculator
     }
 
     private static ResultModel Build(AgendaItem item, ChannelCountModel ballots, List<(ItemOption Option, ChannelCountModel Votes)> options,
-                                     int valid, int needed, ResultOutcome outcome, Func<int, bool> elected) => new()
+                                     int valid, int needed, ResultOutcome outcome, Func<Guid, bool> elected) => new()
                                      {
                                          ItemId = item.Id,
                                          MeetingId = item.MeetingId,

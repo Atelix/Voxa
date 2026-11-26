@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest"
 import { AgendaItemKind, BallotItemStatus, VotingPhase, type BallotSessionModel } from "@/logic/api"
 import { mergeSessions, openCodes, sameMeeting, type CodeSession } from "@/services/ballotCodes"
 
+/** The id of the agenda item at a position, the same in every session. */
+const itemId = (position: number): string => `00000000-0000-0000-0000-${String(position).padStart(12, "0")}`
+
 function session(...statuses: BallotItemStatus[]): BallotSessionModel {
 	return {
 		meetingName: "ALV 2027",
@@ -10,7 +13,7 @@ function session(...statuses: BallotItemStatus[]): BallotSessionModel {
 		advanceOpensAt: null,
 		phase: VotingPhase.Meeting,
 		items: statuses.map((status, i) => ({
-			id: i + 1,
+			id: itemId(i + 1),
 			position: i + 1,
 			title: `Punt ${i + 1}`,
 			description: null,
@@ -35,9 +38,9 @@ describe("several codes on one device", () => {
 	})
 
 	it("lists the codes that can still vote on an item", () => {
-		expect(openCodes(codes, 1)).toEqual(["BBBB-BBBB"])
-		expect(openCodes(codes, 2)).toEqual(["AAAA-AAAA", "BBBB-BBBB"])
-		expect(openCodes(codes, 3)).toEqual([])
+		expect(openCodes(codes, itemId(1))).toEqual(["BBBB-BBBB"])
+		expect(openCodes(codes, itemId(2))).toEqual(["AAAA-AAAA", "BBBB-BBBB"])
+		expect(openCodes(codes, itemId(3))).toEqual([])
 	})
 
 	it("has nothing to show without codes", () => {

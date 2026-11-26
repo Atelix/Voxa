@@ -178,13 +178,13 @@ const router = useRouter()
 const { t } = useI18n()
 const action = useAsyncAction<void>()
 const step = ref<"choose" | "confirm" | "done">("choose")
-const picked = ref<number[]>([])
+const picked = ref<string[]>([])
 const conflict = ref(false)
 const selected = ref<string[]>([])
 const counted = ref(0)
 
 const session = computed(() => voter.session)
-const item = computed(() => session.value?.items.find((i) => i.id === Number(props.id)))
+const item = computed(() => session.value?.items.find((i) => i.id === props.id.toLowerCase()))
 /** The codes on this device that can still vote on this item; all of them are selected until the voter unticks one. */
 const available = computed(() => (item.value ? voter.openFor(item.value.id) : []))
 watch(
@@ -214,7 +214,7 @@ onMounted(async () => {
 	await voter.refresh()
 })
 
-function toggle(id: number): void {
+function toggle(id: string): void {
 	picked.value = picked.value.includes(id) ? picked.value.filter((p) => p !== id) : [...picked.value, id]
 }
 

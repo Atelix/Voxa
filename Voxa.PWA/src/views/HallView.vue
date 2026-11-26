@@ -77,7 +77,7 @@ const host = window.location.host
 
 usePolling(async () => {
 	try {
-		screen.value = (await api.screen.screenDetail(Number(props.meetingId))).data
+		screen.value = (await api.screen.screenDetail(props.meetingId)).data
 		failed.value = false
 	} catch {
 		failed.value = !screen.value

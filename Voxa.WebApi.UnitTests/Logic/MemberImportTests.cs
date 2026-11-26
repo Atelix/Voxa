@@ -157,7 +157,7 @@ public sealed class MemberImportTests : IDisposable
 
     private static MemberImportItem Suspended(string name, string email) => new() { Name = name, Email = email, Suspended = true };
 
-    private async Task<int> MeetingAsync(DateTime? startsAt = null)
+    private async Task<Guid> MeetingAsync(DateTime? startsAt = null)
     {
         var meeting = await _services.Meetings.CreateAsync(new MeetingRequest { Name = "ALV 2027", StartsAt = startsAt ?? s_meetingStart }, CancellationToken.None);
         return meeting.Id;

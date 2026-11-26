@@ -112,7 +112,7 @@ export const useVoterStore = defineStore("voter", () => {
 	}
 
 	/** The codes that can still vote on an item. */
-	function openFor(itemId: number): string[] {
+	function openFor(itemId: string): string[] {
 		return openCodes(sessions.value, itemId)
 	}
 
@@ -120,7 +120,7 @@ export const useVoterStore = defineStore("voter", () => {
 	 * Casts the same choice for each of the given codes, one ballot per code. A code that fails does not stop the
 	 * others; the first failure is thrown after the session is refreshed, so the page shows which codes still can vote.
 	 */
-	async function vote(itemId: number, optionIds: number[], forCodes: string[]): Promise<void> {
+	async function vote(itemId: string, optionIds: string[], forCodes: string[]): Promise<void> {
 		if (!forCodes.length) throw new Error("No code")
 		let failure: ApiError | null = null
 		for (const code of forCodes) {

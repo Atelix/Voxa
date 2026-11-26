@@ -8,7 +8,7 @@ public interface IMeetingLogic
     Task<IReadOnlyList<MeetingSummaryModel>> ListAsync(CancellationToken cancellationToken);
 
     /// <exception cref="ObjectNotFoundException">No meeting has this id.</exception>
-    Task<MeetingModel> GetAsync(int id, CancellationToken cancellationToken);
+    Task<MeetingModel> GetAsync(Guid id, CancellationToken cancellationToken);
 
     /// <exception cref="DomainValidationException">The request breaks a rule, such as advance voting opening too early.</exception>
     Task<MeetingModel> CreateAsync(MeetingRequest request, CancellationToken cancellationToken);
@@ -16,17 +16,17 @@ public interface IMeetingLogic
     /// <exception cref="ObjectNotFoundException">No meeting has this id.</exception>
     /// <exception cref="DomainValidationException">The request breaks a rule.</exception>
     /// <exception cref="DomainConflictException">The meeting is archived.</exception>
-    Task<MeetingModel> UpdateAsync(int id, MeetingRequest request, CancellationToken cancellationToken);
+    Task<MeetingModel> UpdateAsync(Guid id, MeetingRequest request, CancellationToken cancellationToken);
 
     /// <summary>Deletes a draft meeting. A meeting with codes is archived instead.</summary>
     /// <exception cref="DomainConflictException">Codes have been sent for this meeting.</exception>
-    Task DeleteAsync(int id, CancellationToken cancellationToken);
+    Task DeleteAsync(Guid id, CancellationToken cancellationToken);
 
     /// <summary>A new draft with the same agenda, a year later.</summary>
-    Task<MeetingModel> CopyAsync(int id, CancellationToken cancellationToken);
+    Task<MeetingModel> CopyAsync(Guid id, CancellationToken cancellationToken);
 
     /// <summary>Closes every item and deletes the codes and the voter list. Only the totals remain.</summary>
-    Task<MeetingModel> ArchiveAsync(int id, CancellationToken cancellationToken);
+    Task<MeetingModel> ArchiveAsync(Guid id, CancellationToken cancellationToken);
 
     Task<ExportModel> ExportAsync(CancellationToken cancellationToken);
 

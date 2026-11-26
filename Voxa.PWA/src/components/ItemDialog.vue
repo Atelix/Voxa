@@ -56,7 +56,7 @@ import { AgendaItemKind, MajorityRule, OptionRole, type AgendaItemModel } from "
 import { useApi } from "@/services/useApi"
 import { useAsyncAction } from "@/services/useAsyncAction"
 
-const props = defineProps<{ modelValue: boolean; meetingId: number; item: AgendaItemModel | null }>()
+const props = defineProps<{ modelValue: boolean; meetingId: string; item: AgendaItemModel | null }>()
 const emit = defineEmits<{ "update:modelValue": [boolean]; saved: [] }>()
 const api = useApi()
 const { t } = useI18n()

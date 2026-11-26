@@ -30,10 +30,10 @@ export function mergeSessions(sessions: CodeSession[]): BallotSessionModel | nul
 }
 
 /** The codes that can still vote on an item. */
-export function openCodes(sessions: CodeSession[], itemId: number): string[] {
+export function openCodes(sessions: CodeSession[], itemId: string): string[] {
 	return sessions.filter((s) => statusOf(s.session, itemId) === BallotItemStatus.Open).map((s) => s.code)
 }
 
-function statusOf(session: BallotSessionModel, itemId: number): BallotItemModel["status"] | undefined {
+function statusOf(session: BallotSessionModel, itemId: string): BallotItemModel["status"] | undefined {
 	return session.items.find((i) => i.id === itemId)?.status
 }
