@@ -44,8 +44,8 @@ public class BallotController(IBallotLogic ballotLogic) : ControllerBase
 [Route("api/screen")]
 public class ScreenController(IResultLogic resultLogic) : ControllerBase
 {
-    [HttpGet("{meetingId:int}")]
-    public async Task<ActionResult<ScreenModel>> Get(int meetingId, CancellationToken cancellationToken) =>
+    [HttpGet("{meetingId:guid}")]
+    public async Task<ActionResult<ScreenModel>> Get(Guid meetingId, CancellationToken cancellationToken) =>
         await resultLogic.ScreenAsync(meetingId, cancellationToken);
 }
 

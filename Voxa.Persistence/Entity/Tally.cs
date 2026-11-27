@@ -6,7 +6,7 @@ namespace Voxa.Persistence.Entity;
 /// </summary>
 public class BallotTally
 {
-    public int AgendaItemId { get; set; }
+    public Guid AgendaItemId { get; set; }
 
     public AgendaItem AgendaItem { get; set; } = null!;
 
@@ -21,7 +21,7 @@ public class BallotTally
 /// <summary>The number of times an option was chosen through one channel.</summary>
 public class OptionTally
 {
-    public int ItemOptionId { get; set; }
+    public Guid ItemOptionId { get; set; }
 
     public ItemOption ItemOption { get; set; } = null!;
 

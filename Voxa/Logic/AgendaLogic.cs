@@ -18,7 +18,7 @@ public sealed class AgendaLogic(VoxaContext context) : IAgendaLogic
 
     public const string BlankLabel = "Blanco";
 
-    public async Task<AgendaItemModel> AddAsync(int meetingId, AgendaItemRequest request, CancellationToken cancellationToken)
+    public async Task<AgendaItemModel> AddAsync(Guid meetingId, AgendaItemRequest request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
         var meeting = await context.Meetings.Include(static m => m.Items).FirstOrDefaultAsync(m => m.Id == meetingId, cancellationToken)
@@ -31,7 +31,7 @@ public sealed class AgendaLogic(VoxaContext context) : IAgendaLogic
         return Mapping.Item(item);
     }
 
-    public async Task<AgendaItemModel> UpdateAsync(int itemId, AgendaItemRequest request, CancellationToken cancellationToken)
+    public async Task<AgendaItemModel> UpdateAsync(Guid itemId, AgendaItemRequest request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
         var item = await LoadAsync(itemId, cancellationToken);
@@ -43,7 +43,7 @@ public sealed class AgendaLogic(VoxaContext context) : IAgendaLogic
         return Mapping.Item(item);
     }
 
-    public async Task DeleteAsync(int itemId, CancellationToken cancellationToken)
+    public async Task DeleteAsync(Guid itemId, CancellationToken cancellationToken)
     {
         var item = await LoadAsync(itemId, cancellationToken);
         EnsureEditable(item);
@@ -51,7 +51,7 @@ public sealed class AgendaLogic(VoxaContext context) : IAgendaLogic
         _ = await context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<AgendaItemModel>> ReorderAsync(int meetingId, ItemOrderRequest request, CancellationToken cancellationToken)
+    public async Task<IReadOnlyList<AgendaItemModel>> ReorderAsync(Guid meetingId, ItemOrderRequest request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
         var items = await context.AgendaItems.Include(static i => i.Options).Include(static i => i.Ballots)
@@ -70,7 +70,7 @@ public sealed class AgendaLogic(VoxaContext context) : IAgendaLogic
         return [.. items.OrderBy(static i => i.Position).Select(Mapping.Item)];
     }
 
-    public async Task<AgendaItemModel> OpenAsync(int itemId, CancellationToken cancellationToken)
+    public async Task<AgendaItemModel> OpenAsync(Guid itemId, CancellationToken cancellationToken)
     {
         var item = await LoadAsync(itemId, cancellationToken);
         if (item.Meeting.Status != MeetingStatus.Ready)
@@ -88,7 +88,7 @@ public sealed class AgendaLogic(VoxaContext context) : IAgendaLogic
         return Mapping.Item(item);
     }
 
-    public async Task<AgendaItemModel> CloseAsync(int itemId, CancellationToken cancellationToken)
+    public async Task<AgendaItemModel> CloseAsync(Guid itemId, CancellationToken cancellationToken)
     {
         var item = await LoadAsync(itemId, cancellationToken);
         if (item.Meeting.Status == MeetingStatus.Draft)
@@ -101,7 +101,7 @@ public sealed class AgendaLogic(VoxaContext context) : IAgendaLogic
         return Mapping.Item(item);
     }
 
-    private async Task<AgendaItem> LoadAsync(int itemId, CancellationToken cancellationToken) =>
+    private async Task<AgendaItem> LoadAsync(Guid itemId, CancellationToken cancellationToken) =>
         await context.AgendaItems.Include(static i => i.Meeting).Include(static i => i.Options).Include(static i => i.Ballots)
                      .FirstOrDefaultAsync(i => i.Id == itemId, cancellationToken)
         ?? throw new ObjectNotFoundException(nameof(AgendaItem), itemId);

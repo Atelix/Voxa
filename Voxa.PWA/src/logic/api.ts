@@ -90,8 +90,8 @@ export interface AdminSessionModel {
 }
 
 export interface AgendaItemModel {
-  /** @format int32 */
-  id: number;
+  /** @format uuid */
+  id: string;
   /** @format int32 */
   position: number;
   title: string;
@@ -146,8 +146,8 @@ export interface BallotCodeRequest {
 }
 
 export interface BallotItemModel {
-  /** @format int32 */
-  id: number;
+  /** @format uuid */
+  id: string;
   /** @format int32 */
   position: number;
   title: string;
@@ -337,12 +337,12 @@ export interface ExportModel {
 }
 
 export interface ItemOrderRequest {
-  itemIds: number[];
+  itemIds: string[];
 }
 
 export interface LiveItemModel {
-  /** @format int32 */
-  id: number;
+  /** @format uuid */
+  id: string;
   /** @format int32 */
   position: number;
   title: string;
@@ -357,8 +357,8 @@ export interface LiveModel {
   /** A meeting in the board's list. */
   meeting: MeetingSummaryModel;
   advanceOpenNow: boolean;
-  /** @format int32 */
-  screenItemId: number | null;
+  /** @format uuid */
+  screenItemId: string | null;
   items: LiveItemModel[];
 }
 
@@ -370,8 +370,8 @@ export interface MeetingExportModel {
 
 /** A meeting with its agenda, for the board. */
 export interface MeetingModel {
-  /** @format int32 */
-  id: number;
+  /** @format uuid */
+  id: string;
   name: string;
   kind: MeetingKind;
   /** @format date-time */
@@ -401,8 +401,8 @@ export interface MeetingModel {
    * @format date-time
    */
   earliestAdvanceOpensAt: string;
-  /** @format int32 */
-  screenItemId: number | null;
+  /** @format uuid */
+  screenItemId: string | null;
   items: AgendaItemModel[];
 }
 
@@ -436,8 +436,8 @@ export interface MeetingRequest {
 
 /** A meeting in the board's list. */
 export interface MeetingSummaryModel {
-  /** @format int32 */
-  id: number;
+  /** @format uuid */
+  id: string;
   name: string;
   kind: MeetingKind;
   /** @format date-time */
@@ -465,16 +465,16 @@ export interface MeetingSummaryModel {
 }
 
 export interface OptionModel {
-  /** @format int32 */
-  id: number;
+  /** @format uuid */
+  id: string;
   label: string;
   note: string | null;
   role: OptionRole;
 }
 
 export interface OptionResultModel {
-  /** @format int32 */
-  optionId: number;
+  /** @format uuid */
+  optionId: string;
   label: string;
   role: OptionRole;
   votes: ChannelCountModel;
@@ -504,8 +504,8 @@ export interface PaperCodesRequest {
 }
 
 export interface PaperOptionCount {
-  /** @format int32 */
-  optionId?: number;
+  /** @format uuid */
+  optionId?: string;
   /**
    * @format int32
    * @min 0
@@ -527,10 +527,10 @@ export interface PaperVotesRequest {
 
 /** The totals of a closed item. */
 export interface ResultModel {
-  /** @format int32 */
-  itemId: number;
-  /** @format int32 */
-  meetingId: number;
+  /** @format uuid */
+  itemId: string;
+  /** @format uuid */
+  meetingId: string;
   /** @format int32 */
   position: number;
   title: string;
@@ -565,9 +565,9 @@ export interface ScreenModel {
 export interface ScreenRequest {
   /**
    * A closed item to show on the hall screen, or empty to show the open item again.
-   * @format int32
+   * @format uuid
    */
-  itemId?: number | null;
+  itemId?: string | null;
 }
 
 export interface SendCodesResultModel {
@@ -605,10 +605,10 @@ export interface VoteRequest {
    * @maxLength 32
    */
   code: string;
-  /** @format int32 */
-  itemId?: number;
+  /** @format uuid */
+  itemId?: string;
   /** The chosen option, or for an election the chosen candidates or only the blank option. */
-  optionIds: number[];
+  optionIds: string[];
 }
 
 export interface VoterImportRequest {
@@ -654,8 +654,8 @@ export interface VoterListModel {
 }
 
 export interface VoterModel {
-  /** @format int32 */
-  id: number;
+  /** @format uuid */
+  id: string;
   name: string;
   email: string | null;
   guardianName: string | null;
@@ -1057,7 +1057,7 @@ export class Api<
      * @request PUT:/api/admin/items/{id}
      */
     adminItemsUpdate: (
-      id: number,
+      id: string,
       data: AgendaItemRequest,
       params: RequestParams = {},
     ) =>
@@ -1077,7 +1077,7 @@ export class Api<
      * @name AdminItemsDelete
      * @request DELETE:/api/admin/items/{id}
      */
-    adminItemsDelete: (id: number, params: RequestParams = {}) =>
+    adminItemsDelete: (id: string, params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/api/admin/items/${id}`,
         method: "DELETE",
@@ -1091,7 +1091,7 @@ export class Api<
      * @name AdminItemsOpenCreate
      * @request POST:/api/admin/items/{id}/open
      */
-    adminItemsOpenCreate: (id: number, params: RequestParams = {}) =>
+    adminItemsOpenCreate: (id: string, params: RequestParams = {}) =>
       this.request<AgendaItemModel, any>({
         path: `/api/admin/items/${id}/open`,
         method: "POST",
@@ -1106,7 +1106,7 @@ export class Api<
      * @name AdminItemsCloseCreate
      * @request POST:/api/admin/items/{id}/close
      */
-    adminItemsCloseCreate: (id: number, params: RequestParams = {}) =>
+    adminItemsCloseCreate: (id: string, params: RequestParams = {}) =>
       this.request<AgendaItemModel, any>({
         path: `/api/admin/items/${id}/close`,
         method: "POST",
@@ -1122,7 +1122,7 @@ export class Api<
      * @summary The result of a closed item. 403 while the item is still open or waiting.
      * @request GET:/api/admin/items/{id}/result
      */
-    adminItemsResultList: (id: number, params: RequestParams = {}) =>
+    adminItemsResultList: (id: string, params: RequestParams = {}) =>
       this.request<ResultModel, any>({
         path: `/api/admin/items/${id}/result`,
         method: "GET",
@@ -1138,7 +1138,7 @@ export class Api<
      * @request PUT:/api/admin/items/{id}/paper
      */
     adminItemsPaperUpdate: (
-      id: number,
+      id: string,
       data: PaperVotesRequest,
       params: RequestParams = {},
     ) =>
@@ -1190,7 +1190,7 @@ export class Api<
      * @name AdminMeetingsDetail
      * @request GET:/api/admin/meetings/{id}
      */
-    adminMeetingsDetail: (id: number, params: RequestParams = {}) =>
+    adminMeetingsDetail: (id: string, params: RequestParams = {}) =>
       this.request<MeetingModel, any>({
         path: `/api/admin/meetings/${id}`,
         method: "GET",
@@ -1206,7 +1206,7 @@ export class Api<
      * @request PUT:/api/admin/meetings/{id}
      */
     adminMeetingsUpdate: (
-      id: number,
+      id: string,
       data: MeetingRequest,
       params: RequestParams = {},
     ) =>
@@ -1226,7 +1226,7 @@ export class Api<
      * @name AdminMeetingsDelete
      * @request DELETE:/api/admin/meetings/{id}
      */
-    adminMeetingsDelete: (id: number, params: RequestParams = {}) =>
+    adminMeetingsDelete: (id: string, params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/api/admin/meetings/${id}`,
         method: "DELETE",
@@ -1241,7 +1241,7 @@ export class Api<
      * @summary A new draft with the same agenda, a year later.
      * @request POST:/api/admin/meetings/{id}/copy
      */
-    adminMeetingsCopyCreate: (id: number, params: RequestParams = {}) =>
+    adminMeetingsCopyCreate: (id: string, params: RequestParams = {}) =>
       this.request<MeetingModel, any>({
         path: `/api/admin/meetings/${id}/copy`,
         method: "POST",
@@ -1257,7 +1257,7 @@ export class Api<
      * @summary Closes every item and deletes the codes and the voter list; only the totals remain.
      * @request POST:/api/admin/meetings/{id}/archive
      */
-    adminMeetingsArchiveCreate: (id: number, params: RequestParams = {}) =>
+    adminMeetingsArchiveCreate: (id: string, params: RequestParams = {}) =>
       this.request<MeetingModel, any>({
         path: `/api/admin/meetings/${id}/archive`,
         method: "POST",
@@ -1273,7 +1273,7 @@ export class Api<
      * @request POST:/api/admin/meetings/{id}/items
      */
     adminMeetingsItemsCreate: (
-      id: number,
+      id: string,
       data: AgendaItemRequest,
       params: RequestParams = {},
     ) =>
@@ -1294,7 +1294,7 @@ export class Api<
      * @request PUT:/api/admin/meetings/{id}/items/order
      */
     adminMeetingsItemsOrderUpdate: (
-      id: number,
+      id: string,
       data: ItemOrderRequest,
       params: RequestParams = {},
     ) =>
@@ -1315,7 +1315,7 @@ export class Api<
      * @summary Turnout per item; results only for closed items.
      * @request GET:/api/admin/meetings/{id}/live
      */
-    adminMeetingsLiveList: (id: number, params: RequestParams = {}) =>
+    adminMeetingsLiveList: (id: string, params: RequestParams = {}) =>
       this.request<LiveModel, any>({
         path: `/api/admin/meetings/${id}/live`,
         method: "GET",
@@ -1331,7 +1331,7 @@ export class Api<
      * @request PUT:/api/admin/meetings/{id}/screen
      */
     adminMeetingsScreenUpdate: (
-      id: number,
+      id: string,
       data: ScreenRequest,
       params: RequestParams = {},
     ) =>
@@ -1397,7 +1397,7 @@ export class Api<
      * @name AdminMeetingsVotersList
      * @request GET:/api/admin/meetings/{meetingId}/voters
      */
-    adminMeetingsVotersList: (meetingId: number, params: RequestParams = {}) =>
+    adminMeetingsVotersList: (meetingId: string, params: RequestParams = {}) =>
       this.request<VoterListModel, any>({
         path: `/api/admin/meetings/${meetingId}/voters`,
         method: "GET",
@@ -1413,7 +1413,7 @@ export class Api<
      * @request POST:/api/admin/meetings/{meetingId}/voters
      */
     adminMeetingsVotersCreate: (
-      meetingId: number,
+      meetingId: string,
       data: VoterRequest,
       params: RequestParams = {},
     ) =>
@@ -1434,7 +1434,7 @@ export class Api<
      * @request POST:/api/admin/meetings/{meetingId}/voters/import
      */
     adminMeetingsVotersImportCreate: (
-      meetingId: number,
+      meetingId: string,
       data: VoterImportRequest,
       params: RequestParams = {},
     ) =>
@@ -1455,7 +1455,7 @@ export class Api<
      * @request DELETE:/api/admin/meetings/{meetingId}/voters/{voterId}
      */
     adminMeetingsVotersDelete: (
-      voterId: number,
+      voterId: string,
       meetingId: string,
       params: RequestParams = {},
     ) =>
@@ -1473,7 +1473,7 @@ export class Api<
      * @request POST:/api/admin/meetings/{meetingId}/voters/send
      */
     adminMeetingsVotersSendCreate: (
-      meetingId: number,
+      meetingId: string,
       params: RequestParams = {},
     ) =>
       this.request<SendCodesResultModel, any>({
@@ -1492,7 +1492,7 @@ export class Api<
      * @request POST:/api/admin/meetings/{meetingId}/voters/paper
      */
     adminMeetingsVotersPaperCreate: (
-      meetingId: number,
+      meetingId: string,
       data: PaperCodesRequest,
       params: RequestParams = {},
     ) =>
@@ -1513,7 +1513,7 @@ export class Api<
      * @request POST:/api/admin/meetings/{meetingId}/voters/test
      */
     adminMeetingsVotersTestCreate: (
-      meetingId: number,
+      meetingId: string,
       data: TestMailRequest,
       params: RequestParams = {},
     ) =>
@@ -1587,7 +1587,7 @@ export class Api<
      * @name ScreenDetail
      * @request GET:/api/screen/{meetingId}
      */
-    screenDetail: (meetingId: number, params: RequestParams = {}) =>
+    screenDetail: (meetingId: string, params: RequestParams = {}) =>
       this.request<ScreenModel, any>({
         path: `/api/screen/${meetingId}`,
         method: "GET",

@@ -47,7 +47,7 @@ public sealed class MigrationTests(PostgresFixture database)
     public async Task VotesAtTheSameMomentAreAllCountedAndACodeOnlyOnce()
     {
         var codes = new CodeService(Options.Create(new CodeOptions { Pepper = "pg" }));
-        int itemId, optionId;
+        Guid itemId, optionId;
         var plain = Enumerable.Range(0, 20).Select(_ => codes.Generate()).ToList();
         await using (var setup = database.CreateContext())
         {

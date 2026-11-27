@@ -6,7 +6,7 @@ namespace Voxa.Abstractions.Models;
 /// <summary>A meeting in the board's list.</summary>
 public record MeetingSummaryModel
 {
-    public required int Id { get; init; }
+    public required Guid Id { get; init; }
 
     public required string Name { get; init; }
 
@@ -43,14 +43,14 @@ public sealed record MeetingModel : MeetingSummaryModel
     /// <summary>The earliest moment advance voting may open: 30 days before the meeting (statutes art. 20.8).</summary>
     public required DateTime EarliestAdvanceOpensAt { get; init; }
 
-    public required int? ScreenItemId { get; init; }
+    public required Guid? ScreenItemId { get; init; }
 
     public required IReadOnlyList<AgendaItemModel> Items { get; init; }
 }
 
 public sealed record AgendaItemModel
 {
-    public required int Id { get; init; }
+    public required Guid Id { get; init; }
 
     public required int Position { get; init; }
 
@@ -79,7 +79,7 @@ public sealed record AgendaItemModel
 
 public sealed record OptionModel
 {
-    public required int Id { get; init; }
+    public required Guid Id { get; init; }
 
     public required string Label { get; init; }
 
@@ -151,7 +151,7 @@ public sealed class CandidateRequest
 public sealed class ItemOrderRequest
 {
     [Required]
-    public required IReadOnlyList<int> ItemIds { get; init; }
+    public required IReadOnlyList<Guid> ItemIds { get; init; }
 }
 
 public sealed class WipeRequest

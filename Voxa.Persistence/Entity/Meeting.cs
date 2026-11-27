@@ -2,7 +2,7 @@ namespace Voxa.Persistence.Entity;
 
 public class Meeting
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
     public required string Name { get; set; }
 
@@ -29,7 +29,7 @@ public class Meeting
     public int? CodesUsedAtArchive { get; set; }
 
     /// <summary>The closed item whose result the hall screen shows, if the board chose one.</summary>
-    public int? ScreenItemId { get; set; }
+    public Guid? ScreenItemId { get; set; }
 
     public DateTime CreatedAt { get; set; }
 

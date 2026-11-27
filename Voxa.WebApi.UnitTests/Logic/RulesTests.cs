@@ -129,7 +129,7 @@ public sealed class RulesTests
 
     private static AgendaItem Proposal(MajorityRule rule, int forVotes, int against, int abstain)
     {
-        var item = new AgendaItem { Id = ++s_ids, Title = "Voorstel", Kind = AgendaItemKind.Proposal, Majority = rule };
+        var item = new AgendaItem { Id = Guid.NewGuid(), Title = "Voorstel", Kind = AgendaItemKind.Proposal, Majority = rule };
         foreach (var (role, count) in new[] { (OptionRole.For, forVotes), (OptionRole.Against, against), (OptionRole.Abstain, abstain) })
         {
             item.Options.Add(Option(role, role.ToString(), count));
@@ -141,7 +141,7 @@ public sealed class RulesTests
 
     private static AgendaItem Election(int seats, int ballots, int blank, params (string Name, int Votes)[] candidates)
     {
-        var item = new AgendaItem { Id = ++s_ids, Title = "Verkiezing", Kind = AgendaItemKind.Election, Seats = seats };
+        var item = new AgendaItem { Id = Guid.NewGuid(), Title = "Verkiezing", Kind = AgendaItemKind.Election, Seats = seats };
         foreach (var (name, votes) in candidates)
         {
             item.Options.Add(Option(OptionRole.Candidate, name, votes));
@@ -154,7 +154,7 @@ public sealed class RulesTests
 
     private static ItemOption Option(OptionRole role, string label, int count)
     {
-        var option = new ItemOption { Id = ++s_ids, Role = role, Label = label, Position = s_ids };
+        var option = new ItemOption { Id = Guid.NewGuid(), Role = role, Label = label, Position = ++s_ids };
         option.Tallies.Add(new OptionTally { Channel = VoteChannel.Hall, Count = count });
         return option;
     }

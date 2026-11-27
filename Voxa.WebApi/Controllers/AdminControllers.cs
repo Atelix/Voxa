@@ -29,8 +29,8 @@ public class AdminMeetingsController(IMeetingLogic meetingLogic, IAgendaLogic ag
     public async Task<ActionResult<IReadOnlyList<MeetingSummaryModel>>> List(CancellationToken cancellationToken) =>
         Ok(await meetingLogic.ListAsync(cancellationToken));
 
-    [HttpGet("{id:int}")]
-    public async Task<ActionResult<MeetingModel>> Get(int id, CancellationToken cancellationToken) => await meetingLogic.GetAsync(id, cancellationToken);
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult<MeetingModel>> Get(Guid id, CancellationToken cancellationToken) => await meetingLogic.GetAsync(id, cancellationToken);
 
     [HttpPost]
     public async Task<ActionResult<MeetingModel>> Create(MeetingRequest request, CancellationToken cancellationToken)
@@ -39,39 +39,39 @@ public class AdminMeetingsController(IMeetingLogic meetingLogic, IAgendaLogic ag
         return CreatedAtAction(nameof(Get), new { id = meeting.Id }, meeting);
     }
 
-    [HttpPut("{id:int}")]
-    public async Task<ActionResult<MeetingModel>> Update(int id, MeetingRequest request, CancellationToken cancellationToken) =>
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<MeetingModel>> Update(Guid id, MeetingRequest request, CancellationToken cancellationToken) =>
         await meetingLogic.UpdateAsync(id, request, cancellationToken);
 
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         await meetingLogic.DeleteAsync(id, cancellationToken);
         return NoContent();
     }
 
     /// <summary>A new draft with the same agenda, a year later.</summary>
-    [HttpPost("{id:int}/copy")]
-    public async Task<ActionResult<MeetingModel>> Copy(int id, CancellationToken cancellationToken) => await meetingLogic.CopyAsync(id, cancellationToken);
+    [HttpPost("{id:guid}/copy")]
+    public async Task<ActionResult<MeetingModel>> Copy(Guid id, CancellationToken cancellationToken) => await meetingLogic.CopyAsync(id, cancellationToken);
 
     /// <summary>Closes every item and deletes the codes and the voter list; only the totals remain.</summary>
-    [HttpPost("{id:int}/archive")]
-    public async Task<ActionResult<MeetingModel>> Archive(int id, CancellationToken cancellationToken) => await meetingLogic.ArchiveAsync(id, cancellationToken);
+    [HttpPost("{id:guid}/archive")]
+    public async Task<ActionResult<MeetingModel>> Archive(Guid id, CancellationToken cancellationToken) => await meetingLogic.ArchiveAsync(id, cancellationToken);
 
-    [HttpPost("{id:int}/items")]
-    public async Task<ActionResult<AgendaItemModel>> AddItem(int id, AgendaItemRequest request, CancellationToken cancellationToken) =>
+    [HttpPost("{id:guid}/items")]
+    public async Task<ActionResult<AgendaItemModel>> AddItem(Guid id, AgendaItemRequest request, CancellationToken cancellationToken) =>
         await agendaLogic.AddAsync(id, request, cancellationToken);
 
-    [HttpPut("{id:int}/items/order")]
-    public async Task<ActionResult<IReadOnlyList<AgendaItemModel>>> Reorder(int id, ItemOrderRequest request, CancellationToken cancellationToken) =>
+    [HttpPut("{id:guid}/items/order")]
+    public async Task<ActionResult<IReadOnlyList<AgendaItemModel>>> Reorder(Guid id, ItemOrderRequest request, CancellationToken cancellationToken) =>
         Ok(await agendaLogic.ReorderAsync(id, request, cancellationToken));
 
     /// <summary>Turnout per item; results only for closed items.</summary>
-    [HttpGet("{id:int}/live")]
-    public async Task<ActionResult<LiveModel>> Live(int id, CancellationToken cancellationToken) => await resultLogic.LiveAsync(id, cancellationToken);
+    [HttpGet("{id:guid}/live")]
+    public async Task<ActionResult<LiveModel>> Live(Guid id, CancellationToken cancellationToken) => await resultLogic.LiveAsync(id, cancellationToken);
 
-    [HttpPut("{id:int}/screen")]
-    public async Task<IActionResult> Screen(int id, ScreenRequest request, CancellationToken cancellationToken)
+    [HttpPut("{id:guid}/screen")]
+    public async Task<IActionResult> Screen(Guid id, ScreenRequest request, CancellationToken cancellationToken)
     {
         await resultLogic.SetScreenAsync(id, request, cancellationToken);
         return NoContent();
@@ -83,67 +83,67 @@ public class AdminMeetingsController(IMeetingLogic meetingLogic, IAgendaLogic ag
 [Route("api/admin/items")]
 public class AdminItemsController(IAgendaLogic agendaLogic, IResultLogic resultLogic) : ControllerBase
 {
-    [HttpPut("{id:int}")]
-    public async Task<ActionResult<AgendaItemModel>> Update(int id, AgendaItemRequest request, CancellationToken cancellationToken) =>
+    [HttpPut("{id:guid}")]
+    public async Task<ActionResult<AgendaItemModel>> Update(Guid id, AgendaItemRequest request, CancellationToken cancellationToken) =>
         await agendaLogic.UpdateAsync(id, request, cancellationToken);
 
-    [HttpDelete("{id:int}")]
-    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
         await agendaLogic.DeleteAsync(id, cancellationToken);
         return NoContent();
     }
 
-    [HttpPost("{id:int}/open")]
-    public async Task<ActionResult<AgendaItemModel>> Open(int id, CancellationToken cancellationToken) => await agendaLogic.OpenAsync(id, cancellationToken);
+    [HttpPost("{id:guid}/open")]
+    public async Task<ActionResult<AgendaItemModel>> Open(Guid id, CancellationToken cancellationToken) => await agendaLogic.OpenAsync(id, cancellationToken);
 
-    [HttpPost("{id:int}/close")]
-    public async Task<ActionResult<AgendaItemModel>> Close(int id, CancellationToken cancellationToken) => await agendaLogic.CloseAsync(id, cancellationToken);
+    [HttpPost("{id:guid}/close")]
+    public async Task<ActionResult<AgendaItemModel>> Close(Guid id, CancellationToken cancellationToken) => await agendaLogic.CloseAsync(id, cancellationToken);
 
     /// <summary>The result of a closed item. 403 while the item is still open or waiting.</summary>
-    [HttpGet("{id:int}/result")]
-    public async Task<ActionResult<ResultModel>> Result(int id, CancellationToken cancellationToken) => await resultLogic.ResultAsync(id, cancellationToken);
+    [HttpGet("{id:guid}/result")]
+    public async Task<ActionResult<ResultModel>> Result(Guid id, CancellationToken cancellationToken) => await resultLogic.ResultAsync(id, cancellationToken);
 
-    [HttpPut("{id:int}/paper")]
-    public async Task<ActionResult<ResultModel>> Paper(int id, PaperVotesRequest request, CancellationToken cancellationToken) =>
+    [HttpPut("{id:guid}/paper")]
+    public async Task<ActionResult<ResultModel>> Paper(Guid id, PaperVotesRequest request, CancellationToken cancellationToken) =>
         await resultLogic.SetPaperVotesAsync(id, request, cancellationToken);
 }
 
 [ApiController]
 [Authorize(Roles = AdminAuthLogic.Role)]
-[Route("api/admin/meetings/{meetingId:int}/voters")]
+[Route("api/admin/meetings/{meetingId:guid}/voters")]
 public class AdminVotersController(IVoterLogic voterLogic) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<VoterListModel>> List(int meetingId, CancellationToken cancellationToken) => await voterLogic.ListAsync(meetingId, cancellationToken);
+    public async Task<ActionResult<VoterListModel>> List(Guid meetingId, CancellationToken cancellationToken) => await voterLogic.ListAsync(meetingId, cancellationToken);
 
     [HttpPost("import")]
     [RequestSizeLimit(4_000_000)]
-    public async Task<ActionResult<VoterImportResultModel>> Import(int meetingId, VoterImportRequest request, CancellationToken cancellationToken) =>
+    public async Task<ActionResult<VoterImportResultModel>> Import(Guid meetingId, VoterImportRequest request, CancellationToken cancellationToken) =>
         await voterLogic.ImportAsync(meetingId, request, cancellationToken);
 
     [HttpPost]
-    public async Task<ActionResult<VoterModel>> Add(int meetingId, VoterRequest request, CancellationToken cancellationToken) =>
+    public async Task<ActionResult<VoterModel>> Add(Guid meetingId, VoterRequest request, CancellationToken cancellationToken) =>
         await voterLogic.AddAsync(meetingId, request, cancellationToken);
 
-    [HttpDelete("{voterId:int}")]
-    public async Task<IActionResult> Delete(int voterId, CancellationToken cancellationToken)
+    [HttpDelete("{voterId:guid}")]
+    public async Task<IActionResult> Delete(Guid voterId, CancellationToken cancellationToken)
     {
         await voterLogic.DeleteAsync(voterId, cancellationToken);
         return NoContent();
     }
 
     [HttpPost("send")]
-    public async Task<ActionResult<SendCodesResultModel>> Send(int meetingId, CancellationToken cancellationToken) =>
+    public async Task<ActionResult<SendCodesResultModel>> Send(Guid meetingId, CancellationToken cancellationToken) =>
         await voterLogic.SendCodesAsync(meetingId, cancellationToken);
 
     /// <summary>Codes for paper slips, shown once.</summary>
     [HttpPost("paper")]
-    public async Task<ActionResult<PaperCodesModel>> Paper(int meetingId, PaperCodesRequest request, CancellationToken cancellationToken) =>
+    public async Task<ActionResult<PaperCodesModel>> Paper(Guid meetingId, PaperCodesRequest request, CancellationToken cancellationToken) =>
         await voterLogic.CreatePaperCodesAsync(meetingId, request, cancellationToken);
 
     [HttpPost("test")]
-    public async Task<IActionResult> Test(int meetingId, TestMailRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Test(Guid meetingId, TestMailRequest request, CancellationToken cancellationToken)
     {
         await voterLogic.SendTestMailAsync(meetingId, request, cancellationToken);
         return NoContent();

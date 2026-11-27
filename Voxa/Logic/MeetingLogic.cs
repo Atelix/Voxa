@@ -19,7 +19,7 @@ public sealed class MeetingLogic(VoxaContext context, ClubSettingsStore club, Ti
         return [.. meetings.Select(m => Mapping.Summary(m, voters.GetValueOrDefault(m.Id), used.GetValueOrDefault(m.Id)))];
     }
 
-    public async Task<MeetingModel> GetAsync(int id, CancellationToken cancellationToken)
+    public async Task<MeetingModel> GetAsync(Guid id, CancellationToken cancellationToken)
     {
         var meeting = await LoadAsync(id, cancellationToken);
         return await ToModelAsync(meeting, cancellationToken);
@@ -35,7 +35,7 @@ public sealed class MeetingLogic(VoxaContext context, ClubSettingsStore club, Ti
         return await ToModelAsync(meeting, cancellationToken);
     }
 
-    public async Task<MeetingModel> UpdateAsync(int id, MeetingRequest request, CancellationToken cancellationToken)
+    public async Task<MeetingModel> UpdateAsync(Guid id, MeetingRequest request, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(request);
         var meeting = await LoadAsync(id, cancellationToken);
@@ -45,7 +45,7 @@ public sealed class MeetingLogic(VoxaContext context, ClubSettingsStore club, Ti
         return await ToModelAsync(meeting, cancellationToken);
     }
 
-    public async Task DeleteAsync(int id, CancellationToken cancellationToken)
+    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
         var meeting = await LoadAsync(id, cancellationToken);
         if (meeting.Status == MeetingStatus.Ready)
@@ -57,7 +57,7 @@ public sealed class MeetingLogic(VoxaContext context, ClubSettingsStore club, Ti
         _ = await context.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<MeetingModel> CopyAsync(int id, CancellationToken cancellationToken)
+    public async Task<MeetingModel> CopyAsync(Guid id, CancellationToken cancellationToken)
     {
         var source = await LoadAsync(id, cancellationToken);
         var settings = await club.GetAsync(cancellationToken);
@@ -90,7 +90,7 @@ public sealed class MeetingLogic(VoxaContext context, ClubSettingsStore club, Ti
         return await ToModelAsync(copy, cancellationToken);
     }
 
-    public async Task<MeetingModel> ArchiveAsync(int id, CancellationToken cancellationToken)
+    public async Task<MeetingModel> ArchiveAsync(Guid id, CancellationToken cancellationToken)
     {
         var meeting = await LoadAsync(id, cancellationToken);
         EnsureNotArchived(meeting);
@@ -154,7 +154,7 @@ public sealed class MeetingLogic(VoxaContext context, ClubSettingsStore club, Ti
         return ClubTime.ToUtc(localDay);
     }
 
-    internal async Task<Meeting> LoadAsync(int id, CancellationToken cancellationToken) =>
+    internal async Task<Meeting> LoadAsync(Guid id, CancellationToken cancellationToken) =>
         await context.Meetings
                      .Include(static m => m.Items).ThenInclude(static i => i.Options)
                      .Include(static m => m.Items).ThenInclude(static i => i.Ballots)
@@ -210,7 +210,7 @@ public sealed class MeetingLogic(VoxaContext context, ClubSettingsStore club, Ti
     private async Task<MeetingModel> ToModelAsync(Meeting meeting, CancellationToken cancellationToken)
     {
         var settings = await club.GetAsync(cancellationToken);
-        var used = meeting.Id == 0 ? [] : await CodesUsedAsync(meeting.Id, cancellationToken);
+        var used = meeting.Id == Guid.Empty ? [] : await CodesUsedAsync(meeting.Id, cancellationToken);
         var summary = Mapping.Summary(meeting, meeting.Voters.Count, used.GetValueOrDefault(meeting.Id));
         return new MeetingModel
         {
@@ -235,7 +235,7 @@ public sealed class MeetingLogic(VoxaContext context, ClubSettingsStore club, Ti
     }
 
     /// <summary>Per meeting, how many of its codes voted at least once.</summary>
-    private async Task<Dictionary<int, int>> CodesUsedAsync(int? meetingId, CancellationToken cancellationToken) =>
+    private async Task<Dictionary<Guid, int>> CodesUsedAsync(Guid? meetingId, CancellationToken cancellationToken) =>
         await context.VotingCodes.Where(c => meetingId == null || c.MeetingId == meetingId)
                      .Where(static c => c.Uses.Count > 0)
                      .GroupBy(static c => c.MeetingId)

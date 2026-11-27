@@ -115,7 +115,7 @@ const loader = useLoader(async () => (await api.admin.adminMeetingsList()).data)
 const upcoming = computed(() => (loader.data.value ?? []).filter((m) => m.status !== MeetingStatus.Archived))
 const archived = computed(() => (loader.data.value ?? []).filter((m) => m.status === MeetingStatus.Archived))
 const dialog = ref(false)
-const copying = ref<number | null>(null)
+const copying = ref<string | null>(null)
 const demo = useAsyncAction<MeetingModel>()
 const snackbar = ref(false)
 const snackbarText = ref("")
@@ -127,7 +127,7 @@ async function onCreated(meeting: MeetingModel): Promise<void> {
 	await router.push({ name: "meeting", params: { id: meeting.id } })
 }
 
-async function copy(id: number): Promise<void> {
+async function copy(id: string): Promise<void> {
 	copying.value = id
 	try {
 		const copy = (await api.admin.adminMeetingsCopyCreate(id)).data

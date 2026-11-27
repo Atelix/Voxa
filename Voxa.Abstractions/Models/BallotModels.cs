@@ -35,11 +35,11 @@ public sealed class VoteRequest
     [StringLength(32)]
     public required string Code { get; init; }
 
-    public int ItemId { get; init; }
+    public Guid ItemId { get; init; }
 
     /// <summary>The chosen option, or for an election the chosen candidates or only the blank option.</summary>
     [Required]
-    public required IReadOnlyList<int> OptionIds { get; init; }
+    public required IReadOnlyList<Guid> OptionIds { get; init; }
 }
 
 public sealed record BallotSessionModel
@@ -59,7 +59,7 @@ public sealed record BallotSessionModel
 
 public sealed record BallotItemModel
 {
-    public required int Id { get; init; }
+    public required Guid Id { get; init; }
 
     public required int Position { get; init; }
 

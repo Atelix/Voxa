@@ -3,9 +3,9 @@ namespace Voxa.Persistence.Entity;
 /// <summary>A choice on an agenda item: for, against or abstain, or a candidate or the blank vote.</summary>
 public class ItemOption
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
-    public int AgendaItemId { get; set; }
+    public Guid AgendaItemId { get; set; }
 
     public AgendaItem AgendaItem { get; set; } = null!;
 
