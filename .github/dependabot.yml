@@ -46,6 +46,11 @@ updates:
     groups:
       monthly-version-updates:
         patterns: ["*"]
+    ignore:
+      # The images must match the projects' TargetFramework (net10.0) and the SDK in CI. A new .NET major version
+      # is an upgrade of all three together, not an image bump: an 11.0 runtime cannot start a net10.0 app.
+      - dependency-name: "dotnet/*"
+        update-types: ["version-update:semver-major"]
 
   # The server's images in docker-compose*.yml: Traefik, the socket proxy, Watchtower (version and digest) and PostgreSQL.
   # Merging such a PR changes nothing on a running server: copy the updated compose file to the server
