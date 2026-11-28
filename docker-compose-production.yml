@@ -34,7 +34,7 @@ services:
 
     traefik:
         # Traefik v3 (rules use Go regular expressions).
-        image: traefik:v3.7
+        image: traefik:v3.8
         container_name: traefik
         restart: unless-stopped
         logging: *logging
