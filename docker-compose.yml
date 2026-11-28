@@ -17,6 +17,9 @@ services:
       - ConnectionString=Host=db;Port=5432;Database=Voxa;Username=root;Password=${VOXA_DEV_DB_PASSWORD:?Set VOXA_DEV_DB_PASSWORD in your local .env file}
       # Production mode, so the container applies the migrations on start-up like the server does.
       - ASPNETCORE_ENVIRONMENT=Production
+      # Production mode requires these secrets (Program.cs); the values come from your local .env.
+      - Admin__Password=${VOXA_DEV_ADMIN_PASSWORD:?Set VOXA_DEV_ADMIN_PASSWORD in your local .env file}
+      - Codes__Pepper=${VOXA_DEV_CODES_PEPPER:?Set VOXA_DEV_CODES_PEPPER in your local .env file}
       - Cors__AllowedOrigins__0=http://localhost:3000
 
   db:
